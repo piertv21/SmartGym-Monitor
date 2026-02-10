@@ -17,6 +17,8 @@ export default withMermaid(
                     text: 'Report',
                     items: [
                         { text: 'Introduction', link: `${reportPath}/Introduction` },
+                        { text: 'Work Plan', link: `${reportPath}/WorkPlan` },
+                        { text: 'Requirements Analisys', link: `${reportPath}/Requirements` },
                         { text: 'Design', link: `${reportPath}/Design` },
                         { text: 'Implementation', link: `${reportPath}/Implementation` },
                         { text: 'Technologies', link: `${reportPath}/Technologies` },
