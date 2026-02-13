@@ -3,10 +3,19 @@
 > This section describes the domain and system requirements following a Domain-Driven Design approach.
 
 ## 2.1 Domain Definition
+<!--
 - Describe the problem domain
 - Define the main goal of the system
 - Identify the main actors involved
 - Clarify what is inside and outside the domain boundary
+-->
+
+The core domain of this project is the management of a gym.
+
+The aim of the system is therefore to manage the gym comprehensively, with particular attention to the management of machine occupancy.
+The system must be able to monitor the use of machines by users, providing real-time information on availability and occupancy.
+
+We decide to split the domain in more subdomains as shown in the following section, in order to break down the complexity of the system.
 
 ## 2.2 Subdomains Definitions
 <!--
@@ -14,9 +23,6 @@
 - Classify subdomains (core, supporting, generic)
 - Explain why the core domain represents the main business value
 -->
-
-The core domain of this project is the management of a gym. Including all the aspects needed to manage the machine occupancy.
-We decide to split the domain in more subdomains as shown in the following section, in order to break down the complexity of the system.
 
 - **Supporting — Embedded**: this subdomain includes the interaction with physical devices.
 In particular, it manages the machine sensors, the room RFID readers, and real-time communication with the backend.
@@ -47,27 +53,45 @@ It provides mechanisms for microservice authentication and API token to ensure s
 |------------------------|------------------------------------------------------------------------------------------------|----------------------------------|
 | Gym                    | The physical facility composed of multiple areas.                                              | Gym Management                   |
 | Gym Area               | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area). | Room Management / Gym Management |
+| Turnstile              | An element that allows access to the gym/a gym area if a badge is read correctly               | Embedded                         |
+| Badge reader           | A reader detecting user entry and exit, by using cards.                                        | Embedded                         |
 | Machine                | A gym equipment unit that can be used by a user.                                               | Machine Management               |
 | Machine sensor         | A sensor that detects whether the machine is being used by a user                              | Room Management / Gym Management |
 | Occupancy              | The current status of a machine, which can be _Free_ or _Occupied_.                            | Room Management / Gym Management |
 | User                   | A gym member accessing gym areas.                                                              | Room Management                  |
-| Badge reader           | A reader detecting user entry and exit, by using cards.                                        | Embedded                         |
 | Enter Event            | Event indicating that a user entered a gym area.                                               | Embedded / Room Management       |
 | Exit Event             | Event indicating that a user left a gym area.                                                  | Embedded / Room Management       |
 | User Session           | The time interval during which a user uses a machine.                                          | Room Management                  |
 | Admin or Administrator | Staff member responsible for monitoring gym usage and congestion.                              | Analytics / Authentication       |
 
 ## 2.4 System Requirements
+This section lists all system requirements, divided into functional and non-functional requirements.
 
 ### 2.4.1 Functional Requirements
+<!--
 - Define what the system must do
 - Number each requirement
 - Make requirements clear and testable
+-->
+
+1. The system must allow users to access the gym via badge readers
+2. The system must allow users to access different areas of the gym via badge readers
+3. The turnstile must allow users to enter the gym or a gym area if they have a valid badge and deny access otherwise
+4. The system must allow users to use machines if they are free
+5. The system must detect when a machine is occupied or free
+6. The system must allow administrators to view the occupancy status of machines in real time and the usage history
+7. The system must correctly manage user and machine access data, ensuring data consistency and integrity
 
 ### 2.4.2 Non-Functional Requirements
+<!--
 - Define quality attributes (performance, scalability, reliability, etc.)
 - Include architectural and design constraints
 - Relate requirements to project goals
+-->
+
+1. The system must guarantee the security of user and machine data
+2. The system must be scalable to handle a growing number of users and machines
+3. The system must be reliable and available to guarantee continuous service to users and administrators
 
 ## 2.5 Use Case
 - Identify main system use cases
