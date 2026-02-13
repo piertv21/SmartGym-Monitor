@@ -53,15 +53,24 @@ It provides mechanisms for microservice authentication and API token to ensure s
 |------------------------|------------------------------------------------------------------------------------------------|----------------------------------|
 | Gym                    | The physical facility composed of multiple areas.                                              | Gym Management                   |
 | Gym Area               | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area). | Room Management / Gym Management |
-| Turnstile              | An element that allows access to the gym/a gym area if a badge is read correctly               | Embedded                         |
-| Badge reader           | A reader detecting user entry and exit, by using cards.                                        | Embedded                         |
+| Cardio Area            | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area). | Room Management / Gym Management |
+| Weight Area            | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area). | Room Management / Gym Management |
+| Class Area             | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area). | Room Management / Gym Management |
+| Entrace Area           | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area). | Room Management / Gym Management |
+| Machine Area           | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area). | Room Management / Gym Management |
+| Turnstile              | An element that allows access to the gym/a gym area if a badge is read correctly positioned at the entrance of the gym | Embedded  |
+| RFID reader            | A reader detecting user entry and exit, by using RFID.                                        | Embedded                         |
 | Machine                | A gym equipment unit that can be used by a user.                                               | Machine Management               |
 | Machine sensor         | A sensor that detects whether the machine is being used by a user                              | Room Management / Gym Management |
-| Occupancy              | The current status of a machine, which can be _Free_ or _Occupied_.                            | Room Management / Gym Management |
+| Occupancy              | The current status of a machine, which can be _Free_ or _Occupied_ or _Maintainance_     | Room Management / Gym Management |
 | User                   | A gym member accessing gym areas.                                                              | Room Management                  |
-| Enter Event            | Event indicating that a user entered a gym area.                                               | Embedded / Room Management       |
-| Exit Event             | Event indicating that a user left a gym area.                                                  | Embedded / Room Management       |
-| User Session           | The time interval during which a user uses a machine.                                          | Room Management                  |
+| Access Area Direction  | The value that describe the direction of access between the areas. It can be _IN_ and _OUT_ area   | Embedded / Room Management       |
+| Enter Area Event            | Event indicating that a user entered a gym area.                                               | Embedded / Room Management       |
+| Exit Area Event             | Event indicating that a user left a gym area.                                                  | Embedded / Room Management       |
+| Enter Gym Event             | Event indicating that a user left a gym area.                                                  | Embedded / Room Management       |
+| Exit Gym Event             | Event indicating that a user left a gym area.                                                  | Embedded / Room Management       |
+| User Machine Session   | The time interval during which a user uses a machine.                                          | Room Management                  |
+| User Gym Session       | The time interval during which a user stays in the gym                                        | Room Management                  |
 | Admin or Administrator | Staff member responsible for monitoring gym usage and congestion.                              | Analytics / Authentication       |
 
 ## 2.4 System Requirements
@@ -94,14 +103,19 @@ This section lists all system requirements, divided into functional and non-func
 3. The system must be reliable and available to guarantee continuous service to users and administrators
 
 ## 2.5 Use Case
-- Identify main system use cases
-- Describe typical interactions between actors and the system
-- Focus on behavior, not implementation details
 
-## 2.6 User Story
-- Define user stories from the administrator perspective
-- Use simple and clear language
-- Link stories to functional requirements
+```mermaid
+TO DO DIAGRAMMI USE CASE
+```
+
+
+
+## 2.6 User Stories
+
+| ID    | User Story | Related FR |
+|-------|------------|------------|
+| US-01 | As a **Gym Member**, I want ... , so that I .... | FR-1, FR-3 |
+
 
 ## 2.7 Event Storming
 - Identify domain events
@@ -109,7 +123,7 @@ This section lists all system requirements, divided into functional and non-func
 - Identify aggregates involved
 - Define the main event flow
 
-## 2.8 Quality Attributes Scenarios
+## 2.8 Quality Attributes Scenarios 
 - Define scenarios for key quality attributes
 - Specify stimulus, environment, and expected response
 - Focus on system behavior under specific conditions
@@ -117,11 +131,11 @@ This section lists all system requirements, divided into functional and non-func
 ## 2.9 Story Telling
 - Describe realistic system usage scenarios
 
-### 2.9.1 Customer Storytelling
+### 2.9.1 Gym member Storytelling
 - Describe system behavior from a gym member perspective
 - Focus on interactions with sensors and physical space
 
-### 2.9.2 Admin Storytelling
+### 2.9.2 Administrator Storytelling
 - Describe system behavior from an administrator perspective
 - Focus on monitoring and decision-making activities
 
