@@ -12,19 +12,26 @@
   },
   "license": "MIT",
   "author": "",
-  "type": "commonjs",
+  "type": "module",
   "main": "index.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prettier:check": "prettier --check ."
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml,html,java,py}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
     "@commitlint/config-conventional": "^20.4.1",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7"
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "semantic-release-preconfigured-conventional-commits": "^1.1.157"
   }
 }
