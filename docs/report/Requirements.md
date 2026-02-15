@@ -109,13 +109,12 @@ This section lists all system requirements, divided into functional and non-func
 5. The system must be reliable and available to guarantee continuous service to users and administrators
 
 ## 2.5 Use Case
+In this section is shown the use case diagram of the system from the point of
+view of the two main actors: Administrator and Gym Member.
 
-```mermaid
-TO DO DIAGRAMMI USE CASE
-```
+![UseCaseDiagram](../public/resources/use_case_diagram.png)
 
 ## 2.6 User Stories
-
 | ID    | User Story                                       | Related FR |
 |-------|--------------------------------------------------|------------|
 | US-01 | As a **Gym Member**, I want ... , so that I .... | FR-1, FR-3 |
