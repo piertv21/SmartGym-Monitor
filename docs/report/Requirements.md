@@ -172,13 +172,31 @@ In the following tables the description of each use case related to Administrato
 
 ### 2.8.1 Gym member Storytelling
 
+<!--
 - Describe system behavior from a gym member perspective
 - Focus on interactions with sensors and physical space
+-->
+
+Users access the gym through the entrance turnstile, which reads their badge.
+From the moment the user enters the gym, a gym session is tracked, which begins with entry and ends with exit from the gym.
+Each time a user badge is scanned, it is logged, including the timestamp and, in the case of door access, the direction of travel.
+Once inside the gym, users can go to the changing room to get ready.
+Every door in the facility, including the changing room door, is equipped with an RFID reader that reads the user's badge to identify the room they are entering.
+Inside the equipment area, users can use the machines. Each machine tracks its use by a user, so it can detect whether a person is using it and for how long, in practice, it tracks user sessions.
+There are also cardio and weight areas and an area for classes, where the machines detect their use by users in the same way as in the equipment area.
+When the user has finished their workout, they return to the changing room to get changed, passing through the doors and finally exiting the gym through the turnstile.
 
 ### 2.8.2 Administrator Storytelling
 
+<!--
 - Describe system behavior from an administrator perspective
 - Focus on monitoring and decision-making activities
+-->
+
+The administrator logs into an Admin console via a web interface.
+After authentication, they are shown a Dashboard displaying the current status of the gym, including the occupancy of each room, individual machines, and even the operations available to the admin.
+The admin can consult the occupancy history of the machines and gym attendance, in order to understand which days and times are of greatest interest to users.
+The administrator can then view User Gym Sessions and User Machine Sessions in a convenient and understandable way, using appropriate graphs.
 
 ## 2.9 Domain Model
 
