@@ -80,7 +80,9 @@ We decide to split the domain in more subdomains as shown in the following secti
 | Admin or Administrator | Staff member responsible for monitoring gym usage and congestion.                                                      | Analytics / Authentication       |
 
 <p align="center"><em>Table 1: Glossary of SmartGym Domain</em></p>
+
 ## 2.4 System Requirements
+
 This section lists all system requirements, divided into functional and non-functional requirements.
 
 ### 2.4.1 Functional Requirements
