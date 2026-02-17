@@ -32,7 +32,6 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
-    "semantic-release-preconfigured-conventional-commits": "^1.1.157",
-    "vitepress": "^1.6.4"
+    "semantic-release-preconfigured-conventional-commits": "^1.1.157"
   }
 }
