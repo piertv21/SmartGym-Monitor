@@ -200,50 +200,55 @@ The administrator can then view User Gym Sessions and User Machine Sessions in a
 | Machine         | MachineId        | status, areaId                         | Change occupancy state, enforce valid state transitions | Machine Management |
 | Gym Session     | GymSessionId     | badgeId, startTime, endTime            | Track presence inside the gym                           | Area Management    |
 | Machine Session | MachineSessionId | machineId, badgeId, startTime, endTime | Track machine usage duration                            | Machine Management |
+
 <p align="center"><em>Table X: Core Domain Entities</em></p>
 
-| Value Object                      | Attributes                    | Role |
-|-----------------------------------|-------------------------------|------|
-| **OccupancyStatus**               | Free / Occupied / Maintenance |      |
-| **TimeInterval**                  | startTime, endTime            |      |
-| **Capacity**                      | maxPeople                     |      |
-| **GymCount**                      | currentCount                  |      |
-| **AreCount**                      | currentCount                  |      |
-| **BadgeId**| string/uuid                   |      |
+| Value Object        | Attributes                    | Role |
+| ------------------- | ----------------------------- | ---- |
+| **OccupancyStatus** | Free / Occupied / Maintenance |      |
+| **TimeInterval**    | startTime, endTime            |      |
+| **Capacity**        | maxPeople                     |      |
+| **GymCount**        | currentCount                  |      |
+| **AreCount**        | currentCount                  |      |
+| **BadgeId**         | string/uuid                   |      |
+
 <p align="center"><em>Table X: Core Domain Value Objects</em></p>
 
 ### 2.9.2 Aggregates
 
-| Aggregate Root     | Governs                                              | Invariants (examples)                                                                                                      |
-| ------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **Machine**        | Machine state and consistency with machine sessions  | A machine cannot be *Occupied* without an active *MachineSession*; only valid state transitions are allowed (Free ↔ Occupied; Maintenance according to defined rules). |
-| **GymArea**        | Area occupancy count and capacity enforcement        | `0 ≤ currentCount ≤ capacity` must always hold.                                                                            |
-| **GymSession**     | Member presence inside the gym                       | A badge cannot have more than one active *GymSession* at the same time; a session must have a start time and can only end through a valid exit event. |
-| **MachineSession** | Member usage of a machine                            | A machine cannot have more than one active session simultaneously; every *MachineSession* must be associated with exactly one *Machine*. |
+| Aggregate Root     | Governs                                             | Invariants (examples)                                                                                                                                                  |
+| ------------------ | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Machine**        | Machine state and consistency with machine sessions | A machine cannot be _Occupied_ without an active _MachineSession_; only valid state transitions are allowed (Free ↔ Occupied; Maintenance according to defined rules). |
+| **GymArea**        | Area occupancy count and capacity enforcement       | `0 ≤ currentCount ≤ capacity` must always hold.                                                                                                                        |
+| **GymSession**     | Member presence inside the gym                      | A badge cannot have more than one active _GymSession_ at the same time; a session must have a start time and can only end through a valid exit event.                  |
+| **MachineSession** | Member usage of a machine                           | A machine cannot have more than one active session simultaneously; every _MachineSession_ must be associated with exactly one _Machine_.                               |
+
 <p align="center"><em>Table X: Core Domain Aggregates</em></p>
 
 ### 2.9.3 Domain Events
 
-| Event                       | Trigger Condition                         | Effect in the Domain                                                                 |
-| --------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------ |
-| **GymSessionStarted**       | A badge is scanned at the gym entrance    | Creates a new *GymSession* and marks the member as present in the gym.              |
-| **GymSessionEnded**         | A badge is scanned at the gym exit        | Closes the active *GymSession* for the corresponding badge.                         |
-| **AreaEntered**             | A member enters a specific gym area       | Increments the `currentCount` of the corresponding *GymArea*.                       |
-| **AreaExited**              | A member leaves a specific gym area       | Decrements the `currentCount` of the corresponding *GymArea*.                       |
-| **MachineSessionStarted**   | A machine transitions to *Occupied*       | Creates a new *MachineSession* and sets the machine status to *Occupied*.           |
-| **MachineSessionEnded**     | A machine transitions to *Free*           | Closes the active *MachineSession* and sets the machine status to *Free*.           |
-| **MachineSetToMaintenance** | An administrator sets the machine status  | Updates the machine status to *Maintenance* and prevents new sessions from starting.|
+| Event                       | Trigger Condition                        | Effect in the Domain                                                                 |
+| --------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------ |
+| **GymSessionStarted**       | A badge is scanned at the gym entrance   | Creates a new _GymSession_ and marks the member as present in the gym.               |
+| **GymSessionEnded**         | A badge is scanned at the gym exit       | Closes the active _GymSession_ for the corresponding badge.                          |
+| **AreaEntered**             | A member enters a specific gym area      | Increments the `currentCount` of the corresponding _GymArea_.                        |
+| **AreaExited**              | A member leaves a specific gym area      | Decrements the `currentCount` of the corresponding _GymArea_.                        |
+| **MachineSessionStarted**   | A machine transitions to _Occupied_      | Creates a new _MachineSession_ and sets the machine status to _Occupied_.            |
+| **MachineSessionEnded**     | A machine transitions to _Free_          | Closes the active _MachineSession_ and sets the machine status to _Free_.            |
+| **MachineSetToMaintenance** | An administrator sets the machine status | Updates the machine status to _Maintenance_ and prevents new sessions from starting. |
+
 <p align="center"><em>Table X: Core Domain Events</em></p>
 
-
 ## 2.10 Bounded Context
+
 > Each bounded context defines its own **model, terminology, and invariants**, reducing coupling and enabling independent evolution of system components.
 
 ![BC_SmartGymMonitor](../public/resources/BC_SmartGymMonitor.png)
 
 The SmartGym Monitor system is structured into **Core**, **Supporting**, and **Generic** bounded contexts as described below.
+
 - **Occupancy Tracking & Session Management (Core)**:  
-  This bounded context represents the central business logic of the system. It is responsible for tracking gym and machine sessions, maintaining real-time occupancy consistency, enforcing capacity constraints, and validating machine state transitions (*Free / Occupied / Maintenance*). It contains the highest business value and governs the main domain invariants.
+  This bounded context represents the central business logic of the system. It is responsible for tracking gym and machine sessions, maintaining real-time occupancy consistency, enforcing capacity constraints, and validating machine state transitions (_Free / Occupied / Maintenance_). It contains the highest business value and governs the main domain invariants.
 - **Area Management (Supporting)**: This context manages gym areas and spatial configuration. It is responsible for area definitions, capacity limits, entry and exit event handling, and maintaining the number of people currently present in each area.
 - **Machine Management (Supporting)**: This context focuses on gym machines and their lifecycle. It handles machine configuration, status updates, association with sessions, and synchronization with occupancy tracking.
 - **Embedded (Supporting)**: This bounded context includes all interactions with physical or simulated devices. It manages RFID readers, turnstiles, door sensors, and proximity sensors, producing low-level events that are later translated into domain events.
@@ -252,6 +257,4 @@ The SmartGym Monitor system is structured into **Core**, **Supporting**, and **G
 
 ## 2.11 Context Map
 
-- Describe relationships between bounded contexts
-- Identify integration patterns (e.g., Customer–Supplier, ACL, OHS)
-- Explain how data and events flow between contexts
+> The following section explains the relationships between the contexts identified in the Context Map and the applied Domain-Driven Design (DDD) patterns.
