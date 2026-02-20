@@ -110,3 +110,75 @@ It is responsible for managing the lifecycle of gym sessions and maintaining the
 | **Embedded Service**           | publishBadgeScanned(), publishAreaAccess(), publishMachineUsage(), getDeviceStatus()                         | none (event producer)                                                                         |
 | **Analytics Service**          | generateAttendanceReport(), getAttendanceStats(), getMachineUtilization(), getPeakHours()                    | Occupancy Tracking Service, Area Management Service, Machine Management Service               |
 | **Authentication Service**     | login(), logout(), validateToken()                                                                           | none                                                                                          |
+
+## 3.4 API Interface Definition and Identification
+
+> In this section, the interfaces of the SmartGym Monitor system are described.
+> Since the system integrates embedded devices and backend microservices, two communication layers are defined:
+> Asynchronous communication (MQTT/Event Bus) between embedded devices and backend. Synchronous REST APIs between microservices and the API Gateway.
+> Each microservice exposes a set of REST endpoints that implement the identified system operations.
+
+## 3.4.1 Embedded Service
+
+The Embedded Service communicates with physical or simulated devices and publishes structured domain events to backend services.
+
+| Endpoint                          | Type | Description                                                                          |
+| --------------------------------- | ---- | ------------------------------------------------------------------------------------ |
+| `/embedded-service/badge-scanned` | POST | Receives a badge scan event from an RFID reader and forwards it to backend services. |
+| `/embedded-service/area-access`   | POST | Receives an area access event (IN/OUT direction).                                    |
+| `/embedded-service/machine-usage` | POST | Receives proximity sensor events related to machine usage.                           |
+| `/embedded-service/device-status` | GET  | Returns operational status of all connected devices.                                 |
+
+## 3.4.2 Occupancy Tracking Service
+
+This service manages gym sessions and global occupancy consistency.
+| Endpoint | Type | Description |
+| ------------------------------------ | ---- | ------------------------------------------------------------- |
+| `/occupancy-service/start-session` | POST | Creates a new GymSession when a member enters the gym. |
+| `/occupancy-service/end-session` | POST | Terminates the active GymSession of a member. |
+| `/occupancy-service/count` | GET | Returns the total number of members currently inside the gym. |
+| `/occupancy-service/active-sessions` | GET | Returns all currently active gym sessions. |
+
+## 3.4.3 Area Management Service
+
+This service manages area configuration and area-level occupancy.
+
+| Endpoint                        | Type | Description                                                |
+| ------------------------------- | ---- | ---------------------------------------------------------- |
+| `/area-service/enter`           | POST | Registers entry of a member into a specific area.          |
+| `/area-service/exit`            | POST | Registers exit of a member from a specific area.           |
+| `/area-service/{areaId}`        | GET  | Returns occupancy status and capacity of a specific area.  |
+| `/area-service/update-capacity` | POST | Updates the maximum capacity of an area (admin operation). |
+
+## 3.4.4 Machine Management Service
+
+This service handles machine lifecycle and machine sessions.
+
+| Endpoint                               | Type | Description                                                     |
+| -------------------------------------- | ---- | --------------------------------------------------------------- |
+| `/machine-service/start-session`       | POST | Starts a MachineSession and sets machine status to Occupied.    |
+| `/machine-service/end-session`         | POST | Ends the active MachineSession and sets machine status to Free. |
+| `/machine-service/set-maintenance`     | POST | Sets machine status to Maintenance (admin operation).           |
+| `/machine-service/{machineId}`         | GET  | Returns the current state of a machine.                         |
+| `/machine-service/history/{machineId}` | GET  | Returns historical usage sessions of a machine.                 |
+
+## 3.4.5 Analytics Service
+
+The Analytics Service provides aggregated and historical data for administrative monitoring.
+
+| Endpoint                                 | Type | Description                                        |
+| ---------------------------------------- | ---- | -------------------------------------------------- |
+| `/analytics-service/attendance/{date}`   | GET  | Returns attendance statistics for a specific date. |
+| `/analytics-service/machine-utilization` | GET  | Returns aggregated machine usage statistics.       |
+| `/analytics-service/peak-hours`          | GET  | Returns peak attendance periods.                   |
+| `/analytics-service/reports`             | GET  | Retrieves generated analytical reports.            |
+
+## 3.4.6 Authentication Service
+
+The Authentication Service manages identity verification and token-based security.
+
+| Endpoint                 | Type | Description                                               |
+| ------------------------ | ---- | --------------------------------------------------------- |
+| `/auth-service/login`    | POST | Authenticates an administrator and generates a JWT token. |
+| `/auth-service/logout`   | POST | Invalidates the active token.                             |
+| `/auth-service/validate` | GET  | Validates a token for service-to-service communication.   |
