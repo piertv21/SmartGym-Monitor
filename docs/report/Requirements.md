@@ -40,33 +40,33 @@ We decide to split the domain in more subdomains as shown in the following secti
 > All terms listed in the table below must be used consistently in documentation,
 > diagrams, and source code.
 
-| Term                       | Description                                                                                                            | Notes / Context                  |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| Gym                        | The physical facility composed of multiple areas.                                                                      | Gym Management                   |
-| Gym Area                   | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                         | Area Management / Gym Management |
-| Cardio Area                | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                         | Area Management / Gym Management |
-| Weight Area                | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                         | Area Management / Gym Management |
-| Class Area                 | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                         | Area Management / Gym Management |
-| Entrace Area               | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                         | Area Management / Gym Management |
-| Machine Area               | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                         | Area Management / Gym Management |
-| Area count                 | The number of people currently present in a gym area, including both people who are using machines and people waiting. | Area Management                  |
-| Gym count                  | The number of people currently present in the gym.                                                                     | Area Management / Gym Management |
-| Turnstile                  | An element that allows access to the gym/a gym area if a badge is read correctly positioned at the entrance of the gym | Embedded                         |
-| RFID reader                | A reader detecting user entry and exit, by using RFID.                                                                 | Embedded                         |
-| Door                       | An opening that allows passage from one area of the gym to another                                                     | Embedded                         |
-| Access Area Direction      | The value that describe the direction of access between the areas. It can be _IN_ and _OUT_ area                       | Embedded / Area Management       |
-| Machine                    | A gym equipment unit that can be used by a user.                                                                       | Machine Management               |
-| Proximity sensor           | A sensor that detects whether the machine is being used by a user                                                      | Area Management / Gym Management |
-| Occupancy                  | The current status of a machine, which can be _Free_ or _Occupied_ or _Maintainance_                                   | Area Management / Gym Management |
-| Gym Attendance             | Historic attendance of people at the gym                                                                               | Area Management / Gym Management |
-| Gym Member                 | A gym member accessing gym areas.                                                                                      | Area Management                  |
-| Enter Area Event           | Event indicating that a user entered a gym area.                                                                       | Embedded / Area Management       |
-| Exit Area Event            | Event indicating that a gym member left a gym area.                                                                    | Embedded / Area Management       |
-| Enter Gym Event            | Event indicating that a gym member left a gym area.                                                                    | Embedded / Area Management       |
-| Exit Gym Event             | Event indicating that a gym member left a gym area.                                                                    | Embedded / Area Management       |
-| Gym Member Machine Session | The time interval during which a gym member uses a machine.                                                            | Area Management                  |
-| Gym Member Session         | The time interval during which a gym member stays in the gym                                                           | Area Management                  |
-| Admin or Administrator     | Staff member responsible for monitoring gym usage and congestion.                                                      | Analytics / Authentication       |
+| Term                       | Description                                                                                                                 | Notes / Context                  |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| Gym                        | The physical facility composed of multiple areas.                                                                           | Gym Management                   |
+| Gym Area                   | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management / Gym Management |
+| Cardio Area                | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management / Gym Management |
+| Weight Area                | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management / Gym Management |
+| Class Area                 | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management / Gym Management |
+| Entrace Area               | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management / Gym Management |
+| Machine Area               | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management / Gym Management |
+| Area count                 | The number of people currently present in a gym area, including both people who are using machines and people waiting.      | Area Management                  |
+| Gym count                  | The number of people currently present in the gym.                                                                          | Area Management / Gym Management |
+| Turnstile                  | An element that allows access to the gym/a gym area if a badge is read correctly, is positioned at the entrance of the gym. | Embedded                         |
+| RFID reader                | A reader detecting user entry and exit, by using RFID.                                                                      | Embedded                         |
+| Door                       | An opening that allows passage from one area of the gym to another.                                                         | Embedded                         |
+| Access Area Direction      | The value that describe the direction of access between the areas. It can be _IN_ and _OUT_ area.                           | Embedded / Area Management       |
+| Machine                    | A gym equipment unit that can be used by a user.                                                                            | Machine Management               |
+| Proximity sensor           | A sensor that detects whether the machine is being used by a user.                                                          | Area Management / Gym Management |
+| Occupancy                  | The current status of a machine, which can be _Free_ or _Occupied_ or _Maintainance_.                                       | Area Management / Gym Management |
+| Gym Attendance             | Historic attendance of people at the gym.                                                                                   | Area Management / Gym Management |
+| Gym Member                 | A gym member accessing gym areas.                                                                                           | Area Management                  |
+| Enter Area Event           | Event indicating that a user entered a gym area.                                                                            | Embedded / Area Management       |
+| Exit Area Event            | Event indicating that a gym member left a gym area.                                                                         | Embedded / Area Management       |
+| Enter Gym Event            | Event indicating that a gym member left a gym area.                                                                         | Embedded / Area Management       |
+| Exit Gym Event             | Event indicating that a gym member left a gym area.                                                                         | Embedded / Area Management       |
+| Gym Member Machine Session | The time interval during which a gym member uses a machine.                                                                 | Area Management                  |
+| Gym Member Session         | The time interval during which a gym member stays in the gym.                                                               | Area Management                  |
+| Admin or Administrator     | Staff member responsible for monitoring gym usage and congestion.                                                           | Analytics / Authentication       |
 
 <p align="center"><em>Table 1: Glossary of SmartGym Domain</em></p>
 
