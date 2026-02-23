@@ -1,0 +1,189 @@
+services:
+  ##############################
+  # EUREKA SERVICE DISCOVERY   #
+  ##############################
+  service-discovery:
+    build: ./backend/service-discovery
+    env_file:
+      - ./backend/.env
+    container_name: ${EUREKA_INSTANCE_HOSTNAME}
+    ports:
+      - "${EUREKA_INSTANCE_PORT}:${EUREKA_INSTANCE_PORT}"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=${EUREKA_CLIENT_REGISTER_WITH_EUREKA}
+      - EUREKA_CLIENT_FETCH_REGISTRY=${EUREKA_CLIENT_FETCH_REGISTRY}
+      - EUREKA_INSTANCE_HOSTNAME=${EUREKA_INSTANCE_HOSTNAME}
+      - EUREKA_INSTANCE_PORT=${EUREKA_INSTANCE_PORT}
+    networks:
+      - ${SMARTGYM_NETWORK}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail http://localhost:${EUREKA_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  #####################
+  # API GATEWAY       #
+  #####################
+  gateway:
+    build: ./backend/gateway
+    env_file:
+      - ./backend/.env
+    container_name: ${API_GATEWAY_INSTANCE_HOSTNAME}
+    ports:
+      - "${API_GATEWAY_INSTANCE_PORT}:${API_GATEWAY_INSTANCE_PORT}"
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_INSTANCE_HOSTNAME=${API_GATEWAY_INSTANCE_HOSTNAME}
+      - EUREKA_INSTANCE_PORT=${API_GATEWAY_INSTANCE_PORT}
+    networks:
+      - ${SMARTGYM_NETWORK}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail http://localhost:${API_GATEWAY_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  #####################
+  # AUTH SERVICE      #
+  #####################
+  auth-service:
+    build: ./backend/auth-service
+    env_file:
+      - ./backend/.env
+    container_name: ${AUTH_SERVICE_INSTANCE_HOSTNAME}
+    ports:
+      - "${AUTH_SERVICE_INSTANCE_PORT}:${AUTH_SERVICE_INSTANCE_PORT}"
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+      mongo-auth:
+        condition: service_started
+    environment:
+      - SPRING_DATA_MONGODB_URI=${AUTH_MONGODB_URI}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+    networks:
+      - ${SMARTGYM_NETWORK}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail http://localhost:${AUTH_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  mongo-auth:
+    image: mongo:7
+    env_file:
+      - ./backend/.env
+    container_name: ${AUTH_MONGODB_HOST}
+    ports:
+      - "${AUTH_MONGODB_PORT}:${MONGODB_DEFAULT_PORT}"
+    volumes:
+      - mongo-auth-data:${MONGODB_VOLUME_PATH}
+    networks:
+      - ${SMARTGYM_NETWORK}
+
+  #####################
+  # FRONTEND (Flask)  #
+  #####################
+  frontend:
+    build: ./frontend
+    container_name: smartgym-frontend
+    environment:
+      # Calls go DIRECTLY to auth-service to avoid being blocked by the gateway filter
+      # (the gateway currently requires X-Auth-Token on every route).
+      - AUTH_SERVICE_BASE_URL=http://auth-service:${AUTH_SERVICE_INSTANCE_PORT}
+      - FLASK_SECRET_KEY=dev-change-me
+      - FLASK_ENV=production
+      - PORT=5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    networks:
+      - ${SMARTGYM_NETWORK}
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:5000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+  #
+  #  #####################
+  #  # SIMULATOR (Go)    #
+  #  #####################
+  #  simulator:
+  #    build: ./simulator
+  #    container_name: smartgym-simulator
+  #    environment:
+  #      - AUTH_SERVICE_BASE_URL=http://auth-service:${AUTH_SERVICE_INSTANCE_PORT}
+  #      - SIM_USERNAME=ADMIN
+  #      - SIM_PASSWORD=ADMIN
+  #      - SIM_INTERVAL_SECONDS=10
+  #    depends_on:
+  #      auth-service:
+  #        condition: service_healthy
+  #    networks:
+  #      - ${SMARTGYM_NETWORK}
+
+  #####################
+  # PROMETHEUS        #
+  #####################
+  prometheus:
+    image: prom/prometheus:latest
+    env_file:
+      - ./backend/.env
+    container_name: ${PROMETHEUS_INSTANCE_HOSTNAME}
+    ports:
+      - "${PROMETHEUS_INSTANCE_PORT}:${PROMETHEUS_INSTANCE_PORT}"
+    networks:
+      - ${SMARTGYM_NETWORK}
+    volumes:
+      - ./backend/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      gateway:
+        condition: service_healthy
+
+  #####################
+  # GRAFANA           #
+  #####################
+  grafana:
+    image: grafana/grafana:latest
+    env_file:
+      - ./backend/.env
+    container_name: ${GRAFANA_INSTANCE_HOSTNAME}
+    ports:
+      - "${GRAFANA_INSTANCE_PORT}:${GRAFANA_INSTANCE_PORT}"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    networks:
+      - ${SMARTGYM_NETWORK}
+    depends_on:
+      - prometheus
+
+volumes:
+  mongo-auth-data:
+
+networks:
+  smartgym-net:
+    driver: bridge

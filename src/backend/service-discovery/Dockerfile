@@ -1,5 +1,5 @@
 # ---------- FASE 1: BUILD ----------
-FROM gradle:7.6.0-jdk17 AS build
+FROM gradle:8.7-jdk21 AS build
 WORKDIR /app
 # Copio tutto il contenuto del microservizio dentro il container
 COPY . .
@@ -7,7 +7,7 @@ COPY . .
 RUN gradle clean build -x test
 
 # ---------- FASE 2: RUNTIME ----------
-FROM eclipse-temurin:17-jdk
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 # Copio il JAR costruito nella fase precedente
 COPY --from=build /app/build/libs/*.jar app.jar

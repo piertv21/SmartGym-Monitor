@@ -1,0 +1,32 @@
+{% extends "base.html" %} {% block content %}
+<section class="card">
+  <h1 class="h1">Login</h1>
+  <p class="muted">
+    This UI calls the <code>auth-service</code> directly. Default demo
+    credentials are <code>ADMIN / ADMIN</code>.
+  </p>
+
+  <form method="post" class="form">
+    <label class="label" for="username">Username</label>
+    <input
+      class="input"
+      id="username"
+      name="username"
+      placeholder="ADMIN"
+      autocomplete="username"
+    />
+
+    <label class="label" for="password">Password</label>
+    <input
+      class="input"
+      id="password"
+      type="password"
+      name="password"
+      placeholder="ADMIN"
+      autocomplete="current-password"
+    />
+
+    <button class="btn" type="submit">Sign in</button>
+  </form>
+</section>
+{% endblock %}
