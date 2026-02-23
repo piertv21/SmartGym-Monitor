@@ -384,3 +384,5 @@ package-lock.json
 
 .gradle/
 **/build/
+
+.env
