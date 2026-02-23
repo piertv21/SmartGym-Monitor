@@ -3,9 +3,9 @@ services:
   # EUREKA SERVICE DISCOVERY   #
   ##############################
   service-discovery:
-    build: ./backend/service-discovery
+    build: ./src/backend/service-discovery
     env_file:
-      - ./backend/.env
+      - .env
     container_name: ${EUREKA_INSTANCE_HOSTNAME}
     ports:
       - "${EUREKA_INSTANCE_PORT}:${EUREKA_INSTANCE_PORT}"
@@ -32,9 +32,9 @@ services:
   # API GATEWAY       #
   #####################
   gateway:
-    build: ./backend/gateway
+    build: ./src/backend/gateway
     env_file:
-      - ./backend/.env
+      - .env
     container_name: ${API_GATEWAY_INSTANCE_HOSTNAME}
     ports:
       - "${API_GATEWAY_INSTANCE_PORT}:${API_GATEWAY_INSTANCE_PORT}"
@@ -62,9 +62,9 @@ services:
   # AUTH SERVICE      #
   #####################
   auth-service:
-    build: ./backend/auth-service
+    build: ./src/backend/auth-service
     env_file:
-      - ./backend/.env
+      - .env
     container_name: ${AUTH_SERVICE_INSTANCE_HOSTNAME}
     ports:
       - "${AUTH_SERVICE_INSTANCE_PORT}:${AUTH_SERVICE_INSTANCE_PORT}"
@@ -92,7 +92,7 @@ services:
   mongo-auth:
     image: mongo:7
     env_file:
-      - ./backend/.env
+      - .env
     container_name: ${AUTH_MONGODB_HOST}
     ports:
       - "${AUTH_MONGODB_PORT}:${MONGODB_DEFAULT_PORT}"
@@ -105,7 +105,7 @@ services:
   # FRONTEND (Flask)  #
   #####################
   frontend:
-    build: ./frontend
+    build: ./src/frontend
     container_name: smartgym-frontend
     environment:
       # Calls go DIRECTLY to auth-service to avoid being blocked by the gateway filter
@@ -127,12 +127,12 @@ services:
       timeout: 10s
       retries: 5
       start_period: 10s
-  #
+
   #  #####################
   #  # SIMULATOR (Go)    #
   #  #####################
   #  simulator:
-  #    build: ./simulator
+  #    build: ./src/simulator
   #    container_name: smartgym-simulator
   #    environment:
   #      - AUTH_SERVICE_BASE_URL=http://auth-service:${AUTH_SERVICE_INSTANCE_PORT}
@@ -151,14 +151,14 @@ services:
   prometheus:
     image: prom/prometheus:latest
     env_file:
-      - ./backend/.env
+      - .env
     container_name: ${PROMETHEUS_INSTANCE_HOSTNAME}
     ports:
       - "${PROMETHEUS_INSTANCE_PORT}:${PROMETHEUS_INSTANCE_PORT}"
     networks:
       - ${SMARTGYM_NETWORK}
     volumes:
-      - ./backend/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
       gateway:
         condition: service_healthy
@@ -169,7 +169,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     env_file:
-      - ./backend/.env
+      - .env
     container_name: ${GRAFANA_INSTANCE_HOSTNAME}
     ports:
       - "${GRAFANA_INSTANCE_PORT}:${GRAFANA_INSTANCE_PORT}"
