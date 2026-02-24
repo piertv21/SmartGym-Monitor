@@ -1,0 +1,43 @@
+server:
+  port: ${AUTH_SERVICE_INSTANCE_PORT:8081}
+
+spring:
+  application:
+    name: auth-service
+  data:
+    mongodb:
+      uri: ${AUTH_MONGODB_URI:mongodb://localhost:27017/mongo-auth}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://service-discovery:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: ${AUTH_SERVICE_INSTANCE_HOSTNAME:auth-service}
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:${server.port}
+
+management:
+  server:
+    port: 8081
+    servlet:
+      context-path: /
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name:auth-service}
+
+logging:
+  level:
+    com.smartgym: DEBUG
+    org.springframework: INFO
