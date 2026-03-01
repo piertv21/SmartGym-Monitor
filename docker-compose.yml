@@ -101,6 +101,45 @@ services:
     networks:
       - ${SMARTGYM_NETWORK}
 
+  ########################
+  # ANALYTICS SERVICE    #
+  ########################
+  analytics-service:
+    build: ./src/backend/analytics-service
+    container_name: ${ANALYTICS_SERVICE_INSTANCE_HOSTNAME}
+    ports:
+      - "${ANALYTICS_SERVICE_INSTANCE_PORT}:${ANALYTICS_SERVICE_INSTANCE_PORT}"
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+      mongo-analytics:
+        condition: service_started
+    environment:
+      - SERVICE_NAME=analytics-service
+      - SERVICE_PORT=${ANALYTICS_SERVICE_INSTANCE_PORT}
+      - SPRING_DATA_MONGODB_URI=${ANALYTICS_MONGODB_URI}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_INSTANCE_HOSTNAME=${ANALYTICS_SERVICE_INSTANCE_HOSTNAME}
+      - EUREKA_INSTANCE_PORT=${ANALYTICS_SERVICE_INSTANCE_PORT}
+    networks:
+      - ${SMARTGYM_NETWORK}
+    healthcheck:
+      test: curl --fail http://localhost:${ANALYTICS_SERVICE_INSTANCE_PORT}/actuator/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  mongo-analytics:
+    image: mongo
+    container_name: ${ANALYTICS_MONGODB_HOST}
+    ports:
+      - "27021:${MONGODB_DEFAULT_PORT}"
+    volumes:
+      - mongo-analytics-data:${MONGODB_VOLUME_PATH}
+    networks:
+      - ${SMARTGYM_NETWORK}
+
   #####################
   # FRONTEND (Flask)  #
   #####################
@@ -183,6 +222,7 @@ services:
 
 volumes:
   mongo-auth-data:
+  mongo-analytics-data:
 
 networks:
   smartgym-net:
