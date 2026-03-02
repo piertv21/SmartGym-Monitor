@@ -1,5 +1,6 @@
+// gateway: WebFlux (reactive) + Spring Cloud Gateway + Eureka client
 dependencies {
-    implementation libs.spring.boot.starter.webflux
-    implementation libs.spring.cloud.gateway
-    implementation libs.spring.cloud.eureka.client
+    implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.cloud.gateway)
+    implementation(libs.spring.cloud.eureka.client)
 }

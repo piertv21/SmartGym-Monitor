@@ -1,9 +1,10 @@
+// auth-service: REST API + WebFlux + MongoDB + Vert.x + Eureka client
 dependencies {
-    implementation libs.spring.boot.starter.web
-    implementation libs.spring.boot.starter.webflux
-    implementation libs.spring.boot.starter.data.mongodb
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.boot.starter.data.mongodb)
 
-    implementation libs.bundles.vertx.base
+    implementation(libs.bundles.vertx.base)
 
-    implementation libs.spring.cloud.eureka.client
+    implementation(libs.spring.cloud.eureka.client)
 }
