@@ -38,7 +38,7 @@ dependencies {
     implementation "io.vertx:vertx-core:4.4.0"
     implementation "io.vertx:vertx-web:4.4.0"
     implementation "io.vertx:vertx-web-client:4.4.0"
-    implementation "io.vertx:vertx-config:4.4.0"
+    implementation "io.vertx:vertx-config:4.5.25"
     implementation "io.vertx:vertx-mongo-client:4.4.0"
 
     // --- PDF generation ---
