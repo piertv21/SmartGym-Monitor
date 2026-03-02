@@ -17,7 +17,7 @@ repositories {
 }
 
 ext {
-    set('springCloudVersion', "2023.0.3") // compatibile con Boot 3.3.x
+    set('springCloudVersion', "2023.0.6") // compatibile con Boot 3.3.x
 }
 
 dependencies {
