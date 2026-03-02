@@ -1,0 +1,35 @@
+plugins {
+    id 'org.springframework.boot'        apply false
+    id 'io.spring.dependency-management' apply false
+}
+
+// Shared configuration for all subprojects
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    group = 'com.smartgym'
+    version = '1.0.0'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(libs.versions.java.get().toInteger())
+        }
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${libs.versions.spring.cloud.get()}"
+        }
+    }
+
+    dependencies {
+        implementation libs.bundles.spring.common
+        testImplementation libs.spring.boot.starter.test
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+}

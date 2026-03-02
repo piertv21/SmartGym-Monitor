@@ -1,0 +1,43 @@
+[versions]
+java = "21"
+spring-boot = "3.3.4"
+spring-dependency-management = "1.1.6"
+spring-cloud = "2023.0.3"
+vertx = "4.5.10"
+itext = "5.5.13.4"
+
+[libraries]
+# --- Spring Boot starters ---
+spring-boot-starter             = { module = "org.springframework.boot:spring-boot-starter" }
+spring-boot-starter-actuator    = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-web         = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-webflux     = { module = "org.springframework.boot:spring-boot-starter-webflux" }
+spring-boot-starter-data-mongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb" }
+spring-boot-starter-test        = { module = "org.springframework.boot:spring-boot-starter-test" }
+
+# --- Spring Cloud ---
+spring-cloud-eureka-client      = { module = "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client" }
+spring-cloud-eureka-server      = { module = "org.springframework.cloud:spring-cloud-starter-netflix-eureka-server" }
+spring-cloud-gateway            = { module = "org.springframework.cloud:spring-cloud-starter-gateway" }
+
+# --- Micrometer ---
+micrometer-prometheus           = { module = "io.micrometer:micrometer-registry-prometheus" }
+
+# --- Vert.x ---
+vertx-core                      = { module = "io.vertx:vertx-core",         version.ref = "vertx" }
+vertx-web                       = { module = "io.vertx:vertx-web",          version.ref = "vertx" }
+vertx-web-client                = { module = "io.vertx:vertx-web-client",   version.ref = "vertx" }
+vertx-config                    = { module = "io.vertx:vertx-config",       version.ref = "vertx" }
+vertx-mongo-client              = { module = "io.vertx:vertx-mongo-client", version.ref = "vertx" }
+
+# --- PDF generation ---
+itext                           = { module = "com.itextpdf:itextpdf",       version.ref = "itext" }
+
+[bundles]
+vertx-base  = ["vertx-core", "vertx-web", "vertx-web-client", "vertx-config"]
+spring-common = ["spring-boot-starter", "spring-boot-starter-actuator", "micrometer-prometheus"]
+
+[plugins]
+spring-boot              = { id = "org.springframework.boot",      version.ref = "spring-boot" }
+spring-dependency-mgmt   = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+
