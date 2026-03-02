@@ -380,4 +380,8 @@ $RECYCLE.BIN/
 /docs/.vitepress/dist/
 /docs/node_modules/
 node_modules/
-package-lock.json
+
+.gradle/
+**/build/
+
+.env

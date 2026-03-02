@@ -257,4 +257,6 @@ The SmartGym Monitor system is structured into **Core**, **Supporting**, and **G
 
 ## 2.11 Context Map
 
-> The following section explains the relationships between the contexts identified in the Context Map and the applied Domain-Driven Design (DDD) patterns.
+- Describe relationships between bounded contexts
+- Identify integration patterns (e.g., Customer–Supplier, ACL, OHS)
+- Explain how data and events flow between contexts

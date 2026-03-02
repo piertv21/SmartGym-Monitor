@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title or "SmartGym Monitor" }}</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container header__inner">
+        <div class="brand">SmartGym Monitor</div>
+        <nav class="nav">
+          {% if session.get('user') %}
+          <a href="{{ url_for('dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('logout') }}">Logout</a>
+          {% else %}
+          <a href="{{ url_for('login') }}">Login</a>
+          {% endif %}
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <div class="flash">
+        {% for category, message in messages %}
+        <div class="flash__msg flash__msg--{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %} {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <small>
+          Software Process Engineering — demo UI (Flask). Configuration via env
+          vars.
+        </small>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+rootProject.name = 'smart-gym-backend'
+
+include 'service-discovery'
+include 'auth-service'
+include 'analytics-service'
+include 'gateway'

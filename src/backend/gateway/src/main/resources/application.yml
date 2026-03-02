@@ -1,0 +1,68 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth-service/**
+
+        - id: analytics-service
+          uri: lb://analytics-service
+          predicates:
+            - Path=/analytics-service/**
+
+        - id: embedded-service
+          uri: lb://embedded-service
+          predicates:
+            - Path=/embedded-service/**
+
+        - id: parking-service
+          uri: lb://parking-service
+          predicates:
+            - Path=/parking-service/**
+
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/payment-service/**
+
+        - id: ticketing-service
+          uri: lb://ticketing-service
+          predicates:
+            - Path=/ticketing-service/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://service-discovery:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,gateway
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  server:
+    port: 8080
