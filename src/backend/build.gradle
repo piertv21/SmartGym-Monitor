@@ -1,15 +1,14 @@
 plugins {
-    id('org.springframework.boot')        apply false
-    id('io.spring.dependency-management') apply false
+    alias(libs.plugins.spring.boot)            apply false
+    alias(libs.plugins.spring.dependency.mgmt) apply false
 }
 
-// Shared configuration for all subprojects
 subprojects {
     apply(plugin: 'java')
-    apply(plugin: 'org.springframework.boot')
-    apply(plugin: 'io.spring.dependency-management')
+    apply(plugin: libs.plugins.spring.boot.get().pluginId)
+    apply(plugin: libs.plugins.spring.dependency.mgmt.get().pluginId)
 
-    group = 'com.smartgym'
+    group   = 'com.smartgym'
     version = '1.0.0'
 
     java {
