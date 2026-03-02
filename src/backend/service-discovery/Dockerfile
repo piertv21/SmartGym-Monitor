@@ -1,5 +1,5 @@
 # ---------- FASE 1: BUILD ----------
-FROM gradle:8.7-jdk21 AS build
+FROM gradle:8.14-jdk21 AS build
 WORKDIR /app
 # Copio tutto il contenuto del microservizio dentro il container
 COPY . .
