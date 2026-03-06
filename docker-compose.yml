@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   ##############################
   # EUREKA SERVICE DISCOVERY
@@ -22,7 +20,7 @@ services:
       - EUREKA_INSTANCE_HOSTNAME=${EUREKA_INSTANCE_HOSTNAME}
       - EUREKA_INSTANCE_PORT=${EUREKA_INSTANCE_PORT}
     networks:
-      - ${SMARTGYM_NETWORK}
+      - smartgym-net
 
   #####################
   # API GATEWAY
@@ -41,7 +39,7 @@ services:
     depends_on:
       - service-discovery
     networks:
-      - ${SMARTGYM_NETWORK}
+      - smartgym-net
 
   #####################
   # AUTH SERVICE
@@ -64,7 +62,7 @@ services:
       - SPRING_DATA_MONGODB_URI=${AUTH_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
     networks:
-      - ${SMARTGYM_NETWORK}
+      - smartgym-net
 
   mongo-auth:
     image: mongo:7
@@ -74,7 +72,7 @@ services:
     volumes:
       - mongo-auth-data:/data/db
     networks:
-      - ${SMARTGYM_NETWORK}
+      - smartgym-net
 
   ########################
   # ANALYTICS SERVICE
@@ -97,7 +95,7 @@ services:
       - SPRING_DATA_MONGODB_URI=${ANALYTICS_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
     networks:
-      - ${SMARTGYM_NETWORK}
+      - smartgym-net
 
   mongo-analytics:
     image: mongo:7
@@ -107,7 +105,7 @@ services:
     volumes:
       - mongo-analytics-data:/data/db
     networks:
-      - ${SMARTGYM_NETWORK}
+      - smartgym-net
 
 volumes:
   mongo-auth-data:
