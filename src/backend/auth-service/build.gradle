@@ -1,4 +1,8 @@
 // auth-service: REST API + WebFlux + MongoDB + Vert.x + Eureka client
+springBoot {
+    mainClass = 'com.smartgym.authservice.AuthServiceApplication'
+}
+
 dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.webflux)

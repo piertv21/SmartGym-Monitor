@@ -3,7 +3,9 @@ services:
   # EUREKA SERVICE DISCOVERY   #
   ##############################
   service-discovery:
-    build: ./src/backend/service-discovery
+    build:
+      context: ./src/backend
+      dockerfile: service-discovery/Dockerfile
     env_file:
       - .env
     container_name: ${EUREKA_INSTANCE_HOSTNAME}
@@ -32,7 +34,9 @@ services:
   # API GATEWAY       #
   #####################
   gateway:
-    build: ./src/backend/gateway
+    build:
+      context: ./src/backend
+      dockerfile: gateway/Dockerfile
     env_file:
       - .env
     container_name: ${API_GATEWAY_INSTANCE_HOSTNAME}
@@ -62,7 +66,9 @@ services:
   # AUTH SERVICE      #
   #####################
   auth-service:
-    build: ./src/backend/auth-service
+    build:
+      context: ./src/backend
+      dockerfile: auth-service/Dockerfile
     env_file:
       - .env
     container_name: ${AUTH_SERVICE_INSTANCE_HOSTNAME}
@@ -105,7 +111,11 @@ services:
   # ANALYTICS SERVICE    #
   ########################
   analytics-service:
-    build: ./src/backend/analytics-service
+    build:
+      context: ./src/backend
+      dockerfile: analytics-service/Dockerfile
+    env_file:
+      - .env
     container_name: ${ANALYTICS_SERVICE_INSTANCE_HOSTNAME}
     ports:
       - "${ANALYTICS_SERVICE_INSTANCE_PORT}:${ANALYTICS_SERVICE_INSTANCE_PORT}"
@@ -131,10 +141,12 @@ services:
       start_period: 30s
 
   mongo-analytics:
-    image: mongo
+    image: mongo:7
+    env_file:
+      - .env
     container_name: ${ANALYTICS_MONGODB_HOST}
     ports:
-      - "27021:${MONGODB_DEFAULT_PORT}"
+      - "${ANALYTICS_MONGODB_PORT}:${MONGODB_DEFAULT_PORT}"
     volumes:
       - mongo-analytics-data:${MONGODB_VOLUME_PATH}
     networks:
