@@ -1,8 +1,0 @@
-// service-discovery: Eureka server
-springBoot {
-    mainClass = 'com.smartgym.discovery.ServiceDiscoveryApp'
-}
-
-dependencies {
-    implementation(libs.spring.cloud.eureka.server)
-}

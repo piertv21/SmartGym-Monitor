@@ -7,13 +7,13 @@ ARG SERVICE
 
 COPY gradle gradle
 COPY gradlew .
-COPY settings.gradle .
-COPY build.gradle .
+COPY settings.gradle.kts .
+COPY build.gradle.kts .
 
-COPY analytics-service/build.gradle analytics-service/build.gradle
-COPY auth-service/build.gradle auth-service/build.gradle
-COPY gateway/build.gradle gateway/build.gradle
-COPY service-discovery/build.gradle service-discovery/build.gradle
+COPY analytics-service/build.gradle.kts analytics-service/build.gradle.kts
+COPY auth-service/build.gradle.kts auth-service/build.gradle.kts
+COPY gateway/build.gradle.kts gateway/build.gradle.kts
+COPY service-discovery/build.gradle.kts service-discovery/build.gradle.kts
 
 RUN gradle dependencies --no-daemon
 COPY ${SERVICE}/src ${SERVICE}/src

@@ -1,6 +1,9 @@
-// analytics-service: REST API + WebFlux + MongoDB + Vert.x + PDF + Eureka client
+plugins {
+    alias(libs.plugins.spring.boot)
+}
+
 springBoot {
-    mainClass = 'com.smartgym.analyticsservice.AnalyticsServiceApp'
+    mainClass.set("com.smartgym.authservice.AuthServiceApplication")
 }
 
 dependencies {
@@ -9,9 +12,6 @@ dependencies {
     implementation(libs.spring.boot.starter.data.mongodb)
 
     implementation(libs.bundles.vertx.base)
-    implementation(libs.vertx.mongo.client)
-
-    implementation(libs.itext)
 
     implementation(libs.spring.cloud.eureka.client)
 }

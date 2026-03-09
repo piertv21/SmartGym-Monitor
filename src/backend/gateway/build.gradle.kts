@@ -1,6 +1,9 @@
-// gateway: WebFlux (reactive) + Spring Cloud Gateway + Eureka client
+plugins {
+    alias(libs.plugins.spring.boot)
+}
+
 springBoot {
-    mainClass = 'com.smartgym.gateway.GatewayApp'
+    mainClass.set("com.smartgym.gateway.GatewayApp")
 }
 
 dependencies {
