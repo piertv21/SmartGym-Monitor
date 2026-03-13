@@ -21,6 +21,12 @@ services:
       - EUREKA_INSTANCE_PORT=${EUREKA_INSTANCE_PORT}
     networks:
       - smartgym-net
+  #    healthcheck:
+  #      test: curl --fail http://localhost:${EUREKA_INSTANCE_PORT}/actuator/health || exit 1
+  #      interval: 30s
+  #      timeout: 10s
+  #      retries: 5
+  #      start_period: 30s
 
   #####################
   # API GATEWAY
@@ -38,12 +44,20 @@ services:
       - "${API_GATEWAY_INSTANCE_PORT}:${API_GATEWAY_INSTANCE_PORT}"
     depends_on:
       - service-discovery
+    #      service-discovery:
+    #        condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_INSTANCE_HOSTNAME=${API_GATEWAY_INSTANCE_HOSTNAME}
       - EUREKA_INSTANCE_PORT=${API_GATEWAY_INSTANCE_PORT}
     networks:
       - smartgym-net
+  #    healthcheck:
+  #      test: curl --fail http://localhost:${API_GATEWAY_INSTANCE_PORT}/actuator/health || exit 1
+  #      interval: 30s
+  #      timeout: 10s
+  #      retries: 5
+  #      start_period: 60s
 
   #####################
   # AUTH SERVICE
@@ -62,6 +76,10 @@ services:
     depends_on:
       - service-discovery
       - mongo-auth
+    #      service-discovery:
+    #        condition: service_healthy
+    #      mongo-auth:
+    #        condition: service_started
     environment:
       - SPRING_DATA_MONGODB_URI=${AUTH_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
@@ -69,6 +87,12 @@ services:
       - EUREKA_CLIENT_FETCH_REGISTRY=true
     networks:
       - smartgym-net
+  #    healthcheck:
+  #      test: curl --fail http://localhost:${AUTH_SERVICE_INSTANCE_PORT}/actuator/health || exit 1
+  #      interval: 30s
+  #      timeout: 10s
+  #      retries: 5
+  #      start_period: 30s
 
   mongo-auth:
     image: mongo:7
@@ -76,7 +100,7 @@ services:
     ports:
       - "27017:${AUTH_MONGODB_PORT}"
     volumes:
-      - mongo-auth-data:/data/db
+      - mongo-auth-data:${MONGODB_VOLUME_PATH}
     networks:
       - smartgym-net
 
@@ -97,13 +121,25 @@ services:
     depends_on:
       - service-discovery
       - mongo-analytics
+    #      service-discovery:
+    #        condition: service_healthy
+    #      mongo-analytics:
+    #        condition: service_started
     environment:
+      - SERVICE_NAME=analytics-service
+      - SERVICE_PORT=${ANALYTICS_SERVICE_INSTANCE_PORT}
       - SPRING_DATA_MONGODB_URI=${ANALYTICS_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
     networks:
       - smartgym-net
+  #    healthcheck:
+  #      test: curl --fail http://localhost:${ANALYTICS_SERVICE_INSTANCE_PORT}/actuator/health || exit 1
+  #      interval: 30s
+  #      timeout: 10s
+  #      retries: 5
+  #      start_period: 30s
 
   mongo-analytics:
     image: mongo:7
@@ -111,10 +147,45 @@ services:
     ports:
       - "27018:${ANALYTICS_MONGODB_PORT}"
     volumes:
-      - mongo-analytics-data:/data/db
+      - mongo-analytics-data:${MONGODB_VOLUME_PATH}
     networks:
       - smartgym-net
 
+  #####################
+  # PROMETHEUS        #
+  #####################
+#  prometheus:
+#    image: prom/prometheus:latest
+#    container_name: ${PROMETHEUS_INSTANCE_HOSTNAME}
+#    ports:
+#      - "${PROMETHEUS_INSTANCE_PORT}:${PROMETHEUS_INSTANCE_PORT}"
+#    networks:
+#      - ${SMARTPARKING_NETWORK}
+#    volumes:
+#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#    depends_on:
+#      gateway:
+#        condition: service_healthy
+
+#####################
+# GRAFANA           #
+#####################
+#  grafana:
+#    image: grafana/grafana
+#    container_name: ${GRAFANA_INSTANCE_HOSTNAME}
+#    ports:
+#      - "${GRAFANA_INSTANCE_PORT}:${GRAFANA_INSTANCE_PORT}"
+#    environment:
+#      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+#      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+#    networks:
+#      - ${SMARTPARKING_NETWORK}
+#    depends_on:
+#      - prometheus
+
+#############################
+# VOLUMES AND NETWORKS      #
+#############################
 volumes:
   mongo-auth-data:
   mongo-analytics-data:
