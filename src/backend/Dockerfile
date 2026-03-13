@@ -1,24 +1,24 @@
 # -----------------------------
 # BUILD
 # -----------------------------
-FROM gradle:8.14-jdk21 AS build
+FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 ARG SERVICE
 
-COPY gradle gradle
+COPY gradle/ gradle/
 COPY gradlew .
-COPY settings.gradle.kts .
-COPY build.gradle.kts .
+COPY settings.gradle.kts build.gradle.kts ./
 
 COPY analytics-service/build.gradle.kts analytics-service/build.gradle.kts
 COPY auth-service/build.gradle.kts auth-service/build.gradle.kts
 COPY gateway/build.gradle.kts gateway/build.gradle.kts
 COPY service-discovery/build.gradle.kts service-discovery/build.gradle.kts
 
-RUN gradle dependencies --no-daemon
-COPY ${SERVICE}/src ${SERVICE}/src
+RUN chmod +x gradlew
+RUN ./gradlew --no-daemon :${SERVICE}:dependencies
 
-RUN gradle :${SERVICE}:bootJar -x test --no-daemon
+COPY ${SERVICE}/src ${SERVICE}/src
+RUN ./gradlew --no-daemon :${SERVICE}:bootJar -x test
 
 # -----------------------------
 # RUNTIME
