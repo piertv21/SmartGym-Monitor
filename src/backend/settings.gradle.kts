@@ -24,7 +24,7 @@ include(
     "auth-service",
     "analytics-service",
     "area-service",
-    //"machine-service",
+    "machine-service",
     //"embedded-service",
     "gateway"
 )
