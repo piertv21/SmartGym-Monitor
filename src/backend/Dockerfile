@@ -13,6 +13,7 @@ COPY analytics-service/build.gradle.kts analytics-service/build.gradle.kts
 COPY auth-service/build.gradle.kts auth-service/build.gradle.kts
 COPY gateway/build.gradle.kts gateway/build.gradle.kts
 COPY service-discovery/build.gradle.kts service-discovery/build.gradle.kts
+COPY area-service/build.gradle.kts area-service/build.gradle.kts
 
 RUN chmod +x gradlew
 RUN ./gradlew --no-daemon :${SERVICE}:dependencies

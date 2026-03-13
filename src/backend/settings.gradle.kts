@@ -5,9 +5,8 @@ pluginManagement {
     }
 }
 
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
-}
+// Il plugin Foojay e' opzionale: in Docker/CI alcune reti non raggiungono il Plugin Portal.
+// Con JDK 21 gia' presente nell'immagine non serve risoluzione toolchain remota.
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
@@ -24,5 +23,8 @@ include(
     "service-discovery",
     "auth-service",
     "analytics-service",
+    "area-service",
+    //"machine-service",
+    //"embedded-service",
     "gateway"
 )

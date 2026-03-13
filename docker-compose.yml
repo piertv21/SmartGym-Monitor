@@ -151,6 +151,57 @@ services:
     networks:
       - smartgym-net
 
+
+
+  ########################
+  # AREA SERVICE
+  ########################
+  area-service:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE: area-service
+    env_file:
+      - .env
+    container_name: ${AREA_SERVICE_INSTANCE_HOSTNAME}
+    ports:
+      - "${AREA_SERVICE_INSTANCE_PORT}:${AREA_SERVICE_INSTANCE_PORT}"
+    depends_on:
+      - service-discovery
+      - mongo-area
+    #      service-discovery:
+    #        condition: service_healthy
+    #      mongo-analytics:
+    #        condition: service_started
+    environment:
+      - SERVICE_NAME=area-service
+      - SERVICE_PORT=${AREA_SERVICE_INSTANCE_PORT}
+      - SPRING_DATA_MONGODB_URI=${AREA_MONGODB_URI}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    networks:
+      - smartgym-net
+  #    healthcheck:
+  #      test: curl --fail http://localhost:${AREA_SERVICE_INSTANCE_PORT}/actuator/health || exit 1
+  #      interval: 30s
+  #      timeout: 10s
+  #      retries: 5
+  #      start_period: 30s
+
+
+
+  mongo-area:
+    image: mongo:7
+    container_name: ${AREA_MONGODB_HOST}
+    ports:
+      - "27019:${AREA_MONGODB_PORT}"
+    volumes:
+      - mongo-area-data:${MONGODB_VOLUME_PATH}
+    networks:
+      - smartgym-net
+
   #####################
   # PROMETHEUS        #
   #####################
@@ -189,6 +240,7 @@ services:
 volumes:
   mongo-auth-data:
   mongo-analytics-data:
+  mongo-area-data:
 
 networks:
   smartgym-net:
