@@ -385,3 +385,4 @@ node_modules/
 **/build/
 
 .env
+/src/frontend/__pycache__/
