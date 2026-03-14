@@ -25,6 +25,7 @@ include(
     "analytics-service",
     "area-service",
     "machine-service",
+    "tracking-service",
     //"embedded-service",
     "gateway"
 )
