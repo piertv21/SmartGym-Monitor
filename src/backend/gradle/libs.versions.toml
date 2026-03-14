@@ -28,7 +28,9 @@ vertx-core         = { module = "io.vertx:vertx-core",         version.ref = "ve
 vertx-web          = { module = "io.vertx:vertx-web",          version.ref = "vertx" }
 vertx-web-client   = { module = "io.vertx:vertx-web-client",   version.ref = "vertx" }
 vertx-config       = { module = "io.vertx:vertx-config",       version.ref = "vertx" }
+vertx-mqtt         = { module = "io.vertx:vertx-mqtt",         version.ref = "vertx" }
 vertx-mongo-client = { module = "io.vertx:vertx-mongo-client", version.ref = "vertx" }
+vertx-junit5       = { module = "io.vertx:vertx-junit5",       version.ref = "vertx" }
 
 # --- PDF generation ---
 itext = { module = "com.itextpdf:itextpdf", version.ref = "itext" }

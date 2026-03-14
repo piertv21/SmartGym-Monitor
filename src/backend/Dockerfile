@@ -16,6 +16,8 @@ COPY service-discovery/build.gradle.kts service-discovery/build.gradle.kts
 COPY area-service/build.gradle.kts area-service/build.gradle.kts
 COPY machine-service/build.gradle.kts machine-service/build.gradle.kts
 COPY tracking-service/build.gradle.kts tracking-service/build.gradle.kts
+COPY embedded-service/build.gradle.kts embedded-service/build.gradle.kts
+
 
 RUN chmod +x gradlew
 RUN ./gradlew --no-daemon :${SERVICE}:dependencies

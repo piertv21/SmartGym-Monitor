@@ -151,8 +151,6 @@ services:
     networks:
       - smartgym-net
 
-
-
   ########################
   # AREA SERVICE
   ########################
@@ -190,8 +188,6 @@ services:
   #      retries: 5
   #      start_period: 30s
 
-
-
   mongo-area:
     image: mongo:7
     container_name: ${AREA_MONGODB_HOST}
@@ -201,7 +197,6 @@ services:
       - mongo-area-data:${MONGODB_VOLUME_PATH}
     networks:
       - smartgym-net
-
 
   ########################
   # MACHINE SERVICE
@@ -240,8 +235,6 @@ services:
   #      retries: 5
   #      start_period: 30s
 
-
-
   mongo-machine:
     image: mongo:7
     container_name: ${MACHINE_MONGODB_HOST}
@@ -251,7 +244,6 @@ services:
       - mongo-machine-data:${MONGODB_VOLUME_PATH}
     networks:
       - smartgym-net
-
 
   ########################
   # TRACKING SERVICE
@@ -290,8 +282,6 @@ services:
   #      retries: 5
   #      start_period: 30s
 
-
-
   mongo-tracking:
     image: mongo:7
     container_name: ${TRACKING_MONGODB_HOST}
@@ -299,6 +289,53 @@ services:
       - "27021:${TRACKING_MONGODB_PORT}"
     volumes:
       - mongo-tracking-data:${MONGODB_VOLUME_PATH}
+    networks:
+      - smartgym-net
+
+  ########################
+  # EMBEDDED SERVICE
+  ########################
+  embedded-service:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE: embedded-service
+    env_file:
+      - .env
+    container_name: ${EMBEDDED_SERVICE_INSTANCE_HOSTNAME}
+    ports:
+      - "${EMBEDDED_SERVICE_INSTANCE_PORT}:${EMBEDDED_SERVICE_INSTANCE_PORT}"
+    depends_on:
+      - service-discovery
+      - mongo-embedded
+    #      service-discovery:
+    #        condition: service_healthy
+    #      mongo-embedded:
+    #        condition: service_started
+    environment:
+      - SERVICE_NAME=embedded-service
+      - SERVICE_PORT=${EMBEDDED_SERVICE_INSTANCE_PORT}
+      - SPRING_DATA_MONGODB_URI=${EMBEDDED_MONGODB_URI}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    networks:
+      - smartgym-net
+  #    healthcheck:
+  #      test: curl --fail http://localhost:${EMBEDDED_SERVICE_INSTANCE_PORT}/actuator/health || exit 1
+  #      interval: 30s
+  #      timeout: 10s
+  #      retries: 5
+  #      start_period: 30s
+
+  mongo-embedded:
+    image: mongo:7
+    container_name: ${EMBEDDED_MONGODB_HOST}
+    ports:
+      - "27022:${EMBEDDED_MONGODB_PORT}"
+    volumes:
+      - mongo-embedded-data:${MONGODB_VOLUME_PATH}
     networks:
       - smartgym-net
 
@@ -343,8 +380,7 @@ volumes:
   mongo-area-data:
   mongo-machine-data:
   mongo-tracking-data:
-
-
+  mongo-embedded-data:
 
 networks:
   smartgym-net:
