@@ -425,21 +425,24 @@ services:
     build:
       context: ./src/frontend
       dockerfile: Dockerfile
-    container_name: smartgym-frontend
+    env_file:
+      - .env
+    container_name: ${FRONTEND_INSTANCE_HOSTNAME}
     ports:
-      - "5001:5000"
+      - "${FRONTEND_HOST_PORT}:${FRONTEND_CONTAINER_PORT}"
     depends_on:
-      - auth-service
+      auth-service:
+        condition: service_healthy
     environment:
-      - AUTH_SERVICE_BASE_URL=http://auth-service:${AUTH_SERVICE_INSTANCE_PORT}
-      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-dev}
+      - AUTH_SERVICE_BASE_URL=${AUTH_SERVICE_BASE_URL}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
     networks:
       - smartgym-net
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "curl --fail --silent http://localhost:5000/api/health || exit 1",
+          "curl --fail --silent http://localhost:${FRONTEND_CONTAINER_PORT}/api/health || exit 1",
         ]
       interval: 30s
       timeout: 10s
