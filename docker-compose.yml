@@ -21,12 +21,16 @@ services:
       - EUREKA_INSTANCE_PORT=${EUREKA_INSTANCE_PORT}
     networks:
       - smartgym-net
-  #    healthcheck:
-  #      test: curl --fail http://localhost:${EUREKA_INSTANCE_PORT}/actuator/health || exit 1
-  #      interval: 30s
-  #      timeout: 10s
-  #      retries: 5
-  #      start_period: 30s
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${EUREKA_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   #####################
   # API GATEWAY
@@ -43,21 +47,24 @@ services:
     ports:
       - "${API_GATEWAY_INSTANCE_PORT}:${API_GATEWAY_INSTANCE_PORT}"
     depends_on:
-      - service-discovery
-    #      service-discovery:
-    #        condition: service_healthy
+      service-discovery:
+        condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_INSTANCE_HOSTNAME=${API_GATEWAY_INSTANCE_HOSTNAME}
       - EUREKA_INSTANCE_PORT=${API_GATEWAY_INSTANCE_PORT}
     networks:
       - smartgym-net
-  #    healthcheck:
-  #      test: curl --fail http://localhost:${API_GATEWAY_INSTANCE_PORT}/actuator/health || exit 1
-  #      interval: 30s
-  #      timeout: 10s
-  #      retries: 5
-  #      start_period: 60s
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${API_GATEWAY_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   #####################
   # AUTH SERVICE
@@ -74,12 +81,10 @@ services:
     ports:
       - "${AUTH_SERVICE_INSTANCE_PORT}:${AUTH_SERVICE_INSTANCE_PORT}"
     depends_on:
-      - service-discovery
-      - mongo-auth
-    #      service-discovery:
-    #        condition: service_healthy
-    #      mongo-auth:
-    #        condition: service_started
+      service-discovery:
+        condition: service_healthy
+      mongo-auth:
+        condition: service_healthy
     environment:
       - SPRING_DATA_MONGODB_URI=${AUTH_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
@@ -87,12 +92,16 @@ services:
       - EUREKA_CLIENT_FETCH_REGISTRY=true
     networks:
       - smartgym-net
-  #    healthcheck:
-  #      test: curl --fail http://localhost:${AUTH_SERVICE_INSTANCE_PORT}/actuator/health || exit 1
-  #      interval: 30s
-  #      timeout: 10s
-  #      retries: 5
-  #      start_period: 30s
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${AUTH_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   mongo-auth:
     image: mongo:7
@@ -103,6 +112,16 @@ services:
       - mongo-auth-data:${MONGODB_VOLUME_PATH}
     networks:
       - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:${AUTH_MONGODB_PORT}/admin | grep 1 || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
 
   ########################
   # ANALYTICS SERVICE
@@ -119,12 +138,10 @@ services:
     ports:
       - "${ANALYTICS_SERVICE_INSTANCE_PORT}:${ANALYTICS_SERVICE_INSTANCE_PORT}"
     depends_on:
-      - service-discovery
-      - mongo-analytics
-    #      service-discovery:
-    #        condition: service_healthy
-    #      mongo-analytics:
-    #        condition: service_started
+      service-discovery:
+        condition: service_healthy
+      mongo-analytics:
+        condition: service_healthy
     environment:
       - SERVICE_NAME=analytics-service
       - SERVICE_PORT=${ANALYTICS_SERVICE_INSTANCE_PORT}
@@ -134,12 +151,16 @@ services:
       - EUREKA_CLIENT_FETCH_REGISTRY=true
     networks:
       - smartgym-net
-  #    healthcheck:
-  #      test: curl --fail http://localhost:${ANALYTICS_SERVICE_INSTANCE_PORT}/actuator/health || exit 1
-  #      interval: 30s
-  #      timeout: 10s
-  #      retries: 5
-  #      start_period: 30s
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${ANALYTICS_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   mongo-analytics:
     image: mongo:7
@@ -150,6 +171,16 @@ services:
       - mongo-analytics-data:${MONGODB_VOLUME_PATH}
     networks:
       - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:${ANALYTICS_MONGODB_PORT}/admin | grep 1 || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
 
   ########################
   # AREA SERVICE
@@ -166,12 +197,10 @@ services:
     ports:
       - "${AREA_SERVICE_INSTANCE_PORT}:${AREA_SERVICE_INSTANCE_PORT}"
     depends_on:
-      - service-discovery
-      - mongo-area
-    #      service-discovery:
-    #        condition: service_healthy
-    #      mongo-analytics:
-    #        condition: service_started
+      service-discovery:
+        condition: service_healthy
+      mongo-area:
+        condition: service_healthy
     environment:
       - SERVICE_NAME=area-service
       - SERVICE_PORT=${AREA_SERVICE_INSTANCE_PORT}
@@ -181,12 +210,16 @@ services:
       - EUREKA_CLIENT_FETCH_REGISTRY=true
     networks:
       - smartgym-net
-  #    healthcheck:
-  #      test: curl --fail http://localhost:${AREA_SERVICE_INSTANCE_PORT}/actuator/health || exit 1
-  #      interval: 30s
-  #      timeout: 10s
-  #      retries: 5
-  #      start_period: 30s
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${AREA_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   mongo-area:
     image: mongo:7
@@ -197,6 +230,16 @@ services:
       - mongo-area-data:${MONGODB_VOLUME_PATH}
     networks:
       - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:${AREA_MONGODB_PORT}/admin | grep 1 || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
 
   ########################
   # MACHINE SERVICE
@@ -213,12 +256,10 @@ services:
     ports:
       - "${MACHINE_SERVICE_INSTANCE_PORT}:${MACHINE_SERVICE_INSTANCE_PORT}"
     depends_on:
-      - service-discovery
-      - mongo-machine
-    #      service-discovery:
-    #        condition: service_healthy
-    #      mongo-analytics:
-    #        condition: service_started
+      service-discovery:
+        condition: service_healthy
+      mongo-machine:
+        condition: service_healthy
     environment:
       - SERVICE_NAME=machine-service
       - SERVICE_PORT=${MACHINE_SERVICE_INSTANCE_PORT}
@@ -228,12 +269,16 @@ services:
       - EUREKA_CLIENT_FETCH_REGISTRY=true
     networks:
       - smartgym-net
-  #    healthcheck:
-  #      test: curl --fail http://localhost:${MACHINE_SERVICE_INSTANCE_PORT}/actuator/health || exit 1
-  #      interval: 30s
-  #      timeout: 10s
-  #      retries: 5
-  #      start_period: 30s
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${MACHINE_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   mongo-machine:
     image: mongo:7
@@ -244,6 +289,16 @@ services:
       - mongo-machine-data:${MONGODB_VOLUME_PATH}
     networks:
       - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:${MACHINE_MONGODB_PORT}/admin | grep 1 || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
 
   ########################
   # TRACKING SERVICE
@@ -260,12 +315,10 @@ services:
     ports:
       - "${TRACKING_SERVICE_INSTANCE_PORT}:${TRACKING_SERVICE_INSTANCE_PORT}"
     depends_on:
-      - service-discovery
-      - mongo-tracking
-    #      service-discovery:
-    #        condition: service_healthy
-    #      mongo-analytics:
-    #        condition: service_started
+      service-discovery:
+        condition: service_healthy
+      mongo-tracking:
+        condition: service_healthy
     environment:
       - SERVICE_NAME=tracking-service
       - SERVICE_PORT=${TRACKING_SERVICE_INSTANCE_PORT}
@@ -275,12 +328,16 @@ services:
       - EUREKA_CLIENT_FETCH_REGISTRY=true
     networks:
       - smartgym-net
-  #    healthcheck:
-  #      test: curl --fail http://localhost:${tracking_SERVICE_INSTANCE_PORT}/actuator/health || exit 1
-  #      interval: 30s
-  #      timeout: 10s
-  #      retries: 5
-  #      start_period: 30s
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${TRACKING_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   mongo-tracking:
     image: mongo:7
@@ -291,6 +348,16 @@ services:
       - mongo-tracking-data:${MONGODB_VOLUME_PATH}
     networks:
       - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:${TRACKING_MONGODB_PORT}/admin | grep 1 || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
 
   ########################
   # EMBEDDED SERVICE
@@ -307,12 +374,10 @@ services:
     ports:
       - "${EMBEDDED_SERVICE_INSTANCE_PORT}:${EMBEDDED_SERVICE_INSTANCE_PORT}"
     depends_on:
-      - service-discovery
-      - mongo-embedded
-    #      service-discovery:
-    #        condition: service_healthy
-    #      mongo-embedded:
-    #        condition: service_started
+      service-discovery:
+        condition: service_healthy
+      mongo-embedded:
+        condition: service_healthy
     environment:
       - SERVICE_NAME=embedded-service
       - SERVICE_PORT=${EMBEDDED_SERVICE_INSTANCE_PORT}
@@ -322,12 +387,16 @@ services:
       - EUREKA_CLIENT_FETCH_REGISTRY=true
     networks:
       - smartgym-net
-  #    healthcheck:
-  #      test: curl --fail http://localhost:${EMBEDDED_SERVICE_INSTANCE_PORT}/actuator/health || exit 1
-  #      interval: 30s
-  #      timeout: 10s
-  #      retries: 5
-  #      start_period: 30s
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${EMBEDDED_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   mongo-embedded:
     image: mongo:7
@@ -338,6 +407,44 @@ services:
       - mongo-embedded-data:${MONGODB_VOLUME_PATH}
     networks:
       - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:${EMBEDDED_MONGODB_PORT}/admin | grep 1 || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  ########################
+  # FRONTEND FLASK
+  ########################
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    container_name: smartgym-frontend
+    ports:
+      - "5001:5000"
+    depends_on:
+      - auth-service
+    environment:
+      - AUTH_SERVICE_BASE_URL=http://auth-service:${AUTH_SERVICE_INSTANCE_PORT}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-dev}
+    networks:
+      - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:5000/api/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   #####################
   # PROMETHEUS        #

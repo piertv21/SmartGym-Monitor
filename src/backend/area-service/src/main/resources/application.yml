@@ -21,7 +21,7 @@ eureka:
 
 management:
   server:
-    port: 8085
+    port: ${AREA_SERVICE_INSTANCE_PORT:8085}
     servlet:
       context-path: /
   endpoints:
