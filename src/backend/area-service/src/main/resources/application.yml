@@ -1,0 +1,43 @@
+server:
+  port: ${AREA_SERVICE_INSTANCE_PORT:8085}
+
+spring:
+  application:
+    name: area-service
+  data:
+    mongodb:
+      uri: ${AREA_MONGODB_URI:mongodb://localhost:27017/areaservicedb}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://service-discovery:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: ${AREA_SERVICE_INSTANCE_HOSTNAME:area-service}
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:${server.port}
+
+management:
+  server:
+    port: ${AREA_SERVICE_INSTANCE_PORT:8085}
+    servlet:
+      context-path: /
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name:area-service}
+
+logging:
+  level:
+    com.smartgym: DEBUG
+    org.springframework: INFO

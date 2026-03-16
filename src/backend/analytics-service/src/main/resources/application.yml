@@ -1,12 +1,12 @@
 server:
-  port: ${AUTH_SERVICE_INSTANCE_PORT:8081}
+  port: ${ANALYTICS_SERVICE_INSTANCE_PORT:8085}
 
 spring:
   application:
-    name: auth-service
+    name: analytics-service
   data:
     mongodb:
-      uri: ${AUTH_MONGODB_URI:mongodb://localhost:27017/mongo-auth}
+      uri: ${ANALYTICS_MONGODB_URI:mongodb://localhost:27017/analyticsservicedb}
 
 eureka:
   client:
@@ -15,13 +15,13 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
   instance:
-    hostname: ${AUTH_SERVICE_INSTANCE_HOSTNAME:auth-service}
+    hostname: ${ANALYTICS_SERVICE_INSTANCE_HOSTNAME:analytics-service}
     prefer-ip-address: false
     instance-id: ${spring.application.name}:${server.port}
 
 management:
   server:
-    port: 8081
+    port: 8085
     servlet:
       context-path: /
   endpoints:
@@ -35,7 +35,7 @@ management:
       show-details: always
   metrics:
     tags:
-      application: ${spring.application.name:auth-service}
+      application: ${spring.application.name:analytics-service}
 
 logging:
   level:

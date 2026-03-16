@@ -1,0 +1,51 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  test-backend:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, windows-2022, macos-14]
+        java-version: [17, 21]
+    runs-on: ${{ matrix.os }}
+
+    services:
+      mongo-auth:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        if: matrix.os == 'ubuntu-22.04'
+
+      mongo-parking:
+        image: mongo:7
+        ports:
+          - 27018:27017
+        if: matrix.os == 'ubuntu-22.04'
+
+      mongo-analytics:
+        image: mongo:7
+        ports:
+          - 27021:27017
+        if: matrix.os == 'ubuntu-22.04'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java-version }}
+          cache: gradle
+
+      - name: Grant execute permission to Gradle (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: chmod +x ./src/backend/gradlew
+
+      - name: Run Gradle tests
+        working-directory: ./src/backend
+        run: ./gradlew test --no-daemon

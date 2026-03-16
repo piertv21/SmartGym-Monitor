@@ -1,0 +1,43 @@
+server:
+  port: ${TRACKING_SERVICE_INSTANCE_PORT:8085}
+
+spring:
+  application:
+    name: tracking-service
+  data:
+    mongodb:
+      uri: ${TRACKING_MONGODB_URI:mongodb://localhost:27017/trackingservicedb}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://service-discovery:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: ${TRACKING_SERVICE_INSTANCE_HOSTNAME:tracking-service}
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:${server.port}
+
+management:
+  server:
+    port: ${TRACKING_SERVICE_INSTANCE_PORT:8085}
+    servlet:
+      context-path: /
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name:tracking-service}
+
+logging:
+  level:
+    com.smartgym: DEBUG
+    org.springframework: INFO

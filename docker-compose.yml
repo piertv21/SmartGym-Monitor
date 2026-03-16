@@ -1,9 +1,13 @@
 services:
   ##############################
-  # EUREKA SERVICE DISCOVERY   #
+  # EUREKA SERVICE DISCOVERY
   ##############################
   service-discovery:
-    build: ./src/backend/service-discovery
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE: service-discovery
     env_file:
       - .env
     container_name: ${EUREKA_INSTANCE_HOSTNAME}
@@ -16,12 +20,12 @@ services:
       - EUREKA_INSTANCE_HOSTNAME=${EUREKA_INSTANCE_HOSTNAME}
       - EUREKA_INSTANCE_PORT=${EUREKA_INSTANCE_PORT}
     networks:
-      - ${SMARTGYM_NETWORK}
+      - smartgym-net
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "curl --fail http://localhost:${EUREKA_INSTANCE_PORT}/actuator/health || exit 1",
+          "curl --fail --silent http://localhost:${EUREKA_INSTANCE_PORT}/actuator/health || exit 1",
         ]
       interval: 30s
       timeout: 10s
@@ -29,10 +33,14 @@ services:
       start_period: 30s
 
   #####################
-  # API GATEWAY       #
+  # API GATEWAY
   #####################
   gateway:
-    build: ./src/backend/gateway
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE: gateway
     env_file:
       - .env
     container_name: ${API_GATEWAY_INSTANCE_HOSTNAME}
@@ -46,12 +54,12 @@ services:
       - EUREKA_INSTANCE_HOSTNAME=${API_GATEWAY_INSTANCE_HOSTNAME}
       - EUREKA_INSTANCE_PORT=${API_GATEWAY_INSTANCE_PORT}
     networks:
-      - ${SMARTGYM_NETWORK}
+      - smartgym-net
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "curl --fail http://localhost:${API_GATEWAY_INSTANCE_PORT}/actuator/health || exit 1",
+          "curl --fail --silent http://localhost:${API_GATEWAY_INSTANCE_PORT}/actuator/health || exit 1",
         ]
       interval: 30s
       timeout: 10s
@@ -59,10 +67,14 @@ services:
       start_period: 60s
 
   #####################
-  # AUTH SERVICE      #
+  # AUTH SERVICE
   #####################
   auth-service:
-    build: ./src/backend/auth-service
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE: auth-service
     env_file:
       - .env
     container_name: ${AUTH_SERVICE_INSTANCE_HOSTNAME}
@@ -72,17 +84,19 @@ services:
       service-discovery:
         condition: service_healthy
       mongo-auth:
-        condition: service_started
+        condition: service_healthy
     environment:
       - SPRING_DATA_MONGODB_URI=${AUTH_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
     networks:
-      - ${SMARTGYM_NETWORK}
+      - smartgym-net
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "curl --fail http://localhost:${AUTH_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+          "curl --fail --silent http://localhost:${AUTH_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
         ]
       interval: 30s
       timeout: 10s
@@ -91,21 +105,35 @@ services:
 
   mongo-auth:
     image: mongo:7
-    env_file:
-      - .env
     container_name: ${AUTH_MONGODB_HOST}
     ports:
-      - "${AUTH_MONGODB_PORT}:${MONGODB_DEFAULT_PORT}"
+      - "27017:${AUTH_MONGODB_PORT}"
     volumes:
       - mongo-auth-data:${MONGODB_VOLUME_PATH}
     networks:
-      - ${SMARTGYM_NETWORK}
+      - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:${AUTH_MONGODB_PORT}/admin | grep 1 || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
 
   ########################
-  # ANALYTICS SERVICE    #
+  # ANALYTICS SERVICE
   ########################
   analytics-service:
-    build: ./src/backend/analytics-service
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE: analytics-service
+    env_file:
+      - .env
     container_name: ${ANALYTICS_SERVICE_INSTANCE_HOSTNAME}
     ports:
       - "${ANALYTICS_SERVICE_INSTANCE_PORT}:${ANALYTICS_SERVICE_INSTANCE_PORT}"
@@ -113,116 +141,356 @@ services:
       service-discovery:
         condition: service_healthy
       mongo-analytics:
-        condition: service_started
+        condition: service_healthy
     environment:
       - SERVICE_NAME=analytics-service
       - SERVICE_PORT=${ANALYTICS_SERVICE_INSTANCE_PORT}
       - SPRING_DATA_MONGODB_URI=${ANALYTICS_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_INSTANCE_HOSTNAME=${ANALYTICS_SERVICE_INSTANCE_HOSTNAME}
-      - EUREKA_INSTANCE_PORT=${ANALYTICS_SERVICE_INSTANCE_PORT}
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
     networks:
-      - ${SMARTGYM_NETWORK}
+      - smartgym-net
     healthcheck:
-      test: curl --fail http://localhost:${ANALYTICS_SERVICE_INSTANCE_PORT}/actuator/health || exit 1
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${ANALYTICS_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
 
   mongo-analytics:
-    image: mongo
+    image: mongo:7
     container_name: ${ANALYTICS_MONGODB_HOST}
     ports:
-      - "27021:${MONGODB_DEFAULT_PORT}"
+      - "27018:${ANALYTICS_MONGODB_PORT}"
     volumes:
       - mongo-analytics-data:${MONGODB_VOLUME_PATH}
     networks:
-      - ${SMARTGYM_NETWORK}
-
-  #####################
-  # FRONTEND (Flask)  #
-  #####################
-  frontend:
-    build: ./src/frontend
-    container_name: smartgym-frontend
-    environment:
-      # Calls go DIRECTLY to auth-service to avoid being blocked by the gateway filter
-      # (the gateway currently requires X-Auth-Token on every route).
-      - AUTH_SERVICE_BASE_URL=http://auth-service:${AUTH_SERVICE_INSTANCE_PORT}
-      - FLASK_SECRET_KEY=dev-change-me
-      - FLASK_ENV=production
-      - PORT=5000
-    ports:
-      - "5000:5000"
-    depends_on:
-      auth-service:
-        condition: service_healthy
-    networks:
-      - ${SMARTGYM_NETWORK}
+      - smartgym-net
     healthcheck:
-      test: ["CMD-SHELL", "curl --fail http://localhost:5000/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:${ANALYTICS_MONGODB_PORT}/admin | grep 1 || exit 1',
+        ]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 20s
 
-  #  #####################
-  #  # SIMULATOR (Go)    #
-  #  #####################
-  #  simulator:
-  #    build: ./src/simulator
-  #    container_name: smartgym-simulator
-  #    environment:
-  #      - AUTH_SERVICE_BASE_URL=http://auth-service:${AUTH_SERVICE_INSTANCE_PORT}
-  #      - SIM_USERNAME=ADMIN
-  #      - SIM_PASSWORD=ADMIN
-  #      - SIM_INTERVAL_SECONDS=10
-  #    depends_on:
-  #      auth-service:
-  #        condition: service_healthy
-  #    networks:
-  #      - ${SMARTGYM_NETWORK}
+  ########################
+  # AREA SERVICE
+  ########################
+  area-service:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE: area-service
+    env_file:
+      - .env
+    container_name: ${AREA_SERVICE_INSTANCE_HOSTNAME}
+    ports:
+      - "${AREA_SERVICE_INSTANCE_PORT}:${AREA_SERVICE_INSTANCE_PORT}"
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+      mongo-area:
+        condition: service_healthy
+    environment:
+      - SERVICE_NAME=area-service
+      - SERVICE_PORT=${AREA_SERVICE_INSTANCE_PORT}
+      - SPRING_DATA_MONGODB_URI=${AREA_MONGODB_URI}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    networks:
+      - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${AREA_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  mongo-area:
+    image: mongo:7
+    container_name: ${AREA_MONGODB_HOST}
+    ports:
+      - "27019:${AREA_MONGODB_PORT}"
+    volumes:
+      - mongo-area-data:${MONGODB_VOLUME_PATH}
+    networks:
+      - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:${AREA_MONGODB_PORT}/admin | grep 1 || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  ########################
+  # MACHINE SERVICE
+  ########################
+  machine-service:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE: machine-service
+    env_file:
+      - .env
+    container_name: ${MACHINE_SERVICE_INSTANCE_HOSTNAME}
+    ports:
+      - "${MACHINE_SERVICE_INSTANCE_PORT}:${MACHINE_SERVICE_INSTANCE_PORT}"
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+      mongo-machine:
+        condition: service_healthy
+    environment:
+      - SERVICE_NAME=machine-service
+      - SERVICE_PORT=${MACHINE_SERVICE_INSTANCE_PORT}
+      - SPRING_DATA_MONGODB_URI=${MACHINE_MONGODB_URI}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    networks:
+      - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${MACHINE_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  mongo-machine:
+    image: mongo:7
+    container_name: ${MACHINE_MONGODB_HOST}
+    ports:
+      - "27020:${MACHINE_MONGODB_PORT}"
+    volumes:
+      - mongo-machine-data:${MONGODB_VOLUME_PATH}
+    networks:
+      - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:${MACHINE_MONGODB_PORT}/admin | grep 1 || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  ########################
+  # TRACKING SERVICE
+  ########################
+  tracking-service:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE: tracking-service
+    env_file:
+      - .env
+    container_name: ${TRACKING_SERVICE_INSTANCE_HOSTNAME}
+    ports:
+      - "${TRACKING_SERVICE_INSTANCE_PORT}:${TRACKING_SERVICE_INSTANCE_PORT}"
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+      mongo-tracking:
+        condition: service_healthy
+    environment:
+      - SERVICE_NAME=tracking-service
+      - SERVICE_PORT=${TRACKING_SERVICE_INSTANCE_PORT}
+      - SPRING_DATA_MONGODB_URI=${TRACKING_MONGODB_URI}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    networks:
+      - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${TRACKING_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  mongo-tracking:
+    image: mongo:7
+    container_name: ${TRACKING_MONGODB_HOST}
+    ports:
+      - "27021:${TRACKING_MONGODB_PORT}"
+    volumes:
+      - mongo-tracking-data:${MONGODB_VOLUME_PATH}
+    networks:
+      - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:${TRACKING_MONGODB_PORT}/admin | grep 1 || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  ########################
+  # EMBEDDED SERVICE
+  ########################
+  embedded-service:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE: embedded-service
+    env_file:
+      - .env
+    container_name: ${EMBEDDED_SERVICE_INSTANCE_HOSTNAME}
+    ports:
+      - "${EMBEDDED_SERVICE_INSTANCE_PORT}:${EMBEDDED_SERVICE_INSTANCE_PORT}"
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+      mongo-embedded:
+        condition: service_healthy
+    environment:
+      - SERVICE_NAME=embedded-service
+      - SERVICE_PORT=${EMBEDDED_SERVICE_INSTANCE_PORT}
+      - SPRING_DATA_MONGODB_URI=${EMBEDDED_MONGODB_URI}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    networks:
+      - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${EMBEDDED_SERVICE_INSTANCE_PORT}/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  mongo-embedded:
+    image: mongo:7
+    container_name: ${EMBEDDED_MONGODB_HOST}
+    ports:
+      - "27022:${EMBEDDED_MONGODB_PORT}"
+    volumes:
+      - mongo-embedded-data:${MONGODB_VOLUME_PATH}
+    networks:
+      - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'mongosh --quiet --eval "db.adminCommand(''ping'').ok" mongodb://localhost:${EMBEDDED_MONGODB_PORT}/admin | grep 1 || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  ########################
+  # FRONTEND FLASK
+  ########################
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    container_name: ${FRONTEND_INSTANCE_HOSTNAME}
+    ports:
+      - "${FRONTEND_HOST_PORT}:${FRONTEND_CONTAINER_PORT}"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    environment:
+      - AUTH_SERVICE_BASE_URL=${AUTH_SERVICE_BASE_URL}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+    networks:
+      - smartgym-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:${FRONTEND_CONTAINER_PORT}/api/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   #####################
   # PROMETHEUS        #
   #####################
-  prometheus:
-    image: prom/prometheus:latest
-    env_file:
-      - .env
-    container_name: ${PROMETHEUS_INSTANCE_HOSTNAME}
-    ports:
-      - "${PROMETHEUS_INSTANCE_PORT}:${PROMETHEUS_INSTANCE_PORT}"
-    networks:
-      - ${SMARTGYM_NETWORK}
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    depends_on:
-      gateway:
-        condition: service_healthy
+#  prometheus:
+#    image: prom/prometheus:latest
+#    container_name: ${PROMETHEUS_INSTANCE_HOSTNAME}
+#    ports:
+#      - "${PROMETHEUS_INSTANCE_PORT}:${PROMETHEUS_INSTANCE_PORT}"
+#    networks:
+#      - ${SMARTPARKING_NETWORK}
+#    volumes:
+#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#    depends_on:
+#      gateway:
+#        condition: service_healthy
 
-  #####################
-  # GRAFANA           #
-  #####################
-  grafana:
-    image: grafana/grafana:latest
-    env_file:
-      - .env
-    container_name: ${GRAFANA_INSTANCE_HOSTNAME}
-    ports:
-      - "${GRAFANA_INSTANCE_PORT}:${GRAFANA_INSTANCE_PORT}"
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
-    networks:
-      - ${SMARTGYM_NETWORK}
-    depends_on:
-      - prometheus
+#####################
+# GRAFANA           #
+#####################
+#  grafana:
+#    image: grafana/grafana
+#    container_name: ${GRAFANA_INSTANCE_HOSTNAME}
+#    ports:
+#      - "${GRAFANA_INSTANCE_PORT}:${GRAFANA_INSTANCE_PORT}"
+#    environment:
+#      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+#      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+#    networks:
+#      - ${SMARTPARKING_NETWORK}
+#    depends_on:
+#      - prometheus
 
+#############################
+# VOLUMES AND NETWORKS      #
+#############################
 volumes:
   mongo-auth-data:
   mongo-analytics-data:
+  mongo-area-data:
+  mongo-machine-data:
+  mongo-tracking-data:
+  mongo-embedded-data:
 
 networks:
   smartgym-net:
