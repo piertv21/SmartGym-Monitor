@@ -1,7 +1,6 @@
 {
   "name": "smartgym-monitor",
   "version": "1.0.0",
-  "type": "module",
   "description": "A tool for monitoring gym",
   "homepage": "https://github.com/piertv21/SmartGym-Monitor#readme",
   "bugs": {
