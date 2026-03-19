@@ -449,6 +449,21 @@ services:
       retries: 5
       start_period: 30s
 
+  ########################
+  # GO SIMULATOR
+  ########################
+  simulator:
+    build:
+      context: ./src/simulator
+      dockerfile: Dockerfile
+    container_name: smartgym-simulator
+    depends_on:
+      gateway:
+        condition: service_healthy
+    networks:
+      - smartgym-net
+    restart: unless-stopped
+
   #####################
   # PROMETHEUS        #
   #####################
