@@ -1,3 +1,14 @@
+## [1.2.0](https://github.com/piertv21/SmartGym-Monitor/compare/1.1.0...1.2.0) (2026-03-19)
+
+### Features
+
+- **simulator:** add basic go simulator structure ([2d28c3a](https://github.com/piertv21/SmartGym-Monitor/commit/2d28c3a6287f9a269f049db7861ee9d7e4073c5f))
+
+### General maintenance
+
+- add docs package-lock.json ([2e1bac6](https://github.com/piertv21/SmartGym-Monitor/commit/2e1bac6a4bd4ffd089470ea507b2745a75e32f8b))
+- restored doc files from previous commit ([32ba414](https://github.com/piertv21/SmartGym-Monitor/commit/32ba414cbcbcbf4f5821c7abf92d290f441bcec6))
+
 ## [1.1.0](https://github.com/piertv21/SmartGym-Monitor/compare/1.0.0...1.1.0) (2026-03-16)
 
 ### Features
