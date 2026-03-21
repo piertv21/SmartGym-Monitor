@@ -27,20 +27,20 @@ spring:
           predicates:
             - Path=/embedded-service/**
 
-        - id: parking-service
-          uri: lb://parking-service
+        - id: machine-service
+          uri: lb://machine-service
           predicates:
-            - Path=/parking-service/**
+            - Path=/machine-service/**
 
-        - id: payment-service
-          uri: lb://payment-service
+        - id: area-service
+          uri: lb://area-service
           predicates:
-            - Path=/payment-service/**
+            - Path=/area-service/**
 
-        - id: ticketing-service
-          uri: lb://ticketing-service
+        - id: tracking-service
+          uri: lb://tracking-service
           predicates:
-            - Path=/ticketing-service/**
+            - Path=/tracking-service/**
 
 eureka:
   client:
