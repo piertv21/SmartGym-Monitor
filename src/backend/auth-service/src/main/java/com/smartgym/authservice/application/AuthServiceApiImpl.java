@@ -2,6 +2,7 @@ package com.smartgym.authservice.application;
 
 import com.smartgym.authservice.application.ports.AuthRepository;
 import com.smartgym.authservice.application.ports.AuthServiceAPI;
+import com.smartgym.authservice.model.AuthUser;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Optional;
@@ -17,20 +18,10 @@ public class AuthServiceApiImpl implements AuthServiceAPI {
     }
 
     @Override
-    public CompletableFuture<Optional<JsonObject>> authenticate(String username, String password) {
+    public CompletableFuture<Optional<AuthUser>> authenticate(String username, String password) {
         System.out.println("[AuthServiceApiImpl] authenticating user: " + username);
         return repository.findUserByUsername(username)
-                .thenApply(optionalUser -> {
-                    if (optionalUser.isEmpty()) {
-                        return Optional.empty();
-                    }
-                    JsonObject user = optionalUser.get();
-                    String storedPassword = user.getString("password");
-                    if (storedPassword != null && storedPassword.equals(password)) {
-                        return Optional.of(user);
-                    }
-                    return Optional.empty();
-                });
+                .thenApply(optionalUser -> optionalUser.filter(user -> user.matchesPassword(password)));
     }
 
     @Override

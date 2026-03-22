@@ -445,6 +445,8 @@ services:
     ports:
       - "${FRONTEND_HOST_PORT}:${FRONTEND_CONTAINER_PORT}"
     depends_on:
+      gateway:
+        condition: service_healthy
       auth-service:
         condition: service_healthy
     environment:

@@ -16,7 +16,7 @@ public class DataInitializationConfig {
     public CommandLineRunner initializeData(AuthRepository authRepository) {
         return args -> {
             try {
-                authRepository.initializeUsers().get();
+                authRepository.ensureDefaultAdmin().get();
                 logger.info("✅ Data initialization completed");
             } catch (Exception e) {
                 logger.error("❌ Data initialization failed: {}", e.getMessage());

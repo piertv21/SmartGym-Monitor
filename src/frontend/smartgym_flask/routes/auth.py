@@ -7,8 +7,24 @@ from smartgym_flask.services.user_service import Credentials
 auth_bp = Blueprint("auth", __name__)
 
 
+def _ensure_gateway_token() -> str | None:
+    token = session.get("gateway_token")
+    if token:
+        return token
+
+    try:
+        token = get_user_service().generate_gateway_token()
+    except requests.RequestException as ex:
+        flash(f"Gateway token unavailable: {ex}", "error")
+        return None
+
+    session["gateway_token"] = token
+    return token
+
+
 @auth_bp.get("/login")
 def login():
+    _ensure_gateway_token()
     return render_template("login.html")
 
 
@@ -21,10 +37,14 @@ def login_post():
         flash("Username and password are required.", "error")
         return redirect(url_for("auth.login"))
 
+    gateway_token = _ensure_gateway_token()
+    if not gateway_token:
+        return redirect(url_for("auth.login"))
+
     creds = Credentials(username=username, password=password)
 
     try:
-        response = get_user_service().login(creds)
+        response = get_user_service().login(creds, gateway_token)
     except requests.RequestException as ex:
         flash(f"Auth service unreachable: {ex}", "error")
         return redirect(url_for("auth.login"))
@@ -46,11 +66,12 @@ def login_post():
 @auth_bp.get("/logout")
 def logout():
     username = session.get("user")
+    gateway_token = session.get("gateway_token")
     session.clear()
 
-    if username:
+    if username and gateway_token:
         try:
-            get_user_service().logout(username)
+            get_user_service().logout(username, gateway_token)
         except requests.RequestException:
             pass
 

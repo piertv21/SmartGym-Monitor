@@ -1,117 +1,88 @@
 package com.smartgym.authservice;
 
-import com.mongodb.client.*;
-import com.smartgym.authservice.model.LoginMessage;
-import com.smartgym.authservice.model.LogoutMessage;
-import org.bson.Document;
-import org.junit.jupiter.api.*;
-import org.springframework.http.*;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import com.smartgym.authservice.application.AuthServiceApiImpl;
+import com.smartgym.authservice.application.ports.AuthRepository;
+import com.smartgym.authservice.model.AuthUser;
+import io.vertx.core.json.JsonObject;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JUnitAuthServiceTest {
 
     @Test
-    void testSum() {
-        int a = 2 + 3;
-        assertEquals(5, a);
+    void authenticateSuccessWithDomainEntity() {
+        AuthRepository repository = new InMemoryAuthRepository(Map.of("ADMIN", new AuthUser("ADMIN", "ADMIN")));
+        AuthServiceApiImpl authService = new AuthServiceApiImpl(repository);
+
+        Optional<AuthUser> result = authService.authenticate("ADMIN", "ADMIN").join();
+
+        assertTrue(result.isPresent());
+        assertEquals("ADMIN", result.get().getUsername());
     }
 
-    /*private final String baseUrl = "http://localhost:8081";
-    private final RestTemplate rest = new RestTemplate();
+    @Test
+    void authenticateFailsWithWrongPassword() {
+        AuthRepository repository = new InMemoryAuthRepository(Map.of("ADMIN", new AuthUser("ADMIN", "ADMIN")));
+        AuthServiceApiImpl authService = new AuthServiceApiImpl(repository);
 
-    private static final String mongoUrl = "mongodb://localhost:27017";
-    private static final String databaseName = "authservicedb";
+        Optional<AuthUser> result = authService.authenticate("ADMIN", "WRONG").join();
 
-    private static final String logsCollection = "logs";
-    private static final String usersCollection = "users";
+        assertTrue(result.isEmpty());
+    }
 
-    private static final String USERNAME = "ADMIN";
-    private static final String PASSWORD = "ADMIN";
+    @Test
+    void verifyUserExists() {
+        AuthRepository repository = new InMemoryAuthRepository(Map.of("ADMIN", new AuthUser("ADMIN", "ADMIN")));
+        AuthServiceApiImpl authService = new AuthServiceApiImpl(repository);
 
-    @BeforeAll
-    static void cleanMongoOnce() {
-        try (MongoClient client = MongoClients.create(mongoUrl)) {
-            MongoDatabase db = client.getDatabase(databaseName);
+        boolean exists = authService.userExists("ADMIN").join();
 
-            db.getCollection(logsCollection).deleteMany(new Document());
-            db.getCollection(usersCollection).deleteMany(new Document());
+        assertTrue(exists);
+    }
 
-            db.getCollection(usersCollection).insertOne(
-                    new Document("username", USERNAME)
-                            .append("password", PASSWORD)
-            );
+    @Test
+    void registerLoginWritesExpectedPayload() {
+        AuthRepository repository = new InMemoryAuthRepository(Map.of());
+        AuthServiceApiImpl authService = new AuthServiceApiImpl(repository);
 
-            System.out.println("🔥 AuthService Mongo cleaned + ADMIN user recreated");
+        JsonObject payload = authService.registerLogin("ADMIN").join();
+
+        assertEquals("ADMIN", payload.getString("username"));
+        assertEquals("login", payload.getString("action"));
+        assertNotNull(payload.getLong("timestamp"));
+    }
+
+    private static final class InMemoryAuthRepository implements AuthRepository {
+
+        private final Map<String, AuthUser> usersByUsername;
+
+        private InMemoryAuthRepository(Map<String, AuthUser> usersByUsername) {
+            this.usersByUsername = usersByUsername;
+        }
+
+        @Override
+        public CompletableFuture<Optional<AuthUser>> findUserByUsername(String username) {
+            return CompletableFuture.completedFuture(Optional.ofNullable(usersByUsername.get(username)));
+        }
+
+        @Override
+        public CompletableFuture<Void> saveLoginLog(String username, long timestamp) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public CompletableFuture<Void> saveLogoutLog(String username, long timestamp) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public CompletableFuture<Void> ensureDefaultAdmin() {
+            return CompletableFuture.completedFuture(null);
         }
     }
-
-    @Test
-    @Order(1)
-    void testLoginSuccess() {
-        LoginMessage msg = new LoginMessage(USERNAME, PASSWORD);
-
-        ResponseEntity<String> resp = rest.postForEntity(
-                baseUrl + "/login",
-                msg,
-                String.class
-        );
-
-        assertEquals(HttpStatus.OK, resp.getStatusCode());
-        assertTrue(resp.getBody().contains(USERNAME));
-
-        System.out.println("✅ Login riuscito");
-    }
-
-    @Test
-    @Order(2)
-    void testVerifyUser() {
-        ResponseEntity<String> resp =
-                rest.getForEntity(baseUrl + "/login/" + USERNAME, String.class);
-
-        assertEquals(HttpStatus.OK, resp.getStatusCode());
-        assertTrue(resp.getBody().contains("\"exists\":true"));
-
-        System.out.println("✅ User exists verificato");
-    }
-
-    @Test
-    @Order(3)
-    void testLogout() {
-        LogoutMessage logout = new LogoutMessage(USERNAME, PASSWORD);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<LogoutMessage> entity = new HttpEntity<>(logout, headers);
-
-        ResponseEntity<String> resp = rest.exchange(
-                baseUrl + "/logout",
-                HttpMethod.POST,   // POST, NON GET
-                entity,
-                String.class
-        );
-
-        assertEquals(HttpStatus.OK, resp.getStatusCode());
-        assertTrue(resp.getBody().contains("Logout effettuato"));
-
-        System.out.println("✅ Logout OK");
-    }
-
-    @Test
-    @Order(4)
-    void testLoginWrongPassword() {
-        LoginMessage msg = new LoginMessage(USERNAME, "Wrong password");
-
-        try {
-            rest.postForEntity(baseUrl + "/login", msg, String.class);
-            fail("Expected 403 UNAUTHORIZED");
-        } catch (HttpClientErrorException ex) {
-            assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
-            System.out.println("✅ Login con password errata restituisce 403 correttamente");
-        }
-    }*/
 }

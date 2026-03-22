@@ -38,8 +38,12 @@ public class AuthServiceApplication {
     }
 
     @Bean
-    public AuthRepository authRepository(MongoClient mongoClient) {
-        return new AuthRepositoryImpl(mongoClient);
+    public AuthRepository authRepository(
+            MongoClient mongoClient,
+            @Value("${auth.seed.admin.username:ADMIN}") String adminUsername,
+            @Value("${auth.seed.admin.password:ADMIN}") String adminPassword
+    ) {
+        return new AuthRepositoryImpl(mongoClient, adminUsername, adminPassword);
     }
 
     @Bean

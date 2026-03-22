@@ -6,14 +6,11 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.smartgym.authservice.application.ports.AuthRepository;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import com.smartgym.authservice.model.AuthUser;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -25,11 +22,15 @@ public class AuthRepositoryImpl implements AuthRepository {
 
     private final MongoCollection<Document> usersCollection;
     private final MongoCollection<Document> logsCollection;
+    private final String defaultAdminUsername;
+    private final String defaultAdminPassword;
 
-    public AuthRepositoryImpl(MongoClient mongoClient) {
+    public AuthRepositoryImpl(MongoClient mongoClient, String defaultAdminUsername, String defaultAdminPassword) {
         MongoDatabase database = mongoClient.getDatabase("authservicedb");
         this.usersCollection = database.getCollection(USERS_COLLECTION);
         this.logsCollection = database.getCollection(LOGS_COLLECTION);
+        this.defaultAdminUsername = defaultAdminUsername;
+        this.defaultAdminPassword = defaultAdminPassword;
         initializeIndexes();
     }
 
@@ -54,8 +55,8 @@ public class AuthRepositoryImpl implements AuthRepository {
     }
 
     @Override
-    public CompletableFuture<Optional<JsonObject>> findUserByUsername(String username) {
-        CompletableFuture<Optional<JsonObject>> future = new CompletableFuture<>();
+    public CompletableFuture<Optional<AuthUser>> findUserByUsername(String username) {
+        CompletableFuture<Optional<AuthUser>> future = new CompletableFuture<>();
 
         try {
             if (username == null || username.isBlank()) {
@@ -67,9 +68,7 @@ public class AuthRepositoryImpl implements AuthRepository {
 
             logger.debug("User lookup for '{}': {}", username, result != null ? "found" : "not found");
 
-            future.complete(Optional.ofNullable(
-                    result != null ? new JsonObject(result.toJson()) : null
-            ));
+            future.complete(Optional.ofNullable(result).map(this::toDomain));
         } catch (Exception e) {
             logger.error("Error finding user '{}': {}", username, e.getMessage());
             future.completeExceptionally(
@@ -116,50 +115,36 @@ public class AuthRepositoryImpl implements AuthRepository {
     }
 
     @Override
-    public CompletableFuture<Void> initializeUsers() {
+    public CompletableFuture<Void> ensureDefaultAdmin() {
         CompletableFuture<Void> future = new CompletableFuture<>();
 
         try {
-            long count = usersCollection.countDocuments();
-            if (count > 0) {
-                logger.info("Users collection already contains {} documents", count);
+            Document existingAdmin = usersCollection.find(new Document("username", defaultAdminUsername)).first();
+            if (existingAdmin != null) {
+                logger.info("Default admin '{}' already exists", defaultAdminUsername);
                 future.complete(null);
                 return future;
             }
 
-            InputStream is = getClass().getClassLoader()
-                    .getResourceAsStream("ADMIN_LIST.json");
-
-            if (is == null) {
-                throw new RuntimeException("ADMIN_LIST.json not found in resources");
-            }
-
-            String json = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            JsonArray adminList = new JsonArray(json);
-
-            int inserted = 0;
-            for (Object obj : adminList) {
-                JsonObject user = (JsonObject) obj;
-                Document doc = Document.parse(user.encode());
-
-                try {
-                    usersCollection.insertOne(doc);
-                    inserted++;
-                } catch (Exception e) {
-                    logger.warn("Failed to insert user '{}': {}",
-                            user.getString("username"), e.getMessage());
-                }
-            }
-
-            logger.info("✅ Users initialized: {} documents inserted", inserted);
+            AuthUser defaultAdmin = new AuthUser(defaultAdminUsername, defaultAdminPassword);
+            usersCollection.insertOne(toDocument(defaultAdmin));
+            logger.info("✅ Default admin '{}' initialized", defaultAdminUsername);
             future.complete(null);
         } catch (Exception e) {
-            logger.error("❌ Failed to initialize users: {}", e.getMessage());
+            logger.error("❌ Failed to initialize default admin: {}", e.getMessage());
             future.completeExceptionally(
-                    new RuntimeException("Failed to initialize users: " + e.getMessage(), e));
+                    new RuntimeException("Failed to initialize default admin: " + e.getMessage(), e));
         }
 
         return future;
     }
-}
 
+    private AuthUser toDomain(Document document) {
+        return new AuthUser(document.getString("username"), document.getString("password"));
+    }
+
+    private Document toDocument(AuthUser user) {
+        return new Document("username", user.getUsername())
+                .append("password", user.getPassword());
+    }
+}

@@ -41,3 +41,9 @@ logging:
   level:
     com.smartgym: DEBUG
     org.springframework: INFO
+
+auth:
+  seed:
+    admin:
+      username: ${AUTH_DEFAULT_ADMIN_USERNAME:ADMIN}
+      password: ${AUTH_DEFAULT_ADMIN_PASSWORD:ADMIN}

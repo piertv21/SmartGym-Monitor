@@ -47,5 +47,8 @@ poetry run gunicorn -b 0.0.0.0:5000 smartgym_flask.app:app
 ## Variabili ambiente
 
 - `FLASK_SECRET_KEY` (default: `dev`)
-- `AUTH_SERVICE_BASE_URL` (default: `http://localhost:8081`)
+- `AUTH_SERVICE_BASE_URL` (default: `http://localhost:8080/auth-service`)
+- `GATEWAY_BASE_URL` (default derivato da `AUTH_SERVICE_BASE_URL`, es. `http://localhost:8080`)
+- `GATEWAY_CLIENT_ID` (default: `smartgym-client`)
+- `GATEWAY_CLIENT_SECRET` (default: `Smart-Parking`)
 - `AUTH_TIMEOUT_SECONDS` (default: `5`)
