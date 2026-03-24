@@ -394,6 +394,11 @@ services:
       - SERVICE_NAME=embedded-service
       - SERVICE_PORT=${EMBEDDED_SERVICE_INSTANCE_PORT}
       - SPRING_DATA_MONGODB_URI=${EMBEDDED_MONGODB_URI}
+      - MQTT_BROKER_HOST=${MQTT_BROKER_HOST}
+      - MQTT_BROKER_PORT=${MQTT_BROKER_PORT}
+      - MQTT_BROKER_PROTOCOL=${MQTT_BROKER_PROTOCOL}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
@@ -466,6 +471,34 @@ services:
       start_period: 30s
 
   ########################
+  # MQTT BROKER
+  ########################
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: ${MQTT_BROKER_HOST}
+    ports:
+      - "${MQTT_BROKER_PORT}:1883"
+    environment:
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        rm -f /mosquitto/config/passwordfile
+        mosquitto_passwd -b -c /mosquitto/config/passwordfile "$$MQTT_USERNAME" "$$MQTT_PASSWORD"
+        chown mosquitto:mosquitto /mosquitto/config/passwordfile
+        chmod 640 /mosquitto/config/passwordfile
+        exec mosquitto -c /mosquitto/config/mosquitto.conf
+    volumes:
+      - ./infrastructure/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    networks:
+      - smartgym-net
+    restart: unless-stopped
+
+  ########################
   # GO SIMULATOR
   ########################
   simulator:
@@ -478,11 +511,14 @@ services:
     depends_on:
       gateway:
         condition: service_healthy
+      mosquitto:
+        condition: service_started
     networks:
       - smartgym-net
     environment:
       - MQTT_BROKER_HOST=${MQTT_BROKER_HOST}
       - MQTT_BROKER_PORT=${MQTT_BROKER_PORT}
+      - MQTT_BROKER_PROTOCOL=${MQTT_BROKER_PROTOCOL}
       - MQTT_USERNAME=${MQTT_USERNAME}
       - MQTT_PASSWORD=${MQTT_PASSWORD}
       - MQTT_TOPIC=${MQTT_TOPIC}
@@ -530,6 +566,8 @@ volumes:
   mongo-machine-data:
   mongo-tracking-data:
   mongo-embedded-data:
+  mosquitto-data:
+  mosquitto-log:
 
 networks:
   smartgym-net:

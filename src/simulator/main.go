@@ -30,21 +30,30 @@ func getEnvOrDefault(key string, fallback string) string {
 }
 
 func main() {
-	mqttHost := getEnvOrDefault("MQTT_BROKER_HOST", "e30656ac89584a55aaed5759c47e363e.s1.eu.hivemq.cloud")
-	mqttPort := getEnvOrDefault("MQTT_BROKER_PORT", "8883")
-	mqttUsername := getEnvOrDefault("MQTT_USERNAME", "SmartGym-Monitor")
-	mqttPassword := getEnvOrDefault("MQTT_PASSWORD", "SmartGym-Monitor1")
+	mqttHost := getEnvOrDefault("MQTT_BROKER_HOST", "mosquitto")
+	mqttPort := getEnvOrDefault("MQTT_BROKER_PORT", "1883")
+	mqttProtocol := getEnvOrDefault("MQTT_BROKER_PROTOCOL", "tcp")
+	mqttUsername := os.Getenv("MQTT_USERNAME")
+	mqttPassword := os.Getenv("MQTT_PASSWORD")
 	mqttTopic := getEnvOrDefault("MQTT_TOPIC", "smartgym/embedded/machine-sensor")
 
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tls://%s:%s", mqttHost, mqttPort))
+	brokerURL := fmt.Sprintf("%s://%s:%s", mqttProtocol, mqttHost, mqttPort)
+	opts.AddBroker(brokerURL)
 	opts.SetClientID("simulator")
-	opts.SetUsername(mqttUsername)
-	opts.SetPassword(mqttPassword)
 
-	opts.SetTLSConfig(&tls.Config{
-		MinVersion: tls.VersionTLS12,
-	})
+	if mqttUsername != "" {
+		opts.SetUsername(mqttUsername)
+	}
+	if mqttPassword != "" {
+		opts.SetPassword(mqttPassword)
+	}
+
+	if mqttProtocol == "tls" || mqttProtocol == "ssl" {
+		opts.SetTLSConfig(&tls.Config{
+			MinVersion: tls.VersionTLS12,
+		})
+	}
 
 	client := mqtt.NewClient(opts)
 
@@ -52,7 +61,7 @@ func main() {
 		log.Fatal(token.Error())
 	}
 
-	fmt.Println("Connected to HiveMQ")
+	fmt.Println("Connected to MQTT broker:", brokerURL)
 
 	for {
 		msg := MachineSensor{

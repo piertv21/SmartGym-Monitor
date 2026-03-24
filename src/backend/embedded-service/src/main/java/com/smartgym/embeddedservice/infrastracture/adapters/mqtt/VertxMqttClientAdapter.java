@@ -20,11 +20,19 @@ public class VertxMqttClientAdapter extends AbstractVerticle {
     @Override
     public void start() {
 
+        boolean useSsl = "tls".equalsIgnoreCase(MqttConfig.BROKER_PROTOCOL)
+                || "ssl".equalsIgnoreCase(MqttConfig.BROKER_PROTOCOL);
+
         MqttClientOptions options = new MqttClientOptions()
-                .setSsl(true)
-                .setTrustAll(true)
-                .setUsername(MqttConfig.MQTT_USERNAME)
-                .setPassword(MqttConfig.MQTT_PASSWORD);
+                .setSsl(useSsl)
+                .setTrustAll(useSsl);
+
+        if (!MqttConfig.MQTT_USERNAME.isBlank()) {
+            options.setUsername(MqttConfig.MQTT_USERNAME);
+        }
+        if (!MqttConfig.MQTT_PASSWORD.isBlank()) {
+            options.setPassword(MqttConfig.MQTT_PASSWORD);
+        }
 
         MqttClient client = MqttClient.create(vertx, options);
         ObjectMapper mapper = new ObjectMapper();
@@ -33,7 +41,7 @@ public class VertxMqttClientAdapter extends AbstractVerticle {
             if (c.succeeded()) {
                 System.out.println("✅ Connected to MQTT broker");
                 clientInstance = client;
-                client.subscribe("parking/sensor/#", 1);
+                client.subscribe(MqttConfig.TOPIC_SUBSCRIBE, 1);
             } else {
                 System.err.println("❌ MQTT connection failed: " + c.cause().getMessage());
             }
