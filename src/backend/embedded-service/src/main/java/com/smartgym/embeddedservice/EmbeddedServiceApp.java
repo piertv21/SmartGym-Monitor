@@ -5,7 +5,7 @@ import com.smartgym.embeddedservice.application.EmbeddedServiceApiImpl;
 import com.smartgym.embeddedservice.application.MqttManager;
 import com.smartgym.embeddedservice.application.ports.EmbeddedRepository;
 import com.smartgym.embeddedservice.application.ports.EmbeddedServiceAPI;
-import com.smartgym.embeddedservice.infrastracture.persistence.EmbeddedRepositoryImpl;
+import com.smartgym.embeddedservice.infrastructure.persistence.EmbeddedRepositoryImpl;
 
 import io.vertx.core.Vertx;
 import jakarta.annotation.PostConstruct;
