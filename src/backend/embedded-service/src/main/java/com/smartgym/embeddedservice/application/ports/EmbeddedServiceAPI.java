@@ -1,30 +1,28 @@
 package com.smartgym.embeddedservice.application.ports;
 
-import com.smartgym.embeddedservice.model.TicketMessage;
+import com.smartgym.embeddedservice.model.AreaAccessMessage;
+import com.smartgym.embeddedservice.model.DeviceStatusMessage;
+import com.smartgym.embeddedservice.model.GymAccessMessage;
+import com.smartgym.embeddedservice.model.MachineUsageMessage;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 public interface EmbeddedServiceAPI {
 
-    CompletableFuture<JsonObject> registerEvent(String eventType, JsonObject payload);
+    CompletableFuture<Void> processGymAccess(GymAccessMessage message);
 
-    CompletableFuture<Optional<JsonObject>> getEventById(String id);
+    CompletableFuture<Void> processAreaAccess(AreaAccessMessage message);
 
-    CompletableFuture<JsonArray> getAllEventsByType(String eventType);
+    CompletableFuture<Void> processMachineUsage(MachineUsageMessage message);
 
-    CompletableFuture<JsonArray> getAllEventsByDevice(String deviceId);
-
-    CompletableFuture<Void> deleteEvent(String id);
+    CompletableFuture<Void> processDeviceStatus(DeviceStatusMessage message);
 
     CompletableFuture<JsonArray> getAllEvents();
 
-    CompletableFuture<TicketMessage> saveNfcPendingPayment(TicketMessage ticketMessage);
+    CompletableFuture<JsonArray> getAllEventsByType(String eventType);
 
-    CompletableFuture<JsonObject> getPendingPayment();
-
-    CompletableFuture<JsonObject> deletePendingPayment();
+    CompletableFuture<Optional<JsonObject>> getEventById(String eventId);
 }
