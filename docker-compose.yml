@@ -472,12 +472,20 @@ services:
     build:
       context: ./src/simulator
       dockerfile: Dockerfile
+    env_file:
+      - .env
     container_name: smartgym-simulator
     depends_on:
       gateway:
         condition: service_healthy
     networks:
       - smartgym-net
+    environment:
+      - MQTT_BROKER_HOST=${MQTT_BROKER_HOST}
+      - MQTT_BROKER_PORT=${MQTT_BROKER_PORT}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - MQTT_TOPIC=${MQTT_TOPIC}
     restart: unless-stopped
 
   #####################
