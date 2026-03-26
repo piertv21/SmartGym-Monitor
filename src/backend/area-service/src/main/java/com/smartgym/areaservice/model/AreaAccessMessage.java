@@ -90,4 +90,24 @@ public class AreaAccessMessage {
                 ", direction='" + direction + '\'' +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || getClass() != object.getClass()) return false;
+        if (!super.equals(object)) return false;
+
+        AreaAccessMessage that = (AreaAccessMessage) object;
+        return deviceId.equals(that.deviceId) && timeStamp.equals(that.timeStamp) && badgeId.equals(that.badgeId) && areaId.equals(that.areaId) && direction.equals(that.direction);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + deviceId.hashCode();
+        result = 31 * result + timeStamp.hashCode();
+        result = 31 * result + badgeId.hashCode();
+        result = 31 * result + areaId.hashCode();
+        result = 31 * result + direction.hashCode();
+        return result;
+    }
 }

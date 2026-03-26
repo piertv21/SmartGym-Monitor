@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Port per comunicare con Dummy-Service
  */
-public interface DummyServicePort {
+public interface DummyServiceAdapter {
 
 
 }

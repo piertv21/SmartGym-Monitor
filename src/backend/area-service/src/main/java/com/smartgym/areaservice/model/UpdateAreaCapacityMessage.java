@@ -43,4 +43,21 @@ public class UpdateAreaCapacityMessage {
                 ", capacity=" + capacity +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || getClass() != object.getClass()) return false;
+        if (!super.equals(object)) return false;
+
+        UpdateAreaCapacityMessage that = (UpdateAreaCapacityMessage) object;
+        return areaId.equals(that.areaId) && capacity.equals(that.capacity);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + areaId.hashCode();
+        result = 31 * result + capacity.hashCode();
+        return result;
+    }
 }
