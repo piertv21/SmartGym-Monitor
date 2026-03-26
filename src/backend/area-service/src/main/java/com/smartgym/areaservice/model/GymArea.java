@@ -1,86 +1,105 @@
 package com.smartgym.areaservice.model;
 
-import java.util.Objects;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+@Document(collection = "gym_areas")
 public class GymArea {
 
-    private final String areaId;
-    private final String name;
-    private final AreaType type;
-    private int capacity;
-    private int currentCount;
+    @Id
+    private String id;
 
-    public GymArea(String areaId, String name, AreaType type, int capacity) {
-        this(areaId, name, type, capacity, 0);
+    private String name;
+    private AreaType areaType;
+    private Integer capacity;
+    private Integer currentCount;
+
+    public GymArea() {
     }
 
-    public GymArea(String areaId, String name, AreaType type, int capacity, int currentCount) {
-        this.areaId = requireNotBlank(areaId, "areaId");
-        this.name = requireNotBlank(name, "name");
-        this.type = Objects.requireNonNull(type, "type cannot be null");
-        if (capacity <= 0) {
-            throw new IllegalArgumentException("capacity must be > 0");
-        }
-        if (currentCount < 0 || currentCount > capacity) {
-            throw new IllegalArgumentException("currentCount must be between 0 and capacity");
-        }
+    public GymArea(String id, String name, AreaType areaType, Integer capacity, Integer currentCount) {
+        this.id = id;
+        this.name = name;
+        this.areaType = areaType;
         this.capacity = capacity;
         this.currentCount = currentCount;
     }
 
-    public String getAreaId() {
-        return areaId;
+    public String getId() {
+        return id;
     }
 
     public String getName() {
         return name;
     }
 
-    public AreaType getType() {
-        return type;
+    public AreaType getAreaType() {
+        return areaType;
     }
 
-    public int getCapacity() {
+    public Integer getCapacity() {
         return capacity;
     }
 
-    public int getCurrentCount() {
+    public Integer getCurrentCount() {
         return currentCount;
     }
 
-    public void enterMember() {
-        if (isAtCapacity()) {
-            throw new IllegalStateException("area capacity reached for areaId=" + areaId);
-        }
-        currentCount++;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public void exitMember() {
-        if (currentCount == 0) {
-            throw new IllegalStateException("currentCount cannot be negative for areaId=" + areaId);
-        }
-        currentCount--;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void updateCapacity(int newCapacity) {
-        if (newCapacity <= 0) {
-            throw new IllegalArgumentException("newCapacity must be > 0");
-        }
-        if (newCapacity < currentCount) {
-            throw new IllegalArgumentException("newCapacity cannot be lower than currentCount");
-        }
-        capacity = newCapacity;
+    public void setAreaType(AreaType areaType) {
+        this.areaType = areaType;
     }
 
-    public boolean isAtCapacity() {
-        return currentCount >= capacity;
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
     }
 
-    private static String requireNotBlank(String value, String field) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(field + " cannot be blank");
+    public void setCurrentCount(Integer currentCount) {
+        this.currentCount = currentCount;
+    }
+
+    public void incrementCount() {
+        if (this.currentCount == null) {
+            this.currentCount = 0;
         }
-        return value;
+        if (this.capacity != null && this.currentCount >= this.capacity) {
+            throw new IllegalStateException("Area capacity exceeded");
+        }
+        this.currentCount++;
+    }
+
+    public void decrementCount() {
+        if (this.currentCount == null || this.currentCount <= 0) {
+            throw new IllegalStateException("Area count cannot be negative");
+        }
+        this.currentCount--;
+    }
+
+    public void updateCapacity(Integer newCapacity) {
+        if (newCapacity == null || newCapacity < 0) {
+            throw new IllegalArgumentException("Capacity must be greater than or equal to zero");
+        }
+        if (this.currentCount != null && newCapacity < this.currentCount) {
+            throw new IllegalArgumentException("New capacity cannot be lower than current count");
+        }
+        this.capacity = newCapacity;
+    }
+
+    @Override
+    public String toString() {
+        return "GymArea{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", areaType=" + areaType +
+                ", capacity=" + capacity +
+                ", currentCount=" + currentCount +
+                '}';
     }
 }
-

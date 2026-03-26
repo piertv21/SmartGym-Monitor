@@ -1,6 +1,9 @@
 package com.smartgym.areaservice;
 
 import com.mongodb.client.MongoClient;
+import com.smartgym.areaservice.application.AreaServiceAPIImpl;
+import com.smartgym.areaservice.application.ports.AreaRepository;
+import com.smartgym.areaservice.application.ports.AreaServiceAPI;
 import com.smartgym.areaservice.application.ports.DummyServicePort;
 import com.smartgym.areaservice.infrastructure.adapters.DummyServiceAdapter;
 import com.smartgym.areaservice.infrastructure.persistence.AreaRepositoryImpl;
@@ -35,20 +38,25 @@ public class AreaServiceApp {
     @Bean
     public AreaRepositoryImpl areaRepository(MongoClient mongoClient) {
 
-        logger.info("🔧 Initializing AreaRepository with database: {}", databaseName);
+        logger.info("Initializing AreaRepository with database: {}", databaseName);
         return new AreaRepositoryImpl(mongoClient);
     }
 
     @Bean
+    public AreaServiceAPI areaServiceAPI(AreaRepository areaRepository) {
+        logger.info("Initializing AreaServiceAPI");
+        return new AreaServiceAPIImpl(areaRepository);
+    }
+
+    @Bean
     public DummyServicePort dummyServicePort() {
-        logger.info("🔧 Initializing DummyServiceAdapter");
+        logger.info("Initializing DummyServiceAdapter");
         return new DummyServiceAdapter();
     }
 
     public static void main(String[] args) {
-        logger.info("🚀 Starting Area Service...");
+        logger.info("Starting Area Service...");
         SpringApplication.run(AreaServiceApp.class, args);
         logger.info("✅ Area Service started successfully!");
     }
 }
-
