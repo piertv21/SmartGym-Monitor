@@ -55,6 +55,8 @@ services:
       - EUREKA_INSTANCE_PORT=${API_GATEWAY_INSTANCE_PORT}
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
+      - GATEWAY_CLIENT_ID=${GATEWAY_CLIENT_ID}
+      - GATEWAY_CLIENT_SECRET=${GATEWAY_CLIENT_SECRET}
     networks:
       - smartgym-net
     healthcheck:
@@ -458,6 +460,8 @@ services:
     environment:
       - AUTH_SERVICE_BASE_URL=${AUTH_SERVICE_BASE_URL}
       - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      - GATEWAY_CLIENT_ID=${GATEWAY_CLIENT_ID}
+      - GATEWAY_CLIENT_SECRET=${GATEWAY_CLIENT_SECRET}
     networks:
       - smartgym-net
     healthcheck:
