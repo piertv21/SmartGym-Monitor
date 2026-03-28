@@ -5,7 +5,6 @@ public enum AreaType {
     CARDIO,
     WEIGHT,
     CLASS,
-    MACHINE,
-    CHANGING
+    MACHINE
 }
 

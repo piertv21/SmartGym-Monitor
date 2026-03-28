@@ -12,9 +12,21 @@ public class Machine {
     }
 
     public Machine(String machineId, String areaId, OccupancyStatus status) {
+        this(machineId, areaId, status, null);
+    }
+
+    public Machine(String machineId, String areaId, OccupancyStatus status, String activeSessionId) {
         this.machineId = requireNotBlank(machineId, "machineId");
         this.areaId = requireNotBlank(areaId, "areaId");
         this.status = status == null ? OccupancyStatus.FREE : status;
+        this.activeSessionId = normalizeBlank(activeSessionId);
+
+        if (this.status == OccupancyStatus.OCCUPIED && this.activeSessionId == null) {
+            throw new IllegalArgumentException("activeSessionId is required when machine is occupied");
+        }
+        if (this.status != OccupancyStatus.OCCUPIED && this.activeSessionId != null) {
+            throw new IllegalArgumentException("activeSessionId must be null when machine is not occupied");
+        }
     }
 
     public String getMachineId() {
@@ -65,6 +77,13 @@ public class Machine {
             throw new IllegalStateException("machine is not in maintenance: " + machineId);
         }
         this.status = OccupancyStatus.FREE;
+    }
+
+    private static String normalizeBlank(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value;
     }
 
     private static String requireNotBlank(String value, String field) {

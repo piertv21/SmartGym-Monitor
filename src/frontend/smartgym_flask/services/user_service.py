@@ -29,7 +29,7 @@ class UserService:
     def generate_gateway_token(self) -> str:
         response = requests.post(
             f"{self.gateway_base_url}/auth/generate",
-            params={
+            json={
                 "clientId": self.gateway_client_id,
                 "clientSecret": self.gateway_client_secret,
             },
@@ -64,4 +64,3 @@ class UserService:
             return response.status_code == 200
         except requests.RequestException:
             return None
-

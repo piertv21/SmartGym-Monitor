@@ -25,8 +25,9 @@ def _ensure_gateway_token() -> str | None:
 @auth_bp.get("/login")
 def login():
     _ensure_gateway_token()
+    if session.get("user"):
+        return redirect(url_for("dashboard.dashboard"))
     return render_template("login.html")
-
 
 @auth_bp.post("/login")
 def login_post():

@@ -1,6 +1,9 @@
 package com.smartgym.machineservice;
 
 import com.mongodb.client.MongoClient;
+import com.smartgym.machineservice.application.MachineServiceAPIImpl;
+import com.smartgym.machineservice.application.ports.MachineRepository;
+import com.smartgym.machineservice.application.ports.MachineServiceAPI;
 import com.smartgym.machineservice.application.ports.DummyServicePort;
 import com.smartgym.machineservice.infrastructure.adapters.DummyServiceAdapter;
 import com.smartgym.machineservice.infrastructure.persistence.MachineRepositoryImpl;
@@ -37,6 +40,12 @@ public class MachineServiceApp {
 
         logger.info("🔧 Initializing MachineRepository with database: {}", databaseName);
         return new MachineRepositoryImpl(mongoClient);
+    }
+
+    @Bean
+    public MachineServiceAPI machineServiceAPI(MachineRepository machineRepository) {
+        logger.info("Initializing MachineServiceAPI");
+        return new MachineServiceAPIImpl(machineRepository);
     }
 
     @Bean
