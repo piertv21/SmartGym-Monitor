@@ -17,6 +17,7 @@ COPY area-service/build.gradle.kts area-service/build.gradle.kts
 COPY machine-service/build.gradle.kts machine-service/build.gradle.kts
 COPY tracking-service/build.gradle.kts tracking-service/build.gradle.kts
 COPY embedded-service/build.gradle.kts embedded-service/build.gradle.kts
+COPY e2e/build.gradle.kts e2e/build.gradle.kts
 
 
 RUN chmod +x gradlew
