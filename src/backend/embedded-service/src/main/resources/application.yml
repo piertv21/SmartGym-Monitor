@@ -34,3 +34,7 @@ management:
   metrics:
     tags:
       application: ${spring.application.name:embedded-service}
+
+area-service:
+  base-url: ${AREA_SERVICE_BASE_URL:http://area-service:8086}
+

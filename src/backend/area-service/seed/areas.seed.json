@@ -1,0 +1,38 @@
+[
+  {
+    "id": "entrance-area",
+    "name": "INGRESSO",
+    "areaType": "ENTRANCE",
+    "capacity": 30,
+    "currentCount": 0
+  },
+  {
+    "id": "weight-area",
+    "name": "AREA PESI",
+    "areaType": "WEIGHT",
+    "capacity": 45,
+    "currentCount": 0
+  },
+  {
+    "id": "machines-area",
+    "name": "AREA MACCHINARI",
+    "areaType": "MACHINE",
+    "capacity": 70,
+    "currentCount": 0
+  },
+  {
+    "id": "cardio-area",
+    "name": "AREA CARDIO",
+    "areaType": "CARDIO",
+    "capacity": 30,
+    "currentCount": 0
+  },
+  {
+    "id": "class-area",
+    "name": "AREA CORSI",
+    "areaType": "CLASS",
+    "capacity": 40,
+    "currentCount": 0
+  }
+]
+
