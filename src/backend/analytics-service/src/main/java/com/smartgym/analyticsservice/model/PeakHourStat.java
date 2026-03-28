@@ -3,6 +3,8 @@ package com.smartgym.analyticsservice.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PeakHourStat {
 
@@ -68,5 +70,17 @@ public class PeakHourStat {
                 ", hour=" + hour +
                 ", attendanceCount=" + attendanceCount +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        PeakHourStat that = (PeakHourStat) o;
+        return Objects.equals(id, that.id) && Objects.equals(date, that.date) && Objects.equals(hour, that.hour) && Objects.equals(attendanceCount, that.attendanceCount);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, date, hour, attendanceCount);
     }
 }

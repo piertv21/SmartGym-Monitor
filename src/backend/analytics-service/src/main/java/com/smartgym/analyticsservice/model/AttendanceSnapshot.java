@@ -3,6 +3,8 @@ package com.smartgym.analyticsservice.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AttendanceSnapshot {
 
@@ -81,5 +83,17 @@ public class AttendanceSnapshot {
                 ", totalEntries=" + totalEntries +
                 ", totalExits=" + totalExits +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        AttendanceSnapshot that = (AttendanceSnapshot) o;
+        return Objects.equals(id, that.id) && Objects.equals(date, that.date) && Objects.equals(gymCount, that.gymCount) && Objects.equals(totalEntries, that.totalEntries) && Objects.equals(totalExits, that.totalExits);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, date, gymCount, totalEntries, totalExits);
     }
 }
