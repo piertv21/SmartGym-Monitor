@@ -2,6 +2,7 @@ package com.smartgym.embeddedservice.application;
 
 import com.smartgym.embeddedservice.application.ports.EmbeddedRepository;
 import com.smartgym.embeddedservice.application.ports.EmbeddedServiceAPI;
+import com.smartgym.embeddedservice.application.ports.AreaServicePort;
 import com.smartgym.embeddedservice.model.AreaAccessMessage;
 import com.smartgym.embeddedservice.model.DeviceStatusMessage;
 import com.smartgym.embeddedservice.model.GymAccessMessage;
@@ -25,9 +26,11 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
     private static final String DEVICE_STATUS_EVENT = "DEVICE_STATUS";
 
     private final EmbeddedRepository embeddedRepository;
+    private final AreaServicePort areaServicePort;
 
-    public EmbeddedServiceApiImpl(EmbeddedRepository embeddedRepository) {
+    public EmbeddedServiceApiImpl(EmbeddedRepository embeddedRepository, AreaServicePort areaServicePort) {
         this.embeddedRepository = embeddedRepository;
+        this.areaServicePort = areaServicePort;
     }
 
     @Override
@@ -51,7 +54,8 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
         }
 
         JsonObject event = buildAreaAccessEvent(message);
-        return embeddedRepository.saveEvent(event);
+        return areaServicePort.processAreaAccess(message)
+                .thenCompose(ignored -> embeddedRepository.saveEvent(event));
     }
 
     @Override

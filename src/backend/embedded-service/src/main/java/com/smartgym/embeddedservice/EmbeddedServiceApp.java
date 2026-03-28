@@ -3,8 +3,10 @@ package com.smartgym.embeddedservice;
 import com.mongodb.client.MongoClient;
 import com.smartgym.embeddedservice.application.EmbeddedServiceApiImpl;
 import com.smartgym.embeddedservice.application.MqttManager;
+import com.smartgym.embeddedservice.application.ports.AreaServicePort;
 import com.smartgym.embeddedservice.application.ports.EmbeddedRepository;
 import com.smartgym.embeddedservice.application.ports.EmbeddedServiceAPI;
+import com.smartgym.embeddedservice.infrastructure.adapters.http.AreaServiceHttpAdapter;
 import com.smartgym.embeddedservice.infrastructure.persistence.EmbeddedRepositoryImpl;
 
 import io.vertx.core.Vertx;
@@ -62,8 +64,13 @@ public class EmbeddedServiceApp {
     }
 
     @Bean
-    public EmbeddedServiceAPI embeddedServiceAPI(EmbeddedRepository repository) {
-        return new EmbeddedServiceApiImpl(repository);
+    public AreaServicePort areaServicePort(@Value("${area-service.base-url}") String areaServiceBaseUrl) {
+        return new AreaServiceHttpAdapter(areaServiceBaseUrl);
+    }
+
+    @Bean
+    public EmbeddedServiceAPI embeddedServiceAPI(EmbeddedRepository repository, AreaServicePort areaServicePort) {
+        return new EmbeddedServiceApiImpl(repository, areaServicePort);
     }
 
     @Bean

@@ -209,6 +209,8 @@ services:
         condition: service_healthy
       mongo-area:
         condition: service_healthy
+      mongo-area-seed:
+        condition: service_completed_successfully
     environment:
       - SERVICE_NAME=area-service
       - SERVICE_PORT=${AREA_SERVICE_INSTANCE_PORT}
@@ -250,6 +252,24 @@ services:
       timeout: 10s
       retries: 5
       start_period: 20s
+
+  mongo-area-seed:
+    image: mongo:7
+    container_name: mongo-area-seed
+    depends_on:
+      mongo-area:
+        condition: service_healthy
+    command:
+      [
+        "sh",
+        "-c",
+        "mongoimport --host mongo-area --port ${AREA_MONGODB_PORT} --db areaservicedb --collection areaservicedbcollection --jsonArray --file /seed/areas.seed.json --mode upsert --upsertFields id",
+      ]
+    volumes:
+      - ./src/backend/area-service/seed/areas.seed.json:/seed/areas.seed.json:ro
+    networks:
+      - smartgym-net
+    restart: "no"
 
   ########################
   # MACHINE SERVICE
@@ -402,6 +422,7 @@ services:
       - MQTT_USERNAME=${MQTT_USERNAME}
       - MQTT_PASSWORD=${MQTT_PASSWORD}
       - MQTT_TOPIC=${MQTT_TOPIC}
+      - AREA_SERVICE_BASE_URL=http://area-service:${AREA_SERVICE_INSTANCE_PORT} #SERVE PER L'ADAPTER ESTERNO!
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
