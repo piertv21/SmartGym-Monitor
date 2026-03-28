@@ -1,12 +1,14 @@
 package com.smartgym.machineservice.application.ports;
 
+import com.smartgym.machineservice.model.ConfigureMachineMessage;
+import com.smartgym.machineservice.model.EndMachineSessionMessage;
+import com.smartgym.machineservice.model.SetMachineMaintenanceMessage;
+import com.smartgym.machineservice.model.StartMachineSessionMessage;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -15,5 +17,18 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface MachineRestController {
 
+	CompletableFuture<ResponseEntity<?>> createMachine(@RequestBody ConfigureMachineMessage message);
+
+	CompletableFuture<ResponseEntity<?>> updateMachine(@PathVariable String machineId, @RequestBody ConfigureMachineMessage message);
+
+	CompletableFuture<ResponseEntity<?>> startMachineSession(@RequestBody StartMachineSessionMessage message);
+
+	CompletableFuture<ResponseEntity<?>> endMachineSession(@RequestBody EndMachineSessionMessage message);
+
+	CompletableFuture<ResponseEntity<?>> setMachineMaintenance(@RequestBody SetMachineMaintenanceMessage message);
+
+	CompletableFuture<ResponseEntity<?>> getMachineStatus(@PathVariable String machineId);
+
+	CompletableFuture<ResponseEntity<?>> getMachineHistory(@PathVariable String machineId);
 
 }

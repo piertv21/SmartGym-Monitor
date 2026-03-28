@@ -11,6 +11,10 @@ public class MachineSession {
     private LocalDateTime endTime;
 
     public MachineSession(String sessionId, String machineId, String badgeId, LocalDateTime startTime) {
+        this(sessionId, machineId, badgeId, startTime, null);
+    }
+
+    public MachineSession(String sessionId, String machineId, String badgeId, LocalDateTime startTime, LocalDateTime endTime) {
         this.sessionId = requireNotBlank(sessionId, "sessionId");
         this.machineId = requireNotBlank(machineId, "machineId");
         this.badgeId = requireNotBlank(badgeId, "badgeId");
@@ -18,6 +22,10 @@ public class MachineSession {
             throw new IllegalArgumentException("startTime cannot be null");
         }
         this.startTime = startTime;
+        if (endTime != null && endTime.isBefore(startTime)) {
+            throw new IllegalArgumentException("endTime cannot be before startTime");
+        }
+        this.endTime = endTime;
     }
 
     public String getSessionId() {
