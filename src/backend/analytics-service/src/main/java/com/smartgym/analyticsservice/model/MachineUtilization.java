@@ -3,6 +3,8 @@ package com.smartgym.analyticsservice.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MachineUtilization {
 
@@ -99,5 +101,17 @@ public class MachineUtilization {
                 ", totalUsageMinutes=" + totalUsageMinutes +
                 ", utilizationRate=" + utilizationRate +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        MachineUtilization that = (MachineUtilization) o;
+        return Objects.equals(id, that.id) && Objects.equals(machineId, that.machineId) && Objects.equals(date, that.date) && Objects.equals(usageCount, that.usageCount) && Objects.equals(totalUsageMinutes, that.totalUsageMinutes) && Objects.equals(utilizationRate, that.utilizationRate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, machineId, date, usageCount, totalUsageMinutes, utilizationRate);
     }
 }
