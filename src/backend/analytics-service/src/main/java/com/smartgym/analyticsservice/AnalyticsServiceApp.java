@@ -1,6 +1,8 @@
 package com.smartgym.analyticsservice;
 
 import com.mongodb.client.MongoClient;
+import com.smartgym.analyticsservice.application.AnalyticsServiceAPIImpl;
+import com.smartgym.analyticsservice.application.ports.AnalyticsServiceAPI;
 import com.smartgym.analyticsservice.application.ports.DummyServicePort;
 import com.smartgym.analyticsservice.infrastructure.adapters.DummyServiceAdapter;
 import com.smartgym.analyticsservice.infrastructure.persistence.AnalyticsRepositoryImpl;
@@ -40,6 +42,12 @@ public class AnalyticsServiceApp {
 
         logger.info("🔧 Initializing AnalyticsRepository with database: {}", databaseName);
         return new AnalyticsRepositoryImpl(mongoClient);
+    }
+
+    @Bean
+    public AnalyticsServiceAPI analyticsServiceAPI(AnalyticsRepositoryImpl analyticsRepository) {
+        logger.info("Initializing AnalyticsServiceAPI");
+        return new AnalyticsServiceAPIImpl(analyticsRepository);
     }
 
     @Bean

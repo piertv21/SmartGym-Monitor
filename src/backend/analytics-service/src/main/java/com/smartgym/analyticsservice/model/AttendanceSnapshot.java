@@ -1,48 +1,85 @@
 package com.smartgym.analyticsservice.model;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AttendanceSnapshot {
 
-    private final LocalDate date;
-    private final int gymCount;
-    private final Map<String, Integer> areaCountByAreaId;
-    private final LocalDateTime generatedAt;
+    @JsonProperty("id")
+    private String id;
 
-    public AttendanceSnapshot(LocalDate date, int gymCount, Map<String, Integer> areaCountByAreaId, LocalDateTime generatedAt) {
-        if (date == null) {
-            throw new IllegalArgumentException("date cannot be null");
-        }
-        if (gymCount < 0) {
-            throw new IllegalArgumentException("gymCount cannot be negative");
-        }
-        if (generatedAt == null) {
-            throw new IllegalArgumentException("generatedAt cannot be null");
-        }
-        this.date = date;
-        this.gymCount = gymCount;
-        this.areaCountByAreaId = areaCountByAreaId == null ? Collections.emptyMap() : new HashMap<>(areaCountByAreaId);
-        this.generatedAt = generatedAt;
+    @JsonProperty("date")
+    private String date;
+
+    @JsonProperty("gymCount")
+    private Integer gymCount;
+
+    @JsonProperty("totalEntries")
+    private Integer totalEntries;
+
+    @JsonProperty("totalExits")
+    private Integer totalExits;
+
+    public AttendanceSnapshot() {
     }
 
-    public LocalDate getDate() {
+    public AttendanceSnapshot(String id, String date, Integer gymCount, Integer totalEntries, Integer totalExits) {
+        this.id = id;
+        this.date = date;
+        this.gymCount = gymCount;
+        this.totalEntries = totalEntries;
+        this.totalExits = totalExits;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getDate() {
         return date;
     }
 
-    public int getGymCount() {
+    public Integer getGymCount() {
         return gymCount;
     }
 
-    public Map<String, Integer> getAreaCountByAreaId() {
-        return Collections.unmodifiableMap(areaCountByAreaId);
+    public Integer getTotalEntries() {
+        return totalEntries;
     }
 
-    public LocalDateTime getGeneratedAt() {
-        return generatedAt;
+    public Integer getTotalExits() {
+        return totalExits;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public void setGymCount(Integer gymCount) {
+        this.gymCount = gymCount;
+    }
+
+    public void setTotalEntries(Integer totalEntries) {
+        this.totalEntries = totalEntries;
+    }
+
+    public void setTotalExits(Integer totalExits) {
+        this.totalExits = totalExits;
+    }
+
+    @Override
+    public String toString() {
+        return "AttendanceSnapshot{" +
+                "id='" + id + '\'' +
+                ", date='" + date + '\'' +
+                ", gymCount=" + gymCount +
+                ", totalEntries=" + totalEntries +
+                ", totalExits=" + totalExits +
+                '}';
     }
 }
-
