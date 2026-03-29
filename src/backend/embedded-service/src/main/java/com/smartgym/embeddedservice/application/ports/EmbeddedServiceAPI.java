@@ -16,6 +16,8 @@ public interface EmbeddedServiceAPI {
 
     CompletableFuture<Void> processAreaAccess(AreaAccessMessage message);
 
+    CompletableFuture<Void> processAreaExit(AreaAccessMessage message);
+
     CompletableFuture<Void> processMachineUsage(MachineUsageMessage message);
 
     CompletableFuture<Void> processDeviceStatus(DeviceStatusMessage message);

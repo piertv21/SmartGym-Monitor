@@ -12,6 +12,8 @@ public interface AreaServiceAPI {
 
     CompletableFuture<Void> processAreaAccess(AreaAccessMessage message);
 
+    CompletableFuture<Void> processAreaExit(AreaAccessMessage message);
+
     CompletableFuture<Optional<GymArea>> getAreaById(String areaId);
 
     CompletableFuture<List<GymArea>> getAllAreas();

@@ -35,6 +35,20 @@ public class AreaRestControllerImpl implements AreaRestController {
     }
 
     @Override
+    @PostMapping("/exit")
+    public CompletableFuture<ResponseEntity<?>> processAreaExit(@RequestBody AreaAccessMessage message) {
+        return areaServiceAPI.processAreaExit(message)
+                .thenApply(result -> ResponseEntity.ok(
+                        Map.of(
+                                "message", "Area exit processed successfully",
+                                "areaId", message.getAreaId(),
+                                "badgeId", message.getBadgeId(),
+                                "direction", message.getDirection()
+                        )
+                ));
+    }
+
+    @Override
     @GetMapping("/{areaId}")
     public CompletableFuture<ResponseEntity<?>> getAreaById(@PathVariable String areaId) {
         return areaServiceAPI.getAreaById(areaId)

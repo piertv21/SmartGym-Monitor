@@ -61,6 +61,26 @@ public class JUnitAreaServiceTest {
     }
 
     @Test
+    void processAreaExitDecrementsCurrentCount() {
+        GymArea cardio = new GymArea("cardio-area", "Cardio Zone", AreaType.CARDIO, 20, 3);
+        AreaRepository repository = new InMemoryAreaRepository(Map.of("cardio-area", cardio));
+        AreaServiceAPIImpl areaService = new AreaServiceAPIImpl(repository);
+
+        AreaAccessMessage message = new AreaAccessMessage(
+                "reader-cardio-01",
+                "2026-03-26T10:05:00Z",
+                "badge-001",
+                "cardio-area",
+                "OUT"
+        );
+
+        areaService.processAreaExit(message).join();
+
+        GymArea updated = areaService.getAreaById("cardio-area").join().orElseThrow();
+        assertEquals(2, updated.getCurrentCount());
+    }
+
+    @Test
     void processAreaAccessFailsWhenAreaDoesNotExist() {
         AreaRepository repository = new InMemoryAreaRepository(Map.of());
         AreaServiceAPIImpl areaService = new AreaServiceAPIImpl(repository);

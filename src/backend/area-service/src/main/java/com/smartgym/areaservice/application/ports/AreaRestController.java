@@ -10,6 +10,8 @@ public interface AreaRestController {
 
     CompletableFuture<ResponseEntity<?>> processAreaAccess(AreaAccessMessage message);
 
+    CompletableFuture<ResponseEntity<?>> processAreaExit(AreaAccessMessage message);
+
     CompletableFuture<ResponseEntity<?>> getAreaById(String areaId);
 
     CompletableFuture<ResponseEntity<?>> getAllAreas();

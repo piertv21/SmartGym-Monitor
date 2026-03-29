@@ -182,12 +182,42 @@ func maybeEnterGym(client mqtt.Client, baseTopic string, member *GymMember, devi
 	member.InGym = true
 }
 
+func maybeExitArea(client mqtt.Client, baseTopic string, member *GymMember, areas []Area, devices []Device) {
+	if member.CurrentAreaID == "" {
+		return
+	}
+
+	// Find the area and its reader
+	var areaReader string
+	for _, a := range areas {
+		if a.AreaID == member.CurrentAreaID {
+			areaReader = a.ReaderID
+			break
+		}
+	}
+
+	if areaReader == "" || !isDeviceOnline(devices, areaReader) {
+		return
+	}
+
+	msg := AreaAccessMessage{
+		DeviceID:  areaReader,
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		BadgeID:   member.BadgeID,
+		AreaID:    member.CurrentAreaID,
+		Direction: "OUT",
+	}
+
+	publishJSON(client, baseTopic+"/area-access", msg)
+	member.CurrentAreaID = ""
+}
+
 func maybeMoveToArea(client mqtt.Client, baseTopic string, member *GymMember, areas []Area, devices []Device) {
 	if !member.InGym || member.UsingMachineID != "" {
 		return
 	}
 
-	if member.CurrentAreaID == "" {
+	if member.CurrentAreaID == "" && randomBool(0.2) {
 		area := randomChoice(areas)
 
 		if !isDeviceOnline(devices, area.ReaderID) {
@@ -371,6 +401,7 @@ func main() {
 				maybeMoveToArea(client, baseTopic, m, areas, devices)
 				maybeStartMachine(client, baseTopic, m, machines, devices)
 				maybeStopMachine(client, baseTopic, m, machines, devices)
+				maybeExitArea(client, baseTopic, m, areas, devices)
 				maybeExitGym(client, baseTopic, m, devices)
 			}
 

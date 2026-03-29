@@ -39,6 +39,20 @@ public class AreaServiceAPIImpl implements AreaServiceAPI {
     }
 
     @Override
+    public CompletableFuture<Void> processAreaExit(AreaAccessMessage message) {
+        return CompletableFuture.runAsync(() -> {
+            validateAreaAccessMessage(message);
+
+            GymArea area = areaRepository.findAreaById(message.getAreaId()).join()
+                    .orElseThrow(() -> new IllegalArgumentException("Area not found: " + message.getAreaId()));
+
+            area.decrementCount();
+
+            areaRepository.saveArea(area).join();
+        });
+    }
+
+    @Override
     public CompletableFuture<Optional<GymArea>> getAreaById(String areaId) {
         if (isBlank(areaId)) {
             return CompletableFuture.failedFuture(

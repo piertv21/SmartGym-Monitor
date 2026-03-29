@@ -59,6 +59,21 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
     }
 
     @Override
+    public CompletableFuture<Void> processAreaExit(AreaAccessMessage message) {
+        if (message == null
+                || isBlank(message.getDeviceId())
+                || isBlank(message.getBadgeId())
+                || isBlank(message.getAreaId())
+                || isBlank(message.getDirection())) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("Invalid area exit message"));
+        }
+
+        JsonObject event = buildAreaAccessEvent(message);
+        return areaServicePort.processAreaExit(message)
+                .thenCompose(ignored -> embeddedRepository.saveEvent(event));
+    }
+
+    @Override
     public CompletableFuture<Void> processMachineUsage(MachineUsageMessage message) {
         if (message == null
                 || isBlank(message.getDeviceId())

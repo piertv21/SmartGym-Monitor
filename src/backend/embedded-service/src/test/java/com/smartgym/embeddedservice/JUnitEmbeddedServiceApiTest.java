@@ -42,6 +42,27 @@ public class JUnitEmbeddedServiceApiTest {
     }
 
     @Test
+    void processAreaExitCallsAreaServiceThenSavesEvent() {
+        List<String> callOrder = new ArrayList<>();
+        RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
+        RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
+        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(repository, areaServicePort);
+
+        AreaAccessMessage message = new AreaAccessMessage(
+                "reader-01",
+                "2026-03-28T09:00:00Z",
+                "badge-001",
+                "cardio-area",
+                "OUT"
+        );
+
+        service.processAreaExit(message).join();
+
+        assertEquals(List.of("area-service-exit", "embedded-repository"), callOrder);
+        assertEquals(1, repository.savedEvents.size());
+    }
+
+    @Test
     void processAreaAccessFailsValidationAndDoesNotCallDependencies() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
@@ -104,6 +125,15 @@ public class JUnitEmbeddedServiceApiTest {
             }
             return CompletableFuture.completedFuture(null);
         }
+
+        @Override
+        public CompletableFuture<Void> processAreaExit(AreaAccessMessage message) {
+            callOrder.add("area-service-exit");
+            if (fail) {
+                return CompletableFuture.failedFuture(new IllegalStateException("area-service unavailable"));
+            }
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     private static final class RecordingEmbeddedRepository implements EmbeddedRepository {
@@ -138,4 +168,3 @@ public class JUnitEmbeddedServiceApiTest {
         }
     }
 }
-
