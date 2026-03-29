@@ -1,0 +1,179 @@
+[
+  {
+    "machineId": "treadmill-01",
+    "areaId": "cardio-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-treadmill-01"
+  },
+  {
+    "machineId": "treadmill-02",
+    "areaId": "cardio-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-treadmill-02"
+  },
+  {
+    "machineId": "treadmill-03",
+    "areaId": "cardio-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-treadmill-03"
+  },
+  {
+    "machineId": "bike-01",
+    "areaId": "cardio-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-bike-01"
+  },
+  {
+    "machineId": "bike-02",
+    "areaId": "cardio-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-bike-02"
+  },
+  {
+    "machineId": "bike-03",
+    "areaId": "cardio-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-bike-03"
+  },
+  {
+    "machineId": "rower-01",
+    "areaId": "cardio-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-rower-01"
+  },
+  {
+    "machineId": "rower-02",
+    "areaId": "cardio-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-rower-02"
+  },
+  {
+    "machineId": "elliptical-01",
+    "areaId": "cardio-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-elliptical-01"
+  },
+  {
+    "machineId": "elliptical-02",
+    "areaId": "cardio-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-elliptical-02"
+  },
+
+  {
+    "machineId": "benchpress-01",
+    "areaId": "weight-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-benchpress-01"
+  },
+  {
+    "machineId": "benchpress-02",
+    "areaId": "weight-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-benchpress-02"
+  },
+  {
+    "machineId": "legpress-01",
+    "areaId": "weight-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-legpress-01"
+  },
+  {
+    "machineId": "latpulldown-01",
+    "areaId": "weight-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-latpulldown-01"
+  },
+  {
+    "machineId": "shoulderpress-01",
+    "areaId": "weight-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-shoulderpress-01"
+  },
+
+  {
+    "machineId": "cablecross-01",
+    "areaId": "machines-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-cablecross-01"
+  },
+  {
+    "machineId": "cablecross-02",
+    "areaId": "machines-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-cablecross-02"
+  },
+  {
+    "machineId": "smithmachine-01",
+    "areaId": "machines-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-smithmachine-01"
+  },
+  {
+    "machineId": "smithmachine-02",
+    "areaId": "machines-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-smithmachine-02"
+  },
+  {
+    "machineId": "legextension-01",
+    "areaId": "machines-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-legextension-01"
+  },
+  {
+    "machineId": "legcurl-01",
+    "areaId": "machines-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-legcurl-01"
+  },
+  {
+    "machineId": "chestpress-01",
+    "areaId": "machines-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-chestpress-01"
+  },
+  {
+    "machineId": "chestpress-02",
+    "areaId": "machines-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-chestpress-02"
+  },
+  {
+    "machineId": "pecdeck-01",
+    "areaId": "machines-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-pecdeck-01"
+  },
+  {
+    "machineId": "hackmachine-01",
+    "areaId": "machines-area",
+    "status": "FREE",
+    "activeSessionId": null,
+    "sensor": "sensor-hackmachine-01"
+  }
+]
