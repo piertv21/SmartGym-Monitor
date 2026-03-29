@@ -209,8 +209,6 @@ services:
         condition: service_healthy
       mongo-area:
         condition: service_healthy
-      mongo-area-seed:
-        condition: service_completed_successfully
     environment:
       - SERVICE_NAME=area-service
       - SERVICE_PORT=${AREA_SERVICE_INSTANCE_PORT}
@@ -253,20 +251,27 @@ services:
       retries: 5
       start_period: 20s
 
-  mongo-area-seed:
+  mongo-seed:
     image: mongo:7
-    container_name: mongo-area-seed
+    container_name: mongo-seed
     depends_on:
       mongo-area:
+        condition: service_healthy
+      mongo-machine:
+        condition: service_healthy
+      area-service:
+        condition: service_healthy
+      machine-service:
         condition: service_healthy
     command:
       [
         "sh",
         "-c",
-        "mongoimport --host mongo-area --port ${AREA_MONGODB_PORT} --db areaservicedb --collection areaservicedbcollection --jsonArray --file /seed/areas.seed.json --mode upsert --upsertFields id",
+        "mongoimport --host mongo-area --port ${AREA_MONGODB_PORT} --db areaservicedb --collection areaservicedbcollection --jsonArray --file /seed/areas.seed.json --mode upsert --upsertFields id && mongoimport --host mongo-machine --port ${MACHINE_MONGODB_PORT} --db machineservicedb --collection machines --jsonArray --file /seed/machines.seed.json --mode upsert --upsertFields machineId",
       ]
     volumes:
       - ./src/backend/area-service/seed/areas.seed.json:/seed/areas.seed.json:ro
+      - ./src/backend/machine-service/seed/machines.seed.json:/seed/machines.seed.json:ro
     networks:
       - smartgym-net
     restart: "no"
