@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +24,6 @@ import java.util.concurrent.CompletableFuture;
  * Gestisce le richieste HTTP per la generazione e recupero dei report.
  */
 @RestController
-@RequestMapping("/machine-service")
 public class MachineRestControllerImpl implements MachineRestController {
 
     private final MachineServiceAPI machineService;
