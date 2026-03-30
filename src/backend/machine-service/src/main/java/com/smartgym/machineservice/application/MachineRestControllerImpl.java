@@ -41,7 +41,8 @@ public class MachineRestControllerImpl implements MachineRestController {
                                 "message", "Machine created successfully",
                                 "machineId", machine.getMachineId(),
                                 "areaId", machine.getAreaId(),
-                                "status", machine.getStatus().name()
+                                "status", machine.getStatus().name(),
+                                "sensor", machine.getSensor().getId()
                         )
                 ));
     }
@@ -56,7 +57,8 @@ public class MachineRestControllerImpl implements MachineRestController {
                                 "message", "Machine updated successfully",
                                 "machineId", machine.getMachineId(),
                                 "areaId", machine.getAreaId(),
-                                "status", machine.getStatus().name()
+                                "status", machine.getStatus().name(),
+                                "sensor", machine.getSensor().getId()
                         )
                 ));
     }

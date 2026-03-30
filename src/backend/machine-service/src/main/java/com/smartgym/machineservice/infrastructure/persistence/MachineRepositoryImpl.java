@@ -7,6 +7,7 @@ import com.smartgym.machineservice.application.ports.MachineRepository;
 import com.smartgym.machineservice.model.Machine;
 import com.smartgym.machineservice.model.MachineSession;
 import com.smartgym.machineservice.model.OccupancyStatus;
+import com.smartgym.machineservice.model.Sensor;
 import com.mongodb.client.model.Sorts;
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -107,15 +108,18 @@ public class MachineRepositoryImpl implements MachineRepository {
                 .append("machineId", machine.getMachineId())
                 .append("areaId", machine.getAreaId())
                 .append("status", machine.getStatus().name())
-                .append("activeSessionId", machine.getActiveSessionId());
+                .append("activeSessionId", machine.getActiveSessionId())
+                .append("sensor", machine.getSensor() == null ? null : machine.getSensor().getId());
     }
 
     private Machine fromMachineDocument(Document document) {
+        String sensorId = document.getString("sensor");
         return new Machine(
                 document.getString("machineId"),
                 document.getString("areaId"),
                 OccupancyStatus.valueOf(document.getString("status")),
-                document.getString("activeSessionId")
+                document.getString("activeSessionId"),
+                sensorId == null ? null : new Sensor(sensorId)
         );
     }
 
