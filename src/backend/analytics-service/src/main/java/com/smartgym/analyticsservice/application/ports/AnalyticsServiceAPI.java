@@ -1,16 +1,27 @@
 package com.smartgym.analyticsservice.application.ports;
 
+import com.smartgym.analyticsservice.model.AttendanceSnapshot;
+import com.smartgym.analyticsservice.model.MachineUtilization;
+import com.smartgym.analyticsservice.model.PeakHourStat;
+import io.vertx.core.json.JsonObject;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Port per il layer applicativo del microservizio Analytics.
- * Contiene la business logic per la gestione degli analytics
- */
 public interface AnalyticsServiceAPI {
 
+    CompletableFuture<Void> ingestEvent(JsonObject event);
 
+    CompletableFuture<Optional<AttendanceSnapshot>> getAttendanceStats(String date);
+
+    CompletableFuture<List<AttendanceSnapshot>> getAllAttendanceStats();
+
+    CompletableFuture<List<MachineUtilization>> getMachineUtilization();
+
+    CompletableFuture<List<MachineUtilization>> getMachineUtilizationByDate(String date);
+
+    CompletableFuture<List<PeakHourStat>> getPeakHours();
+
+    CompletableFuture<List<PeakHourStat>> getPeakHoursByDate(String date);
 }

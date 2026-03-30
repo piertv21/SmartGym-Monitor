@@ -1,16 +1,30 @@
 package com.smartgym.analyticsservice.application.ports;
 
+import com.smartgym.analyticsservice.model.AttendanceSnapshot;
+import com.smartgym.analyticsservice.model.MachineUtilization;
+import com.smartgym.analyticsservice.model.PeakHourStat;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Port per l'accesso ai dati
- *
- */
 public interface AnalyticsRepository {
 
+    CompletableFuture<Void> saveAttendanceSnapshot(AttendanceSnapshot snapshot);
 
+    CompletableFuture<Optional<AttendanceSnapshot>> findAttendanceByDate(String date);
+
+    CompletableFuture<List<AttendanceSnapshot>> findAllAttendanceSnapshots();
+
+    CompletableFuture<Void> saveMachineUtilization(MachineUtilization machineUtilization);
+
+    CompletableFuture<List<MachineUtilization>> findAllMachineUtilizations();
+
+    CompletableFuture<List<MachineUtilization>> findMachineUtilizationsByDate(String date);
+
+    CompletableFuture<Void> savePeakHourStat(PeakHourStat peakHourStat);
+
+    CompletableFuture<List<PeakHourStat>> findPeakHoursByDate(String date);
+
+    CompletableFuture<List<PeakHourStat>> findAllPeakHours();
 }

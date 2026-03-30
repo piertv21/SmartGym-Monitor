@@ -53,6 +53,10 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_INSTANCE_HOSTNAME=${API_GATEWAY_INSTANCE_HOSTNAME}
       - EUREKA_INSTANCE_PORT=${API_GATEWAY_INSTANCE_PORT}
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+      - GATEWAY_CLIENT_ID=${GATEWAY_CLIENT_ID}
+      - GATEWAY_CLIENT_SECRET=${GATEWAY_CLIENT_SECRET}
     networks:
       - smartgym-net
     healthcheck:
@@ -90,6 +94,8 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
+      - EUREKA_INSTANCE_HOSTNAME=${AUTH_SERVICE_INSTANCE_HOSTNAME}
+      - SERVER_PORT=${AUTH_SERVICE_INSTANCE_PORT}
     networks:
       - smartgym-net
     healthcheck:
@@ -149,6 +155,8 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
+      - EUREKA_INSTANCE_HOSTNAME=${ANALYTICS_SERVICE_INSTANCE_HOSTNAME}
+      - SERVER_PORT=${ANALYTICS_SERVICE_INSTANCE_PORT}
     networks:
       - smartgym-net
     healthcheck:
@@ -208,6 +216,8 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
+      - EUREKA_INSTANCE_HOSTNAME=${AREA_SERVICE_INSTANCE_HOSTNAME}
+      - SERVER_PORT=${AREA_SERVICE_INSTANCE_PORT}
     networks:
       - smartgym-net
     healthcheck:
@@ -241,6 +251,31 @@ services:
       retries: 5
       start_period: 20s
 
+  mongo-seed:
+    image: mongo:7
+    container_name: mongo-seed
+    depends_on:
+      mongo-area:
+        condition: service_healthy
+      mongo-machine:
+        condition: service_healthy
+      area-service:
+        condition: service_healthy
+      machine-service:
+        condition: service_healthy
+    command:
+      [
+        "sh",
+        "-c",
+        "mongoimport --host mongo-area --port ${AREA_MONGODB_PORT} --db areaservicedb --collection areaservicedbcollection --jsonArray --file /seed/areas.seed.json --mode upsert --upsertFields id && mongoimport --host mongo-machine --port ${MACHINE_MONGODB_PORT} --db machineservicedb --collection machines --jsonArray --file /seed/machines.seed.json --mode upsert --upsertFields machineId",
+      ]
+    volumes:
+      - ./src/backend/area-service/seed/areas.seed.json:/seed/areas.seed.json:ro
+      - ./src/backend/machine-service/seed/machines.seed.json:/seed/machines.seed.json:ro
+    networks:
+      - smartgym-net
+    restart: "no"
+
   ########################
   # MACHINE SERVICE
   ########################
@@ -267,6 +302,8 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
+      - EUREKA_INSTANCE_HOSTNAME=${MACHINE_SERVICE_INSTANCE_HOSTNAME}
+      - SERVER_PORT=${MACHINE_SERVICE_INSTANCE_PORT}
     networks:
       - smartgym-net
     healthcheck:
@@ -326,6 +363,8 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
+      - EUREKA_INSTANCE_HOSTNAME=${TRACKING_SERVICE_INSTANCE_HOSTNAME}
+      - SERVER_PORT=${TRACKING_SERVICE_INSTANCE_PORT}
     networks:
       - smartgym-net
     healthcheck:
@@ -382,9 +421,20 @@ services:
       - SERVICE_NAME=embedded-service
       - SERVICE_PORT=${EMBEDDED_SERVICE_INSTANCE_PORT}
       - SPRING_DATA_MONGODB_URI=${EMBEDDED_MONGODB_URI}
+      - MQTT_BROKER_HOST=${MQTT_BROKER_HOST}
+      - MQTT_BROKER_PORT=${MQTT_BROKER_PORT}
+      - MQTT_BROKER_PROTOCOL=${MQTT_BROKER_PROTOCOL}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - MQTT_TOPIC=${MQTT_TOPIC}
+      - AREA_SERVICE_BASE_URL=http://area-service:${AREA_SERVICE_INSTANCE_PORT} #SERVE PER L'ADAPTER ESTERNO!
+      - ANALYTICS_SERVICE_BASE_URL=http://analytics-service:${ANALYTICS_SERVICE_INSTANCE_PORT} #SERVE PER L'ADAPTER ESTERNO!
+      - MACHINE_SERVICE_BASE_URL=http://machine-service:${MACHINE_SERVICE_INSTANCE_PORT} #SERVE PER L'ADAPTER ESTERNO!
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
       - EUREKA_CLIENT_FETCH_REGISTRY=true
+      - EUREKA_INSTANCE_HOSTNAME=${EMBEDDED_SERVICE_INSTANCE_HOSTNAME}
+      - SERVER_PORT=${EMBEDDED_SERVICE_INSTANCE_PORT}
     networks:
       - smartgym-net
     healthcheck:
@@ -431,11 +481,15 @@ services:
     ports:
       - "${FRONTEND_HOST_PORT}:${FRONTEND_CONTAINER_PORT}"
     depends_on:
+      gateway:
+        condition: service_healthy
       auth-service:
         condition: service_healthy
     environment:
       - AUTH_SERVICE_BASE_URL=${AUTH_SERVICE_BASE_URL}
       - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      - GATEWAY_CLIENT_ID=${GATEWAY_CLIENT_ID}
+      - GATEWAY_CLIENT_SECRET=${GATEWAY_CLIENT_SECRET}
     networks:
       - smartgym-net
     healthcheck:
@@ -450,18 +504,57 @@ services:
       start_period: 30s
 
   ########################
+  # MQTT BROKER
+  ########################
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: ${MQTT_BROKER_HOST}
+    ports:
+      - "${MQTT_BROKER_PORT}:1883"
+    environment:
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        rm -f /mosquitto/config/passwordfile
+        mosquitto_passwd -b -c /mosquitto/config/passwordfile "$$MQTT_USERNAME" "$$MQTT_PASSWORD"
+        chown mosquitto:mosquitto /mosquitto/config/passwordfile
+        chmod 640 /mosquitto/config/passwordfile
+        exec mosquitto -c /mosquitto/config/mosquitto.conf
+    volumes:
+      - ./infrastructure/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    networks:
+      - smartgym-net
+    restart: unless-stopped
+
+  ########################
   # GO SIMULATOR
   ########################
   simulator:
     build:
       context: ./src/simulator
       dockerfile: Dockerfile
+    env_file:
+      - .env
     container_name: smartgym-simulator
     depends_on:
       gateway:
         condition: service_healthy
+      mosquitto:
+        condition: service_started
     networks:
       - smartgym-net
+    environment:
+      - MQTT_BROKER_HOST=${MQTT_BROKER_HOST}
+      - MQTT_BROKER_PORT=${MQTT_BROKER_PORT}
+      - MQTT_BROKER_PROTOCOL=${MQTT_BROKER_PROTOCOL}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - MQTT_TOPIC=${MQTT_TOPIC}
     restart: unless-stopped
 
   #####################
@@ -506,6 +599,8 @@ volumes:
   mongo-machine-data:
   mongo-tracking-data:
   mongo-embedded-data:
+  mosquitto-data:
+  mosquitto-log:
 
 networks:
   smartgym-net:

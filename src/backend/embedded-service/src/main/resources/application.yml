@@ -34,3 +34,18 @@ management:
   metrics:
     tags:
       application: ${spring.application.name:embedded-service}
+
+logging:
+  level:
+    com.smartgym: DEBUG
+    org.springframework: INFO
+
+area-service:
+  base-url: ${AREA_SERVICE_BASE_URL:http://area-service:8086}
+
+analytics-service:
+  base-url: ${ANALYTICS_SERVICE_BASE_URL:http://analytics-service:8085}
+
+machine-service:
+  base-url: ${MACHINE_SERVICE_BASE_URL:http://machine-service:8084}
+

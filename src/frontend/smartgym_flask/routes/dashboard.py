@@ -15,10 +15,13 @@ def index():
 @dashboard_bp.get("/dashboard")
 def dashboard():
     username = session.get("user")
+    gateway_token = session.get("gateway_token")
     if not username:
         return redirect(url_for("auth.login"))
+    if not gateway_token:
+        return redirect(url_for("auth.login"))
 
-    user_exists = get_user_service().user_exists(username)
+    user_exists = get_user_service().user_exists(username, gateway_token)
     auth_service_base_url = get_user_service().base_url
 
     return render_template(

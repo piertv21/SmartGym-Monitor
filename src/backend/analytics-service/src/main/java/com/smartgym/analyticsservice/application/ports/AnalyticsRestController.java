@@ -1,19 +1,23 @@
 package com.smartgym.analyticsservice.application.ports;
 
-
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
-import java.time.LocalDate;
-import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Port per il layer REST del microservizio Analytics.
- * Definisce gli endpoint HTTP esposti per la gestione degli analytics
- */
 public interface AnalyticsRestController {
 
+    CompletableFuture<ResponseEntity<?>> ingestEvent(Map<String, Object> event);
 
+    CompletableFuture<ResponseEntity<?>> getAttendanceStats(String date);
+
+    CompletableFuture<ResponseEntity<?>> getAllAttendanceStats();
+
+    CompletableFuture<ResponseEntity<?>> getMachineUtilization();
+
+    CompletableFuture<ResponseEntity<?>> getMachineUtilizationByDate(String date);
+
+    CompletableFuture<ResponseEntity<?>> getPeakHours();
+
+    CompletableFuture<ResponseEntity<?>> getPeakHoursByDate(String date);
 }

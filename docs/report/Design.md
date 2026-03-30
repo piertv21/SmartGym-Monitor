@@ -17,6 +17,8 @@
 | Gym Member | Exit Area          | `exitArea(badgeId, areaId)`               | Registers AreaExited event and decrements area count                   |
 | Gym Member | Use Machine        | `startMachineSession(machineId, badgeId)` | Sets machine status to Occupied and creates MachineSession             |
 | Gym Member | Stop Using Machine | `endMachineSession(machineId)`            | Closes MachineSession and sets machine status to Free                  |
+| Admin      | Create Machine     | `createMachine(machineId, areaId)`        | Creates a machine and associates it to an area                         |
+| Admin      | Update Machine     | `updateMachine(machineId, areaId)`        | Updates machine metadata and area association                          |
 | Admin      | Set Maintenance    | `setMachineMaintenance(machineId)`        | Changes machine state to Maintenance                                   |
 | Admin      | Login              | `authenticateAdmin(credentials)`          | Validates admin credentials                                            |
 
@@ -102,14 +104,14 @@ It is responsible for managing the lifecycle of gym sessions and maintaining the
 > In this section we identify the main operations exposed by each microservice of the SmartGym Monitor system.
 > Operations are derived from the use cases and represent the core commands that drive the behavior of the distributed system.
 
-| Micro-service                  | Operations                                                                                                   | Collaborators                                                                                 |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| **Occupancy Tracking Service** | startGymSession(), endGymSession(), getGymCount(), getActiveGymSessions()                                    | Embedded Service, Area Management Service, Authentication Service                             |
-| **Area Management Service**    | enterArea(), exitArea(), getAreaStatus(), updateAreaCapacity()                                               | Embedded Service, Occupancy Tracking Service, Authentication Service                          |
-| **Machine Management Service** | startMachineSession(), endMachineSession(), setMachineMaintenance(), getMachineStatus(), getMachineHistory() | Embedded Service, Area Management Service, Occupancy Tracking Service, Authentication Service |
-| **Embedded Service**           | publishBadgeScanned(), publishAreaAccess(), publishMachineUsage(), getDeviceStatus()                         | none (event producer)                                                                         |
-| **Analytics Service**          | generateAttendanceReport(), getAttendanceStats(), getMachineUtilization(), getPeakHours()                    | Occupancy Tracking Service, Area Management Service, Machine Management Service               |
-| **Authentication Service**     | login(), logout(), validateToken()                                                                           | none                                                                                          |
+| Micro-service                  | Operations                                                                                                                                     | Collaborators                                                                                 |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Occupancy Tracking Service** | startGymSession(), endGymSession(), getGymCount(), getActiveGymSessions()                                                                      | Embedded Service, Area Management Service, Authentication Service                             |
+| **Area Management Service**    | enterArea(), exitArea(), getAreaStatus(), updateAreaCapacity()                                                                                 | Embedded Service, Occupancy Tracking Service, Authentication Service                          |
+| **Machine Management Service** | createMachine(), updateMachine(), startMachineSession(), endMachineSession(), setMachineMaintenance(), getMachineStatus(), getMachineHistory() | Embedded Service, Area Management Service, Occupancy Tracking Service, Authentication Service |
+| **Embedded Service**           | publishBadgeScanned(), publishAreaAccess(), publishMachineUsage(), getDeviceStatus()                                                           | none (event producer)                                                                         |
+| **Analytics Service**          | generateAttendanceReport(), getAttendanceStats(), getMachineUtilization(), getPeakHours()                                                      | Occupancy Tracking Service, Area Management Service, Machine Management Service               |
+| **Authentication Service**     | login(), logout(), validateToken()                                                                                                             | none                                                                                          |
 
 ## 3.4 API Interface Definition and Identification
 
@@ -154,13 +156,15 @@ This service manages area configuration and area-level occupancy.
 
 This service handles machine lifecycle and machine sessions.
 
-| Endpoint                               | Type | Description                                                     |
-| -------------------------------------- | ---- | --------------------------------------------------------------- |
-| `/machine-service/start-session`       | POST | Starts a MachineSession and sets machine status to Occupied.    |
-| `/machine-service/end-session`         | POST | Ends the active MachineSession and sets machine status to Free. |
-| `/machine-service/set-maintenance`     | POST | Sets machine status to Maintenance (admin operation).           |
-| `/machine-service/{machineId}`         | GET  | Returns the current state of a machine.                         |
-| `/machine-service/history/{machineId}` | GET  | Returns historical usage sessions of a machine.                 |
+| Endpoint                                | Type | Description                                                     |
+| --------------------------------------- | ---- | --------------------------------------------------------------- |
+| `/machine-service/machines`             | POST | Creates a new machine and associates it to an area.             |
+| `/machine-service/machines/{machineId}` | PUT  | Updates machine metadata (e.g. associated area).                |
+| `/machine-service/start-session`        | POST | Starts a MachineSession and sets machine status to Occupied.    |
+| `/machine-service/end-session`          | POST | Ends the active MachineSession and sets machine status to Free. |
+| `/machine-service/set-maintenance`      | POST | Sets machine status to Maintenance (admin operation).           |
+| `/machine-service/{machineId}`          | GET  | Returns the current state of a machine.                         |
+| `/machine-service/history/{machineId}`  | GET  | Returns historical usage sessions of a machine.                 |
 
 ## 3.4.5 Analytics Service
 

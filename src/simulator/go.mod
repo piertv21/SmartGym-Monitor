@@ -1,11 +1,11 @@
 module smartgym-monitor/simulator
 
-go 1.22
+go 1.24.0
 
-require github.com/rs/zerolog v1.34.0
+require github.com/eclipse/paho.mqtt.golang v1.5.1
 
 require (
-	github.com/mattn/go-colorable v0.1.13
-	github.com/mattn/go-isatty v0.0.19
-	golang.org/x/sys v0.12.0
+	github.com/gorilla/websocket v1.5.3 // indirect
+	golang.org/x/net v0.44.0 // indirect
+	golang.org/x/sync v0.17.0 // indirect
 )

@@ -28,9 +28,13 @@ class JUnitGatewayAuthTest {
     @Test @Order(1)
     void testGenerateTokenSuccess() {
 
-        String url = baseUrl + "/auth/generate?clientId=smartgym-client&clientSecret=Smart-Parking";
+        String url = baseUrl + "/auth/generate";
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(Map.of(
+                "clientId", "smartgym-client",
+                "clientSecret", "smartgym-secret"
+        ));
 
-        ResponseEntity<Map> resp = rest.postForEntity(url, null, Map.class);
+        ResponseEntity<Map> resp = rest.postForEntity(url, request, Map.class);
 
         assertEquals(HttpStatus.OK, resp.getStatusCode());
         assertNotNull(resp.getBody());
@@ -44,10 +48,14 @@ class JUnitGatewayAuthTest {
     @Test @Order(2)
     void testGenerateTokenUnauthorized() {
 
-        String url = baseUrl + "/auth/generate?clientId=wrong&clientSecret=wrong";
+        String url = baseUrl + "/auth/generate";
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(Map.of(
+                "clientId", "wrong",
+                "clientSecret", "wrong"
+        ));
 
         try {
-            rest.postForEntity(url, null, String.class);
+            rest.postForEntity(url, request, String.class);
             fail("Expected 401");
         } catch (HttpClientErrorException ex) {
             assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
@@ -70,9 +78,13 @@ class JUnitGatewayAuthTest {
     @Test @Order(4)
     void testProtectedRouteWithValidToken() {
 
-        String url = baseUrl + "/auth/generate?clientId=smartgym-client&clientSecret=Smart-Parking";
+        String url = baseUrl + "/auth/generate";
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(Map.of(
+                "clientId", "smartgym-client",
+                "clientSecret", "smartgym-secret"
+        ));
 
-        ResponseEntity<Map> resp = rest.postForEntity(url, null, Map.class);
+        ResponseEntity<Map> resp = rest.postForEntity(url, request, Map.class);
 
         assertEquals(HttpStatus.OK, resp.getStatusCode());
         assertNotNull(resp.getBody());
@@ -101,12 +113,15 @@ class JUnitGatewayAuthTest {
     @Test @Order(5)
     void testAuthRouteBypassesFilter() {
 
-        String url = baseUrl + "/auth/generate?clientId=smartgym-client&clientSecret=Smart-Parking";
+        String url = baseUrl + "/auth/generate";
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(Map.of(
+                "clientId", "smartgym-client",
+                "clientSecret", "smartgym-secret"
+        ));
 
-        ResponseEntity<Map> resp = rest.postForEntity(url, null, Map.class);
+        ResponseEntity<Map> resp = rest.postForEntity(url, request, Map.class);
 
         assertEquals(HttpStatus.OK, resp.getStatusCode());
         System.out.println("✅ /auth bypassa correttamente il filtro");
     }*/
 }
-

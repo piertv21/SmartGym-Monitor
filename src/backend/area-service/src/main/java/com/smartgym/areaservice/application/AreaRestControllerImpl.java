@@ -2,35 +2,78 @@ package com.smartgym.areaservice.application;
 
 import com.smartgym.areaservice.application.ports.AreaRestController;
 import com.smartgym.areaservice.application.ports.AreaServiceAPI;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
+import com.smartgym.areaservice.model.AreaAccessMessage;
+import com.smartgym.areaservice.model.UpdateAreaCapacityMessage;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Implementazione del REST controller per Area Service.
- * Gestisce le richieste HTTP per la generazione e recupero dei report.
- */
 @RestController
+@RequestMapping("/area-service")
 public class AreaRestControllerImpl implements AreaRestController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AreaRestControllerImpl.class);
+    private final AreaServiceAPI areaServiceAPI;
 
-    private final AreaServiceAPI areaService;
-
-    public AreaRestControllerImpl(AreaServiceAPI areaService) {
-        this.areaService = areaService;
-        logger.info("✅ AreaRestControllerImpl initialized");
+    public AreaRestControllerImpl(AreaServiceAPI areaServiceAPI) {
+        this.areaServiceAPI = areaServiceAPI;
     }
 
+    @Override
+    @PostMapping("/access")
+    public CompletableFuture<ResponseEntity<?>> processAreaAccess(@RequestBody AreaAccessMessage message) {
+        return areaServiceAPI.processAreaAccess(message)
+                .thenApply(result -> ResponseEntity.ok(
+                        Map.of(
+                                "message", "Area access processed successfully",
+                                "areaId", message.getAreaId(),
+                                "badgeId", message.getBadgeId(),
+                                "direction", message.getDirection()
+                        )
+                ));
+    }
 
+    @Override
+    @PostMapping("/exit")
+    public CompletableFuture<ResponseEntity<?>> processAreaExit(@RequestBody AreaAccessMessage message) {
+        return areaServiceAPI.processAreaExit(message)
+                .thenApply(result -> ResponseEntity.ok(
+                        Map.of(
+                                "message", "Area exit processed successfully",
+                                "areaId", message.getAreaId(),
+                                "badgeId", message.getBadgeId(),
+                                "direction", message.getDirection()
+                        )
+                ));
+    }
 
+    @Override
+    @GetMapping("/{areaId}")
+    public CompletableFuture<ResponseEntity<?>> getAreaById(@PathVariable String areaId) {
+        return areaServiceAPI.getAreaById(areaId)
+                .thenApply(areaOpt -> areaOpt
+                        .<ResponseEntity<?>>map(ResponseEntity::ok)
+                        .orElseGet(() -> ResponseEntity.notFound().build()));
+    }
+
+    @Override
+    @GetMapping
+    public CompletableFuture<ResponseEntity<?>> getAllAreas() {
+        return areaServiceAPI.getAllAreas()
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
+    @PutMapping("/capacity")
+    public CompletableFuture<ResponseEntity<?>> updateAreaCapacity(@RequestBody UpdateAreaCapacityMessage message) {
+        return areaServiceAPI.updateAreaCapacity(message)
+                .thenApply(result -> ResponseEntity.ok(
+                        Map.of(
+                                "message", "Area capacity updated successfully",
+                                "areaId", message.getAreaId(),
+                                "capacity", message.getCapacity()
+                        )
+                ));
+    }
 }

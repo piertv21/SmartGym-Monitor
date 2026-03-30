@@ -1,16 +1,22 @@
 package com.smartgym.areaservice.application.ports;
 
+import com.smartgym.areaservice.model.AreaAccessMessage;
+import com.smartgym.areaservice.model.GymArea;
+import com.smartgym.areaservice.model.UpdateAreaCapacityMessage;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Port per il layer applicativo del microservizio Area.
- * Contiene la business logic per la gestione dell'area
- */
 public interface AreaServiceAPI {
 
+    CompletableFuture<Void> processAreaAccess(AreaAccessMessage message);
 
+    CompletableFuture<Void> processAreaExit(AreaAccessMessage message);
+
+    CompletableFuture<Optional<GymArea>> getAreaById(String areaId);
+
+    CompletableFuture<List<GymArea>> getAllAreas();
+
+    CompletableFuture<Void> updateAreaCapacity(UpdateAreaCapacityMessage message);
 }

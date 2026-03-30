@@ -24,6 +24,7 @@ include(
     "auth-service",
     "analytics-service",
     "area-service",
+    "e2e",
     "machine-service",
     "tracking-service",
     "embedded-service",
