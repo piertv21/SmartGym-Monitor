@@ -7,6 +7,7 @@ import com.smartgym.machineservice.model.EndMachineSessionMessage;
 import com.smartgym.machineservice.model.Machine;
 import com.smartgym.machineservice.model.MachineSession;
 import com.smartgym.machineservice.model.OccupancyStatus;
+import com.smartgym.machineservice.model.Sensor;
 import com.smartgym.machineservice.model.SetMachineMaintenanceMessage;
 import com.smartgym.machineservice.model.StartMachineSessionMessage;
 
@@ -39,7 +40,12 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
                         throw new IllegalStateException("Machine already exists: " + existing.getMachineId());
                     });
 
-            Machine machine = new Machine(message.getMachineId(), message.getAreaId(), OccupancyStatus.FREE);
+            Machine machine = new Machine(
+                    message.getMachineId(),
+                    message.getAreaId(),
+                    OccupancyStatus.FREE,
+                    new Sensor(message.getSensor().trim())
+            );
 
             repository.saveMachine(machine).join();
             return machine;
@@ -61,7 +67,8 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
                     existing.getMachineId(),
                     message.getAreaId(),
                     existing.getStatus(),
-                    existing.getActiveSessionId()
+                    existing.getActiveSessionId(),
+                    new Sensor(message.getSensor().trim())
             );
 
             repository.saveMachine(updated).join();
@@ -159,6 +166,9 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
         if (isBlank(message.getAreaId())) {
             throw new IllegalArgumentException("areaId cannot be null or empty");
         }
+        if (isBlank(message.getSensor())) {
+            throw new IllegalArgumentException("sensor cannot be null or empty");
+        }
     }
 
     private void validateUpdateMessage(ConfigureMachineMessage message) {
@@ -167,6 +177,9 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
         }
         if (isBlank(message.getAreaId())) {
             throw new IllegalArgumentException("areaId cannot be null or empty");
+        }
+        if (isBlank(message.getSensor())) {
+            throw new IllegalArgumentException("sensor cannot be null or empty");
         }
     }
 

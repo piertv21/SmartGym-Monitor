@@ -35,11 +35,12 @@ public class JUnitMachineServiceTest {
         MachineRepository repository = new InMemoryMachineRepository();
         MachineServiceAPIImpl service = new MachineServiceAPIImpl(repository);
 
-        Machine machine = service.createMachine(new ConfigureMachineMessage("m-01", "area-cardio")).join();
+        Machine machine = service.createMachine(new ConfigureMachineMessage("m-01", "area-cardio", "sensor-m-01")).join();
 
         assertEquals("m-01", machine.getMachineId());
         assertEquals("area-cardio", machine.getAreaId());
         assertEquals(OccupancyStatus.FREE, machine.getStatus());
+        assertEquals("sensor-m-01", machine.getSensor().getId());
     }
 
     @Test
@@ -50,7 +51,7 @@ public class JUnitMachineServiceTest {
 
         CompletionException ex = assertThrows(
                 CompletionException.class,
-                () -> service.createMachine(new ConfigureMachineMessage("m-01", "area-weights")).join()
+                () -> service.createMachine(new ConfigureMachineMessage("m-01", "area-weights", "sensor-m-02")).join()
         );
 
         assertNotNull(ex.getCause());
@@ -64,11 +65,12 @@ public class JUnitMachineServiceTest {
         MachineServiceAPIImpl service = new MachineServiceAPIImpl(repository);
 
         MachineSession session = service.startMachineSession(new StartMachineSessionMessage("m-01", "badge-01")).join();
-        Machine updated = service.updateMachine("m-01", new ConfigureMachineMessage("m-01", "area-weights")).join();
+        Machine updated = service.updateMachine("m-01", new ConfigureMachineMessage("m-01", "area-weights", "sensor-m-99")).join();
 
         assertEquals("area-weights", updated.getAreaId());
         assertEquals(OccupancyStatus.OCCUPIED, updated.getStatus());
         assertEquals(session.getSessionId(), updated.getActiveSessionId());
+        assertEquals("sensor-m-99", updated.getSensor().getId());
     }
 
     @Test
