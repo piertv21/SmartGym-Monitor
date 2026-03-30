@@ -5,6 +5,7 @@ import com.smartgym.analyticsservice.application.ports.AnalyticsRepository;
 import com.smartgym.analyticsservice.model.AttendanceSnapshot;
 import com.smartgym.analyticsservice.model.MachineUtilization;
 import com.smartgym.analyticsservice.model.PeakHourStat;
+import io.vertx.core.json.JsonObject;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -18,6 +19,108 @@ import java.util.concurrent.CompletionException;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class JUnitAnalyticsServiceTest {
+
+    @Test
+    void ingestGymAccessEntryUpdatesAttendanceAndPeakHours() {
+        AnalyticsRepository repository = new InMemoryAnalyticsRepository(
+                Map.of(),
+                List.of(),
+                List.of()
+        );
+
+        AnalyticsServiceAPIImpl analyticsService = new AnalyticsServiceAPIImpl(repository);
+
+        JsonObject event = new JsonObject()
+                .put("eventType", "GYM_ACCESS")
+                .put("payload", new JsonObject()
+                        .put("timeStamp", "2026-03-26T18:30:00Z")
+                        .put("accessType", "ENTRY")
+                );
+
+        analyticsService.ingestEvent(event).join();
+
+        Optional<AttendanceSnapshot> snapshot = analyticsService.getAttendanceStats("2026-03-26").join();
+        List<PeakHourStat> peakHours = analyticsService.getPeakHoursByDate("2026-03-26").join();
+
+        assertTrue(snapshot.isPresent());
+        assertEquals(1, snapshot.get().getTotalEntries());
+        assertEquals(0, snapshot.get().getTotalExits());
+        assertEquals(1, snapshot.get().getGymCount());
+        assertEquals(1, peakHours.size());
+        assertEquals(18, peakHours.getFirst().getHour());
+        assertEquals(1, peakHours.getFirst().getAttendanceCount());
+    }
+
+    @Test
+    void ingestMachineUsageStartedUpdatesMachineUtilization() {
+        AnalyticsRepository repository = new InMemoryAnalyticsRepository(
+                Map.of(),
+                List.of(),
+                List.of()
+        );
+
+        AnalyticsServiceAPIImpl analyticsService = new AnalyticsServiceAPIImpl(repository);
+
+        JsonObject event = new JsonObject()
+                .put("eventType", "MACHINE_USAGE")
+                .put("payload", new JsonObject()
+                        .put("timeStamp", "2026-03-26T10:15:00Z")
+                        .put("machineId", "treadmill-01")
+                        .put("usageState", "STARTED")
+                );
+
+        analyticsService.ingestEvent(event).join();
+
+        List<MachineUtilization> util = analyticsService.getMachineUtilizationByDate("2026-03-26").join();
+        assertEquals(1, util.size());
+        assertEquals("treadmill-01", util.getFirst().getMachineId());
+        assertEquals(1, util.getFirst().getUsageCount());
+    }
+
+    @Test
+    void ingestGymAccessAcceptsTimestampAlias() {
+        AnalyticsRepository repository = new InMemoryAnalyticsRepository(
+                Map.of(),
+                List.of(),
+                List.of()
+        );
+
+        AnalyticsServiceAPIImpl analyticsService = new AnalyticsServiceAPIImpl(repository);
+
+        JsonObject event = new JsonObject()
+                .put("eventType", "GYM_ACCESS")
+                .put("payload", new JsonObject()
+                        .put("timestamp", "2026-03-26T12:00:00Z")
+                        .put("accessType", "ENTRY")
+                );
+
+        analyticsService.ingestEvent(event).join();
+
+        Optional<AttendanceSnapshot> snapshot = analyticsService.getAttendanceStats("2026-03-26").join();
+        assertTrue(snapshot.isPresent());
+        assertEquals(1, snapshot.get().getTotalEntries());
+    }
+
+    @Test
+    void ingestEventFailsWhenPayloadIsMissing() {
+        AnalyticsRepository repository = new InMemoryAnalyticsRepository(
+                Map.of(),
+                List.of(),
+                List.of()
+        );
+
+        AnalyticsServiceAPIImpl analyticsService = new AnalyticsServiceAPIImpl(repository);
+
+        JsonObject invalidEvent = new JsonObject().put("eventType", "GYM_ACCESS");
+
+        CompletionException ex = assertThrows(
+                CompletionException.class,
+                () -> analyticsService.ingestEvent(invalidEvent).join()
+        );
+
+        assertNotNull(ex.getCause());
+        assertTrue(ex.getCause() instanceof IllegalArgumentException);
+    }
 
     @Test
     void getAttendanceStatsReturnsSnapshotWhenPresent() {

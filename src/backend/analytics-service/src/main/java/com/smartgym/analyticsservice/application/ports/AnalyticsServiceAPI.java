@@ -3,12 +3,15 @@ package com.smartgym.analyticsservice.application.ports;
 import com.smartgym.analyticsservice.model.AttendanceSnapshot;
 import com.smartgym.analyticsservice.model.MachineUtilization;
 import com.smartgym.analyticsservice.model.PeakHourStat;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface AnalyticsServiceAPI {
+
+    CompletableFuture<Void> ingestEvent(JsonObject event);
 
     CompletableFuture<Optional<AttendanceSnapshot>> getAttendanceStats(String date);
 

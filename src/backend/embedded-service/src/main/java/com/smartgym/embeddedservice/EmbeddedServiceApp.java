@@ -3,10 +3,14 @@ package com.smartgym.embeddedservice;
 import com.mongodb.client.MongoClient;
 import com.smartgym.embeddedservice.application.EmbeddedServiceApiImpl;
 import com.smartgym.embeddedservice.application.MqttManager;
+import com.smartgym.embeddedservice.application.ports.AnalyticsServicePort;
 import com.smartgym.embeddedservice.application.ports.AreaServicePort;
 import com.smartgym.embeddedservice.application.ports.EmbeddedRepository;
 import com.smartgym.embeddedservice.application.ports.EmbeddedServiceAPI;
+import com.smartgym.embeddedservice.application.ports.MachineServicePort;
+import com.smartgym.embeddedservice.infrastructure.adapters.http.AnalyticsServiceHttpAdapter;
 import com.smartgym.embeddedservice.infrastructure.adapters.http.AreaServiceHttpAdapter;
+import com.smartgym.embeddedservice.infrastructure.adapters.http.MachineServiceHttpAdapter;
 import com.smartgym.embeddedservice.infrastructure.persistence.EmbeddedRepositoryImpl;
 
 import io.vertx.core.Vertx;
@@ -69,8 +73,23 @@ public class EmbeddedServiceApp {
     }
 
     @Bean
-    public EmbeddedServiceAPI embeddedServiceAPI(EmbeddedRepository repository, AreaServicePort areaServicePort) {
-        return new EmbeddedServiceApiImpl(repository, areaServicePort);
+    public AnalyticsServicePort analyticsServicePort(@Value("${analytics-service.base-url}") String analyticsServiceBaseUrl) {
+        return new AnalyticsServiceHttpAdapter(analyticsServiceBaseUrl);
+    }
+
+    @Bean
+    public MachineServicePort machineServicePort(@Value("${machine-service.base-url}") String machineServiceBaseUrl) {
+        return new MachineServiceHttpAdapter(machineServiceBaseUrl);
+    }
+
+    @Bean
+    public EmbeddedServiceAPI embeddedServiceAPI(
+            EmbeddedRepository repository,
+            AreaServicePort areaServicePort,
+            AnalyticsServicePort analyticsServicePort,
+            MachineServicePort machineServicePort
+    ) {
+        return new EmbeddedServiceApiImpl(repository, areaServicePort, analyticsServicePort, machineServicePort);
     }
 
     @Bean
