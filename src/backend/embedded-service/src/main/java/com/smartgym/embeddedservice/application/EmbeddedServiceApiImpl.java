@@ -3,6 +3,8 @@ package com.smartgym.embeddedservice.application;
 import com.smartgym.embeddedservice.application.ports.EmbeddedRepository;
 import com.smartgym.embeddedservice.application.ports.EmbeddedServiceAPI;
 import com.smartgym.embeddedservice.application.ports.AreaServicePort;
+import com.smartgym.embeddedservice.application.ports.AnalyticsServicePort;
+import com.smartgym.embeddedservice.application.ports.MachineServicePort;
 import com.smartgym.embeddedservice.model.AreaAccessMessage;
 import com.smartgym.embeddedservice.model.DeviceStatusMessage;
 import com.smartgym.embeddedservice.model.GymAccessMessage;
@@ -13,6 +15,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.Locale;
 
 public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
 
@@ -27,10 +30,19 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
 
     private final EmbeddedRepository embeddedRepository;
     private final AreaServicePort areaServicePort;
+    private final AnalyticsServicePort analyticsServicePort;
+    private final MachineServicePort machineServicePort;
 
-    public EmbeddedServiceApiImpl(EmbeddedRepository embeddedRepository, AreaServicePort areaServicePort) {
+    public EmbeddedServiceApiImpl(
+            EmbeddedRepository embeddedRepository,
+            AreaServicePort areaServicePort,
+            AnalyticsServicePort analyticsServicePort,
+            MachineServicePort machineServicePort
+    ) {
         this.embeddedRepository = embeddedRepository;
         this.areaServicePort = areaServicePort;
+        this.analyticsServicePort = analyticsServicePort;
+        this.machineServicePort = machineServicePort;
     }
 
     @Override
@@ -40,7 +52,7 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
         }
 
         JsonObject event = buildGymAccessEvent(message);
-        return embeddedRepository.saveEvent(event);
+        return forwardToAnalyticsAndSave(event);
     }
 
     @Override
@@ -55,7 +67,7 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
 
         JsonObject event = buildAreaAccessEvent(message);
         return areaServicePort.processAreaAccess(message)
-                .thenCompose(ignored -> embeddedRepository.saveEvent(event));
+                .thenCompose(ignored -> forwardToAnalyticsAndSave(event));
     }
 
     @Override
@@ -70,7 +82,7 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
 
         JsonObject event = buildAreaAccessEvent(message);
         return areaServicePort.processAreaExit(message)
-                .thenCompose(ignored -> embeddedRepository.saveEvent(event));
+                .thenCompose(ignored -> forwardToAnalyticsAndSave(event));
     }
 
     @Override
@@ -82,8 +94,23 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
             return CompletableFuture.failedFuture(new IllegalArgumentException("Invalid machine usage message"));
         }
 
+        String usageState = message.getUsageState().trim().toUpperCase(Locale.ROOT);
+        CompletableFuture<Void> machineCall;
+        if ("STARTED".equals(usageState)) {
+            if (isBlank(message.getBadgeId())) {
+                return CompletableFuture.failedFuture(
+                        new IllegalArgumentException("badgeId is required when usageState is STARTED"));
+            }
+            machineCall = machineServicePort.startSession(message);
+        } else if ("STOPPED".equals(usageState)) {
+            machineCall = machineServicePort.endSession(message);
+        } else {
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Unsupported usageState: " + message.getUsageState()));
+        }
+
         JsonObject event = buildMachineUsageEvent(message);
-        return embeddedRepository.saveEvent(event);
+        return machineCall.thenCompose(ignored -> forwardToAnalyticsAndSave(event));
     }
 
     @Override
@@ -157,5 +184,10 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private CompletableFuture<Void> forwardToAnalyticsAndSave(JsonObject event) {
+        return analyticsServicePort.ingestEvent(event)
+                .thenCompose(ignored -> embeddedRepository.saveEvent(event));
     }
 }

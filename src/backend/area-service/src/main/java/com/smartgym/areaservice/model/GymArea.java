@@ -77,7 +77,7 @@ public class GymArea {
 
     public void decrementCount() {
         if (this.currentCount == null || this.currentCount <= 0) {
-            throw new IllegalStateException("Area count cannot be negative");
+            return;
         }
         this.currentCount--;
     }

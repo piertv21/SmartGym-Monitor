@@ -5,12 +5,16 @@ import com.smartgym.areaservice.application.ports.AreaServiceAPI;
 import com.smartgym.areaservice.model.AreaAccessMessage;
 import com.smartgym.areaservice.model.GymArea;
 import com.smartgym.areaservice.model.UpdateAreaCapacityMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class AreaServiceAPIImpl implements AreaServiceAPI {
+
+    private static final Logger logger = LoggerFactory.getLogger(AreaServiceAPIImpl.class);
 
     private final AreaRepository areaRepository;
 
@@ -29,6 +33,10 @@ public class AreaServiceAPIImpl implements AreaServiceAPI {
             if (message.isEntry()) {
                 area.incrementCount();
             } else if (message.isExit()) {
+                if (area.getCurrentCount() == null || area.getCurrentCount() <= 0) {
+                    logger.warn("OUT ignored at zero: areaId={}, badgeId={}, count={}",
+                            message.getAreaId(), message.getBadgeId(), area.getCurrentCount());
+                }
                 area.decrementCount();
             } else {
                 throw new IllegalArgumentException("Invalid direction: " + message.getDirection());
@@ -45,6 +53,11 @@ public class AreaServiceAPIImpl implements AreaServiceAPI {
 
             GymArea area = areaRepository.findAreaById(message.getAreaId()).join()
                     .orElseThrow(() -> new IllegalArgumentException("Area not found: " + message.getAreaId()));
+
+            if (area.getCurrentCount() == null || area.getCurrentCount() <= 0) {
+                logger.warn("OUT ignored at zero (exit endpoint): areaId={}, badgeId={}, count={}",
+                        message.getAreaId(), message.getBadgeId(), area.getCurrentCount());
+            }
 
             area.decrementCount();
 

@@ -2,9 +2,11 @@ package com.smartgym.analyticsservice.application;
 
 import com.smartgym.analyticsservice.application.ports.AnalyticsRestController;
 import com.smartgym.analyticsservice.application.ports.AnalyticsServiceAPI;
+import io.vertx.core.json.JsonObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -15,6 +17,13 @@ public class AnalyticsRestControllerImpl implements AnalyticsRestController {
 
     public AnalyticsRestControllerImpl(AnalyticsServiceAPI analyticsServiceAPI) {
         this.analyticsServiceAPI = analyticsServiceAPI;
+    }
+
+    @Override
+    @PostMapping("/events/ingest")
+    public CompletableFuture<ResponseEntity<?>> ingestEvent(@RequestBody Map<String, Object> event) {
+        return analyticsServiceAPI.ingestEvent(new JsonObject(event))
+                .thenApply(ignored -> ResponseEntity.accepted().build());
     }
 
     @Override

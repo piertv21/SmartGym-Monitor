@@ -2,9 +2,12 @@ package com.smartgym.analyticsservice.application.ports;
 
 import org.springframework.http.ResponseEntity;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public interface AnalyticsRestController {
+
+    CompletableFuture<ResponseEntity<?>> ingestEvent(Map<String, Object> event);
 
     CompletableFuture<ResponseEntity<?>> getAttendanceStats(String date);
 
