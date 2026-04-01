@@ -5,6 +5,8 @@ import com.smartgym.authservice.application.ports.AuthRepository;
 import com.smartgym.authservice.model.AuthUser;
 import io.vertx.core.json.JsonObject;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Map;
 import java.util.Optional;
@@ -14,10 +16,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class JUnitAuthServiceTest {
 
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     @Test
     void authenticateSuccessWithDomainEntity() {
-        AuthRepository repository = new InMemoryAuthRepository(Map.of("ADMIN", new AuthUser("ADMIN", "ADMIN")));
-        AuthServiceApiImpl authService = new AuthServiceApiImpl(repository);
+        AuthRepository repository = new InMemoryAuthRepository(Map.of("ADMIN", new AuthUser("ADMIN", passwordEncoder.encode("ADMIN"))));
+        AuthServiceApiImpl authService = new AuthServiceApiImpl(repository, passwordEncoder);
 
         Optional<AuthUser> result = authService.authenticate("ADMIN", "ADMIN").join();
 
@@ -27,8 +31,8 @@ class JUnitAuthServiceTest {
 
     @Test
     void authenticateFailsWithWrongPassword() {
-        AuthRepository repository = new InMemoryAuthRepository(Map.of("ADMIN", new AuthUser("ADMIN", "ADMIN")));
-        AuthServiceApiImpl authService = new AuthServiceApiImpl(repository);
+        AuthRepository repository = new InMemoryAuthRepository(Map.of("ADMIN", new AuthUser("ADMIN", passwordEncoder.encode("ADMIN"))));
+        AuthServiceApiImpl authService = new AuthServiceApiImpl(repository, passwordEncoder);
 
         Optional<AuthUser> result = authService.authenticate("ADMIN", "WRONG").join();
 
@@ -38,7 +42,7 @@ class JUnitAuthServiceTest {
     @Test
     void verifyUserExists() {
         AuthRepository repository = new InMemoryAuthRepository(Map.of("ADMIN", new AuthUser("ADMIN", "ADMIN")));
-        AuthServiceApiImpl authService = new AuthServiceApiImpl(repository);
+        AuthServiceApiImpl authService = new AuthServiceApiImpl(repository, passwordEncoder);
 
         boolean exists = authService.userExists("ADMIN").join();
 
@@ -48,7 +52,7 @@ class JUnitAuthServiceTest {
     @Test
     void registerLoginWritesExpectedPayload() {
         AuthRepository repository = new InMemoryAuthRepository(Map.of());
-        AuthServiceApiImpl authService = new AuthServiceApiImpl(repository);
+        AuthServiceApiImpl authService = new AuthServiceApiImpl(repository, passwordEncoder);
 
         JsonObject payload = authService.registerLogin("ADMIN").join();
 
@@ -73,6 +77,11 @@ class JUnitAuthServiceTest {
         @Override
         public CompletableFuture<Void> saveLoginLog(String username, long timestamp) {
             return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public CompletableFuture<Boolean> saveUser(AuthUser user) {
+            return CompletableFuture.completedFuture(true);
         }
 
         @Override

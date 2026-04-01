@@ -5,6 +5,7 @@ spring-dependency-management = "1.1.7"
 spring-cloud                 = "2024.0.1"
 vertx                        = "4.5.13"
 itext                        = "5.5.13.4"
+jjwt                         = "0.12.6"
 cucumber                     = "7.22.2"
 
 [libraries]
@@ -15,6 +16,7 @@ spring-boot-starter-web          = { module = "org.springframework.boot:spring-b
 spring-boot-starter-webflux      = { module = "org.springframework.boot:spring-boot-starter-webflux" }
 spring-boot-starter-data-mongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb" }
 spring-boot-starter-test         = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-security-crypto           = { module = "org.springframework.security:spring-security-crypto" }
 junit-platform-suite             = { module = "org.junit.platform:junit-platform-suite" }
 
 # --- Spring Cloud (version managed by Spring Cloud BOM) ---
@@ -41,9 +43,15 @@ cucumber-junit-platform-engine = { module = "io.cucumber:cucumber-junit-platform
 # --- PDF generation ---
 itext = { module = "com.itextpdf:itextpdf", version.ref = "itext" }
 
+# --- JWT ---
+jjwt-api     = { module = "io.jsonwebtoken:jjwt-api",     version.ref = "jjwt" }
+jjwt-impl    = { module = "io.jsonwebtoken:jjwt-impl",    version.ref = "jjwt" }
+jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+
 [bundles]
 vertx-base    = ["vertx-core", "vertx-web", "vertx-web-client", "vertx-config"]
 spring-common = ["spring-boot-starter", "spring-boot-starter-actuator", "micrometer-prometheus"]
+jjwt          = ["jjwt-api", "jjwt-impl", "jjwt-jackson"]
 
 [plugins]
 spring-boot            = { id = "org.springframework.boot",        version.ref = "spring-boot" }

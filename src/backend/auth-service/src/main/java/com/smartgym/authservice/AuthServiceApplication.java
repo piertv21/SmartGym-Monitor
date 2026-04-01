@@ -13,6 +13,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -40,14 +42,20 @@ public class AuthServiceApplication {
     @Bean
     public AuthRepository authRepository(
             MongoClient mongoClient,
+            PasswordEncoder passwordEncoder,
             @Value("${auth.seed.admin.username:ADMIN}") String adminUsername,
             @Value("${auth.seed.admin.password:ADMIN}") String adminPassword
     ) {
-        return new AuthRepositoryImpl(mongoClient, adminUsername, adminPassword);
+        return new AuthRepositoryImpl(mongoClient, passwordEncoder, adminUsername, adminPassword);
     }
 
     @Bean
-    public AuthServiceAPI authServiceAPI(AuthRepository repository) {
-        return new AuthServiceApiImpl(repository);
+    public AuthServiceAPI authServiceAPI(AuthRepository repository, PasswordEncoder passwordEncoder) {
+        return new AuthServiceApiImpl(repository, passwordEncoder);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
