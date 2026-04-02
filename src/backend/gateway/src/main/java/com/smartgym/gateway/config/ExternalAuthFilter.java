@@ -45,8 +45,7 @@ public class ExternalAuthFilter implements GlobalFilter, Ordered {
         // Public endpoints that must remain accessible without a JWT.
         if (path.startsWith("/actuator")
                 || path.endsWith("/login")
-                || path.endsWith("/register")
-                || path.endsWith("/logout")) {
+                || path.endsWith("/register")) {
             return forwardWithLogging(exchange, chain, method, path, routeId);
         }
 

@@ -7,25 +7,16 @@ from smartgym_flask.services.user_service import Credentials
 auth_bp = Blueprint("auth", __name__)
 
 
-def _ensure_gateway_token() -> str | None:
-    token = session.get("gateway_token")
-    if token:
-        return token
-
-    try:
-        token = get_user_service().generate_gateway_token()
-    except requests.RequestException as ex:
-        flash(f"Gateway token unavailable: {ex}", "error")
-        return None
-
-    session["gateway_token"] = token
-    return token
+def _unwrap_payload(response: requests.Response) -> dict:
+    data = response.json()
+    if isinstance(data, dict) and isinstance(data.get("map"), dict):
+        return data["map"]
+    return data if isinstance(data, dict) else {}
 
 
 @auth_bp.get("/login")
 def login():
-    _ensure_gateway_token()
-    if session.get("user"):
+    if session.get("user") and session.get("access_token"):
         return redirect(url_for("dashboard.dashboard"))
     return render_template("login.html")
 
@@ -38,20 +29,27 @@ def login_post():
         flash("Username and password are required.", "error")
         return redirect(url_for("auth.login"))
 
-    gateway_token = _ensure_gateway_token()
-    if not gateway_token:
-        return redirect(url_for("auth.login"))
-
     creds = Credentials(username=username, password=password)
 
     try:
-        response = get_user_service().login(creds, gateway_token)
+        response = get_user_service().login(creds)
     except requests.RequestException as ex:
         flash(f"Auth service unreachable: {ex}", "error")
         return redirect(url_for("auth.login"))
 
     if response.status_code == 200:
+        try:
+            payload = _unwrap_payload(response)
+        except ValueError:
+            payload = {}
+
+        access_token = payload.get("accessToken")
+        if not access_token:
+            flash("Auth response missing access token.", "error")
+            return redirect(url_for("auth.login"))
+
         session["user"] = creds.username
+        session["access_token"] = access_token
         flash("Login successful.", "success")
         return redirect(url_for("dashboard.dashboard"))
 
@@ -66,13 +64,12 @@ def login_post():
 
 @auth_bp.get("/logout")
 def logout():
-    username = session.get("user")
-    gateway_token = session.get("gateway_token")
+    access_token = session.get("access_token")
     session.clear()
 
-    if username and gateway_token:
+    if access_token:
         try:
-            get_user_service().logout(username, gateway_token)
+            get_user_service().logout(access_token)
         except requests.RequestException:
             pass
 
