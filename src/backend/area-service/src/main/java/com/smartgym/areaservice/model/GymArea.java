@@ -102,6 +102,4 @@ public class GymArea {
                 ", currentCount=" + currentCount +
                 '}';
     }
-
-
 }

@@ -41,14 +41,14 @@ class IntegrationMachineServiceTest {
 
     @Test
     void createMachineAndReadStatus() throws Exception {
-        String machineId = "it-machine-" + System.currentTimeMillis();
+        String machineId = "machine-" + System.currentTimeMillis();
         String createBody = """
                 {
                   "machineId": "%s",
-                  "areaId": "it-area",
-                  "sensor": "it-sensor"
+                  "areaId": "machines-area",
+                  "sensor": "sensor-%s"
                 }
-                """.formatted(machineId);
+                """.formatted(machineId, machineId);
 
         HttpResponse<String> createResponse = sendPost("/machines", createBody);
         assertEquals(201, createResponse.statusCode());

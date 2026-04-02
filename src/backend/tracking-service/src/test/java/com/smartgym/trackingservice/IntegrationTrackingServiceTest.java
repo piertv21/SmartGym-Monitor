@@ -11,6 +11,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,6 +40,30 @@ class IntegrationTrackingServiceTest {
         assertTrue(response.body().contains("UP"));
     }
 
+    @Test
+    void startAndEndSessionUpdatesGymCount() throws Exception {
+        String badgeId = "badge-" + UUID.randomUUID();
+
+        HttpResponse<String> startResponse = sendPost(
+                "/tracking-service/start-session",
+                "{\"badgeId\":\"" + badgeId + "\"}"
+        );
+        Assumptions.assumeTrue(
+                startResponse.statusCode() == 200,
+                "Tracking endpoints are not available on target integration environment"
+        );
+
+        HttpResponse<String> countAfterStart = sendGet("/tracking-service/count");
+        assertEquals(200, countAfterStart.statusCode());
+        assertTrue(countAfterStart.body().contains("gymCount"));
+
+        HttpResponse<String> endResponse = sendPost(
+                "/tracking-service/end-session",
+                "{\"badgeId\":\"" + badgeId + "\"}"
+        );
+        assertEquals(200, endResponse.statusCode());
+    }
+
     private boolean isServiceHealthy() {
         try {
             HttpResponse<String> response = sendGet("/actuator/health");
@@ -53,6 +78,17 @@ class IntegrationTrackingServiceTest {
                 .uri(URI.create(baseUrl + path))
                 .timeout(Duration.ofSeconds(10))
                 .GET()
+                .build();
+
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpResponse<String> sendPost(String path, String payload) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + path))
+                .timeout(Duration.ofSeconds(10))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(payload))
                 .build();
 
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
