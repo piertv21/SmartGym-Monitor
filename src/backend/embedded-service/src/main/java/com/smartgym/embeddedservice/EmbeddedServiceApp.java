@@ -8,9 +8,11 @@ import com.smartgym.embeddedservice.application.ports.AreaServicePort;
 import com.smartgym.embeddedservice.application.ports.EmbeddedRepository;
 import com.smartgym.embeddedservice.application.ports.EmbeddedServiceAPI;
 import com.smartgym.embeddedservice.application.ports.MachineServicePort;
+import com.smartgym.embeddedservice.application.ports.TrackingServicePort;
 import com.smartgym.embeddedservice.infrastructure.adapters.http.AnalyticsServiceHttpAdapter;
 import com.smartgym.embeddedservice.infrastructure.adapters.http.AreaServiceHttpAdapter;
 import com.smartgym.embeddedservice.infrastructure.adapters.http.MachineServiceHttpAdapter;
+import com.smartgym.embeddedservice.infrastructure.adapters.http.TrackingServiceHttpAdapter;
 import com.smartgym.embeddedservice.infrastructure.persistence.EmbeddedRepositoryImpl;
 
 import io.vertx.core.Vertx;
@@ -83,13 +85,19 @@ public class EmbeddedServiceApp {
     }
 
     @Bean
+    public TrackingServicePort trackingServicePort(@Value("${tracking-service.base-url}") String trackingServiceBaseUrl) {
+        return new TrackingServiceHttpAdapter(trackingServiceBaseUrl);
+    }
+
+    @Bean
     public EmbeddedServiceAPI embeddedServiceAPI(
             EmbeddedRepository repository,
             AreaServicePort areaServicePort,
             AnalyticsServicePort analyticsServicePort,
-            MachineServicePort machineServicePort
+            MachineServicePort machineServicePort,
+            TrackingServicePort trackingServicePort
     ) {
-        return new EmbeddedServiceApiImpl(repository, areaServicePort, analyticsServicePort, machineServicePort);
+        return new EmbeddedServiceApiImpl(repository, areaServicePort, analyticsServicePort, machineServicePort, trackingServicePort);
     }
 
     @Bean

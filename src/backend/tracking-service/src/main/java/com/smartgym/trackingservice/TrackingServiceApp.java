@@ -1,8 +1,9 @@
 package com.smartgym.trackingservice;
 
 import com.mongodb.client.MongoClient;
-import com.smartgym.trackingservice.application.ports.DummyServicePort;
-import com.smartgym.trackingservice.infrastructure.adapters.DummyServiceAdapter;
+import com.smartgym.trackingservice.application.TrackingServiceAPIImpl;
+import com.smartgym.trackingservice.application.ports.TrackingRepository;
+import com.smartgym.trackingservice.application.ports.TrackingServiceAPI;
 import com.smartgym.trackingservice.infrastructure.persistence.TrackingRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,9 +41,9 @@ public class TrackingServiceApp {
     }
 
     @Bean
-    public DummyServicePort dummyServicePort() {
-        logger.info("🔧 Initializing DummyServiceAdapter");
-        return new DummyServiceAdapter();
+    public TrackingServiceAPI trackingServiceAPI(TrackingRepository trackingRepository) {
+        logger.info("🔧 Initializing TrackingServiceAPI");
+        return new TrackingServiceAPIImpl(trackingRepository);
     }
 
     public static void main(String[] args) {

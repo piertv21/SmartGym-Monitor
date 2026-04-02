@@ -5,6 +5,7 @@ import com.smartgym.embeddedservice.application.ports.EmbeddedServiceAPI;
 import com.smartgym.embeddedservice.application.ports.AreaServicePort;
 import com.smartgym.embeddedservice.application.ports.AnalyticsServicePort;
 import com.smartgym.embeddedservice.application.ports.MachineServicePort;
+import com.smartgym.embeddedservice.application.ports.TrackingServicePort;
 import com.smartgym.embeddedservice.model.AreaAccessMessage;
 import com.smartgym.embeddedservice.model.DeviceStatusMessage;
 import com.smartgym.embeddedservice.model.GymAccessMessage;
@@ -32,17 +33,20 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
     private final AreaServicePort areaServicePort;
     private final AnalyticsServicePort analyticsServicePort;
     private final MachineServicePort machineServicePort;
+    private final TrackingServicePort trackingServicePort;
 
     public EmbeddedServiceApiImpl(
             EmbeddedRepository embeddedRepository,
             AreaServicePort areaServicePort,
             AnalyticsServicePort analyticsServicePort,
-            MachineServicePort machineServicePort
+            MachineServicePort machineServicePort,
+            TrackingServicePort trackingServicePort
     ) {
         this.embeddedRepository = embeddedRepository;
         this.areaServicePort = areaServicePort;
         this.analyticsServicePort = analyticsServicePort;
         this.machineServicePort = machineServicePort;
+        this.trackingServicePort = trackingServicePort;
     }
 
     @Override
@@ -51,8 +55,23 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
             return CompletableFuture.failedFuture(new IllegalArgumentException("Invalid gym access message"));
         }
 
+        if (isBlank(message.getAccessType())) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("accessType cannot be null or empty"));
+        }
+
+        String accessType = message.getAccessType().trim().toUpperCase(Locale.ROOT);
+        CompletableFuture<Void> trackingCall;
+        if ("ENTRY".equals(accessType)) {
+            trackingCall = trackingServicePort.startGymSession(message);
+        } else if ("EXIT".equals(accessType)) {
+            trackingCall = trackingServicePort.endGymSession(message);
+        } else {
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Unsupported accessType: " + message.getAccessType()));
+        }
+
         JsonObject event = buildGymAccessEvent(message);
-        return forwardToAnalyticsAndSave(event);
+        return trackingCall.thenCompose(ignored -> forwardToAnalyticsAndSave(event));
     }
 
     @Override

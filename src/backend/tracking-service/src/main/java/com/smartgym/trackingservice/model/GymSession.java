@@ -2,6 +2,7 @@ package com.smartgym.trackingservice.model;
 
 import java.time.LocalDateTime;
 
+
 public class GymSession {
 
     private final String gymSessionId;
@@ -10,12 +11,20 @@ public class GymSession {
     private LocalDateTime endTime;
 
     public GymSession(String gymSessionId, String badgeId, LocalDateTime startTime) {
+        this(gymSessionId, badgeId, startTime, null);
+    }
+
+    public GymSession(String gymSessionId, String badgeId, LocalDateTime startTime, LocalDateTime endTime) {
         this.gymSessionId = requireNotBlank(gymSessionId, "gymSessionId");
         this.badgeId = requireNotBlank(badgeId, "badgeId");
         if (startTime == null) {
             throw new IllegalArgumentException("startTime cannot be null");
         }
         this.startTime = startTime;
+        if (endTime != null && endTime.isBefore(startTime)) {
+            throw new IllegalArgumentException("endTime cannot be before startTime");
+        }
+        this.endTime = endTime;
     }
 
     public String getGymSessionId() {
@@ -53,6 +62,16 @@ public class GymSession {
             throw new IllegalArgumentException(field + " cannot be blank");
         }
         return value;
+    }
+
+    @Override
+    public String toString() {
+        return "GymSession{" +
+                "gymSessionId='" + gymSessionId + '\'' +
+                ", badgeId='" + badgeId + '\'' +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                '}';
     }
 }
 
