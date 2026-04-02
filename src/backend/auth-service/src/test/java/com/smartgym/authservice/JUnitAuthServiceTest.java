@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -58,7 +59,9 @@ class JUnitAuthServiceTest {
 
         assertEquals("ADMIN", payload.getString("username"));
         assertEquals("login", payload.getString("action"));
-        assertNotNull(payload.getLong("timestamp"));
+        String timestamp = payload.getString("timestamp");
+        assertNotNull(timestamp);
+        assertDoesNotThrow(() -> LocalDateTime.parse(timestamp));
     }
 
     private static final class InMemoryAuthRepository implements AuthRepository {
@@ -75,7 +78,7 @@ class JUnitAuthServiceTest {
         }
 
         @Override
-        public CompletableFuture<Void> saveLoginLog(String username, long timestamp) {
+        public CompletableFuture<Void> saveLoginLog(String username, String timestamp) {
             return CompletableFuture.completedFuture(null);
         }
 
@@ -85,7 +88,7 @@ class JUnitAuthServiceTest {
         }
 
         @Override
-        public CompletableFuture<Void> saveLogoutLog(String username, long timestamp) {
+        public CompletableFuture<Void> saveLogoutLog(String username, String timestamp) {
             return CompletableFuture.completedFuture(null);
         }
 

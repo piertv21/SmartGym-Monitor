@@ -6,6 +6,7 @@ import com.smartgym.authservice.model.AuthUser;
 import io.vertx.core.json.JsonObject;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -47,7 +48,7 @@ public class AuthServiceApiImpl implements AuthServiceAPI {
     @Override
     public CompletableFuture<JsonObject> registerLogin(String username) {
         System.out.println("[AuthServiceApiImpl] registering login for user: " + username);
-        long timestamp = System.currentTimeMillis();
+        String timestamp = LocalDateTime.now().toString();
         return repository.saveLoginLog(username, timestamp)
                 .thenApply(v -> new JsonObject()
                         .put("username", username)
@@ -58,7 +59,7 @@ public class AuthServiceApiImpl implements AuthServiceAPI {
     @Override
     public CompletableFuture<JsonObject> registerLogout(String username) {
         System.out.println("[AuthServiceApiImpl] registering logout for user: " + username);
-        long timestamp = System.currentTimeMillis();
+        String timestamp = LocalDateTime.now().toString();
         return repository.saveLogoutLog(username, timestamp)
                 .thenApply(v -> new JsonObject()
                         .put("username", username)

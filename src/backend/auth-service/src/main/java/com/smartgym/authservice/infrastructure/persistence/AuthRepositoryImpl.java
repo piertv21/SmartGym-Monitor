@@ -87,7 +87,7 @@ public class AuthRepositoryImpl implements AuthRepository {
     }
 
     @Override
-    public CompletableFuture<Void> saveLoginLog(String username, long timestamp) {
+    public CompletableFuture<Void> saveLoginLog(String username, String timestamp) {
         return saveLog(username, timestamp, "LOGIN");
     }
 
@@ -117,16 +117,19 @@ public class AuthRepositoryImpl implements AuthRepository {
     }
 
     @Override
-    public CompletableFuture<Void> saveLogoutLog(String username, long timestamp) {
+    public CompletableFuture<Void> saveLogoutLog(String username, String timestamp) {
         return saveLog(username, timestamp, "LOGOUT");
     }
 
-    private CompletableFuture<Void> saveLog(String username, long timestamp, String action) {
+    private CompletableFuture<Void> saveLog(String username, String timestamp, String action) {
         CompletableFuture<Void> future = new CompletableFuture<>();
 
         try {
             if (username == null || username.isBlank()) {
                 throw new IllegalArgumentException("Invalid username");
+            }
+            if (timestamp == null || timestamp.isBlank()) {
+                throw new IllegalArgumentException("Invalid timestamp");
             }
 
             Document logDoc = new Document()
