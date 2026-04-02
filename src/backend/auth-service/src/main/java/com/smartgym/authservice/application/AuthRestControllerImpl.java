@@ -3,7 +3,6 @@ package com.smartgym.authservice.application;
 import com.smartgym.authservice.application.ports.AuthRestController;
 import com.smartgym.authservice.application.ports.AuthServiceAPI;
 import com.smartgym.authservice.model.LoginMessage;
-import com.smartgym.authservice.model.LogoutMessage;
 import com.smartgym.authservice.model.RegisterMessage;
 import com.smartgym.authservice.service.JwtTokenService;
 import io.vertx.core.json.JsonObject;
@@ -107,12 +106,11 @@ public class AuthRestControllerImpl implements AuthRestController {
 
     @Override
     @PostMapping("/logout")
-    public CompletableFuture<ResponseEntity<JsonObject>> handleLogout(@RequestBody LogoutMessage payload) {
+    public CompletableFuture<ResponseEntity<JsonObject>> handleLogout(@RequestHeader("X-User-Id") String username) {
         System.out.println("[AuthRestControllerImpl] handling logout request");
-        String username = payload.getUsername();
         System.out.println("[AuthRestControllerImpl] logging out user: " + username);
 
-        if (username == null) {
+        if (username == null || username.isBlank()) {
             JsonObject error = new JsonObject().put("error", "Username richiesto");
             return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error));
         }

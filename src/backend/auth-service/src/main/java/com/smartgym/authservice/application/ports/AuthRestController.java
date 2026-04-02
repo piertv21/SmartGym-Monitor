@@ -1,7 +1,6 @@
 package com.smartgym.authservice.application.ports;
 
 import com.smartgym.authservice.model.LoginMessage;
-import com.smartgym.authservice.model.LogoutMessage;
 import com.smartgym.authservice.model.RegisterMessage;
 import io.vertx.core.json.JsonObject;
 import org.springframework.http.ResponseEntity;
@@ -21,5 +20,5 @@ public interface AuthRestController {
     CompletableFuture<ResponseEntity<JsonObject>> handleVerifyUser(@PathVariable String username);
 
     @PostMapping("/logout")
-    CompletableFuture<ResponseEntity<JsonObject>> handleLogout(@RequestBody LogoutMessage message);
+    CompletableFuture<ResponseEntity<JsonObject>> handleLogout(@RequestHeader("X-User-Id") String username);
 }
