@@ -121,7 +121,7 @@ public class AuthRestControllerImpl implements AuthRestController {
                 .thenApply(logoutLog -> {
                     JsonObject response = new JsonObject()
                             .put("message", "Logout effettuato")
-                            .put("timestamp", logoutLog.getLong("timestamp"));
+                            .put("timestamp", logoutLog.getString("timestamp"));
                     return ResponseEntity.ok(response);
                 })
                 .exceptionally(ex -> {
