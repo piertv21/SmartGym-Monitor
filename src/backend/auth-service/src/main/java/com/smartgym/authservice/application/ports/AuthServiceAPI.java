@@ -9,6 +9,8 @@ public interface AuthServiceAPI {
 
     CompletableFuture<Optional<AuthUser>> authenticate(String username, String password);
 
+    CompletableFuture<Boolean> registerUser(String username, String rawPassword);
+
     CompletableFuture<Boolean> userExists(String username);
 
     CompletableFuture<JsonObject> registerLogin(String username);

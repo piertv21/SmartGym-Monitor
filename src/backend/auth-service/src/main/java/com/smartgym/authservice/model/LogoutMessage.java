@@ -9,6 +9,9 @@ public class LogoutMessage {
     @JsonProperty("username")
     private String username;
 
+    public LogoutMessage() {
+    }
+
     public LogoutMessage(String username, String space) {
         this.username = username;
     }
