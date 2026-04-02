@@ -23,8 +23,9 @@ public class AuthRestControllerImpl implements AuthRestController {
         this.authService = authService;
         this.jwtTokenService = jwtTokenService;
     }
-    @PostMapping("/login")
+
     @Override
+    @PostMapping("/login")
     public CompletableFuture<ResponseEntity<JsonObject>> handleLogin(@RequestBody LoginMessage credentials) {
         System.out.println("[AuthRestControllerImpl] handling login request: " + credentials);
         String username = credentials.getUsername();
@@ -57,8 +58,8 @@ public class AuthRestControllerImpl implements AuthRestController {
                 });
     }
 
-    @PostMapping("/register")
     @Override
+    @PostMapping("/register")
     public CompletableFuture<ResponseEntity<JsonObject>> handleRegister(@RequestBody RegisterMessage registerMessage) {
         String username = registerMessage != null ? registerMessage.getUsername() : null;
         String password = registerMessage != null ? registerMessage.getPassword() : null;
@@ -82,8 +83,8 @@ public class AuthRestControllerImpl implements AuthRestController {
                         .body(new JsonObject().put("error", ex.getMessage())));
     }
 
-    @GetMapping("/login/{username}")
     @Override
+    @GetMapping("/login/{username}")
     public CompletableFuture<ResponseEntity<JsonObject>> handleVerifyUser(@PathVariable String username) {
         System.out.println("[AuthRestControllerImpl] verifying user: " + username);
         return authService.userExists(username)
@@ -104,9 +105,8 @@ public class AuthRestControllerImpl implements AuthRestController {
                 });
     }
 
-
-    @PostMapping("/logout")
     @Override
+    @PostMapping("/logout")
     public CompletableFuture<ResponseEntity<JsonObject>> handleLogout(@RequestBody LogoutMessage payload) {
         System.out.println("[AuthRestControllerImpl] handling logout request");
         String username = payload.getUsername();
