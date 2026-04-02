@@ -1,9 +1,10 @@
 package com.smartgym.trackingservice.application.ports;
 
+import com.smartgym.trackingservice.model.EndGymSessionMessage;
+import com.smartgym.trackingservice.model.GymSession;
+import com.smartgym.trackingservice.model.StartGymSessionMessage;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -12,5 +13,11 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface TrackingServiceAPI {
 
+	CompletableFuture<GymSession> startGymSession(StartGymSessionMessage message);
 
+	CompletableFuture<GymSession> endGymSession(EndGymSessionMessage message);
+
+	CompletableFuture<Long> getGymCount();
+
+	CompletableFuture<List<GymSession>> getActiveSessions();
 }
