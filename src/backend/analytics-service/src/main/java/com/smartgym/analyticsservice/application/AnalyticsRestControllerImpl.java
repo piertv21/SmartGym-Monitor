@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-@RequestMapping("/analytics-service")
 public class AnalyticsRestControllerImpl implements AnalyticsRestController {
 
     private final AnalyticsServiceAPI analyticsServiceAPI;
