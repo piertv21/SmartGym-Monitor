@@ -1,3 +1,52 @@
+## [2.0.0](https://github.com/piertv21/SmartGym-Monitor/compare/1.2.0...2.0.0) (2026-03-30)
+
+### ⚠ BREAKING CHANGES
+
+- **auth:** clients must send client_id and client_secret in the JSON body
+- MQTT broker moved to local Mosquitto container.
+  Default host/port and authentication settings have changed.
+
+### Features
+
+- add area service refactoring old project, add embedded test and area service test ([bc43dc7](https://github.com/piertv21/SmartGym-Monitor/commit/bc43dc7e6ed6ecaa4fd659bec4c09cb0911f5aeb))
+- add cucumber end to end test structure and first scenario of authentication ([bd955ca](https://github.com/piertv21/SmartGym-Monitor/commit/bd955cacf9ff1cf46dd41bc491207e513eb8dd15))
+- add data ingestion in mongo area at startup, create seed folder and seed file, implement first embedded port to area service ([ba0fcaf](https://github.com/piertv21/SmartGym-Monitor/commit/ba0fcaf9dacb7fd01f9405d5f47d65aefcddfaf9))
+- add first machine service draft ([52f807d](https://github.com/piertv21/SmartGym-Monitor/commit/52f807d4b63f186a7e0557fe5684999b49472bcb))
+- add machine-area seed, add sensor to machine model ([cd85c59](https://github.com/piertv21/SmartGym-Monitor/commit/cd85c5901b6ce82620c97086bfc6728af0737daf))
+- add missing equals(), hashCode() methods in message classes, rename DummyServiceAdapter ([c54cba0](https://github.com/piertv21/SmartGym-Monitor/commit/c54cba07494f1e842a9a77fb557500cc14d0f79b))
+- add simulator scenarios, refactoring embedded in order to be compatible. MQTT consumer implementation in vertx ([a0664ec](https://github.com/piertv21/SmartGym-Monitor/commit/a0664ecd472c70e0e49edba440d487ed3da53902))
+- **auth:** change token generation to use JSON body instead of URL params ([e6f1313](https://github.com/piertv21/SmartGym-Monitor/commit/e6f131305a8c2cabaedd6fdd9b4adb6bba8475a8))
+- create flow from embedded to handle different type of messages through machine , analytics and area service ([e83687c](https://github.com/piertv21/SmartGym-Monitor/commit/e83687c6d9ce6ccb4851fe895ef004e08e367682))
+- handle exit area event ([a8aeb44](https://github.com/piertv21/SmartGym-Monitor/commit/a8aeb443e558a33876be83cd180418bc08a9f6a6))
+- replace HiveMQ broker with local Mosquitto ([d8dd546](https://github.com/piertv21/SmartGym-Monitor/commit/d8dd546ad8a10e503abef485ecfbe5208cde953c))
+- **simulator:** add basic simulator json-based impl, edit docker-compose.yml reflecting new impl ([ef9b4ed](https://github.com/piertv21/SmartGym-Monitor/commit/ef9b4ed31d8e8167669427a27d1fda889ca53197))
+- start create analytics service ([2bc629b](https://github.com/piertv21/SmartGym-Monitor/commit/2bc629b283019a33e5fbc7cd41b4f935bf41e6f3))
+- updated sensor field handling across machine service operations ([722a9b0](https://github.com/piertv21/SmartGym-Monitor/commit/722a9b08dbee80ec7af7ec53f47259e11541b1c6))
+
+### Bug Fixes
+
+- add hashcode and equals to analytics model class ([d7f1ff5](https://github.com/piertv21/SmartGym-Monitor/commit/d7f1ff53e437448a13f16db6e3f25abf1453801b))
+- dashboard redirect when already logged-in ([a65bba0](https://github.com/piertv21/SmartGym-Monitor/commit/a65bba02121ae05fab49aa693f8a2b012378b89f))
+- fix dockerfile to include e2e folder ([ee4bca9](https://github.com/piertv21/SmartGym-Monitor/commit/ee4bca99cd4add247e10347e0a626ea89a312048))
+- fix env.example. modified topic variable ([c86139d](https://github.com/piertv21/SmartGym-Monitor/commit/c86139d2fcdf91bef3ce260d23f7daf32464d781))
+- fix eureka server registration and docker compose variable ([2ad601d](https://github.com/piertv21/SmartGym-Monitor/commit/2ad601d9b8207af1f3fbfad31d2cfde25e5896e7))
+- imports in AreaServiceApp causing docker fail ([0d492fd](https://github.com/piertv21/SmartGym-Monitor/commit/0d492fdfd8d41faca46a3234226525e48286315f))
+- improve gateway aithentication flow, add main entities ([ec8ca4d](https://github.com/piertv21/SmartGym-Monitor/commit/ec8ca4d273309a253f789d02b88ea6d0dac6711f))
+- machine-service gateway reach, service port number ([9d88b78](https://github.com/piertv21/SmartGym-Monitor/commit/9d88b78a3f89c72887c669d44b56037fb70d0972))
+- update env.example ([b965781](https://github.com/piertv21/SmartGym-Monitor/commit/b965781ae0dcf848b776e6fbde59cec95e780458))
+
+### Documentation
+
+- add new machine-service operations to design chapter ([ee8c491](https://github.com/piertv21/SmartGym-Monitor/commit/ee8c491649ee710f9bd7a417aaf612b246ac1ef2))
+
+### General maintenance
+
+- removed useless folder ([2d8128b](https://github.com/piertv21/SmartGym-Monitor/commit/2d8128bfd4ba2dba375a0d39c77f7e9f5da256a4))
+
+### Refactoring
+
+- add jackson serialization and toString() to machine-service messages ([80783d5](https://github.com/piertv21/SmartGym-Monitor/commit/80783d564aac94a8bae92a523c9a932b5c865d3f))
+
 ## [1.2.0](https://github.com/piertv21/SmartGym-Monitor/compare/1.1.0...1.2.0) (2026-03-19)
 
 ### Features

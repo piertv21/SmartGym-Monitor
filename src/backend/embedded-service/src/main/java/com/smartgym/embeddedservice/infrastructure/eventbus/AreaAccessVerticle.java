@@ -5,6 +5,8 @@ import com.smartgym.embeddedservice.model.AreaAccessMessage;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 
+import java.util.concurrent.CompletableFuture;
+
 public class AreaAccessVerticle extends AbstractVerticle {
 
     private final EmbeddedServiceAPI embeddedService;
@@ -22,7 +24,17 @@ public class AreaAccessVerticle extends AbstractVerticle {
 
                 System.out.println("[AreaAccessVerticle] Area access event received: " + areaAccessMessage);
 
-                embeddedService.processAreaAccess(areaAccessMessage)
+                String direction = areaAccessMessage.getDirection();
+                CompletableFuture<Void> processing;
+                if ("OUT".equalsIgnoreCase(direction)) {
+                    processing = embeddedService.processAreaExit(areaAccessMessage);
+                } else if ("IN".equalsIgnoreCase(direction)) {
+                    processing = embeddedService.processAreaAccess(areaAccessMessage);
+                } else {
+                    throw new IllegalArgumentException("Unsupported area direction: " + direction);
+                }
+
+                processing
                         .thenAccept(result ->
                                 System.out.println("[AreaAccessVerticle] Area access event processed successfully"))
                         .exceptionally(ex -> {

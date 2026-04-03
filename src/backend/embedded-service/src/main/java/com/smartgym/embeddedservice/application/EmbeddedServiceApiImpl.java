@@ -16,6 +16,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.Locale;
 
 public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
@@ -85,8 +86,7 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
         }
 
         JsonObject event = buildAreaAccessEvent(message);
-        return areaServicePort.processAreaAccess(message)
-                .thenCompose(ignored -> forwardToAnalyticsAndSave(event));
+        return executeWithGuaranteedAnalytics(areaServicePort.processAreaAccess(message), event);
     }
 
     @Override
@@ -100,8 +100,7 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
         }
 
         JsonObject event = buildAreaAccessEvent(message);
-        return areaServicePort.processAreaExit(message)
-                .thenCompose(ignored -> forwardToAnalyticsAndSave(event));
+        return executeWithGuaranteedAnalytics(areaServicePort.processAreaExit(message), event);
     }
 
     @Override
@@ -129,7 +128,7 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
         }
 
         JsonObject event = buildMachineUsageEvent(message);
-        return machineCall.thenCompose(ignored -> forwardToAnalyticsAndSave(event));
+        return executeWithGuaranteedAnalytics(machineCall, event);
     }
 
     @Override
@@ -208,5 +207,31 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
     private CompletableFuture<Void> forwardToAnalyticsAndSave(JsonObject event) {
         return analyticsServicePort.ingestEvent(event)
                 .thenCompose(ignored -> embeddedRepository.saveEvent(event));
+    }
+
+    private CompletableFuture<Void> executeWithGuaranteedAnalytics(CompletableFuture<Void> domainCall, JsonObject event) {
+        return domainCall
+                .handle((ignored, domainError) -> domainError)
+                .thenCompose(domainError -> forwardToAnalyticsAndSave(event)
+                        .handle((ignored, analyticsError) -> {
+                            if (domainError != null) {
+                                Throwable domainCause = unwrap(domainError);
+                                if (analyticsError != null) {
+                                    domainCause.addSuppressed(unwrap(analyticsError));
+                                }
+                                throw new CompletionException(domainCause);
+                            }
+                            if (analyticsError != null) {
+                                throw new CompletionException(unwrap(analyticsError));
+                            }
+                            return null;
+                        }));
+    }
+
+    private Throwable unwrap(Throwable throwable) {
+        if (throwable instanceof CompletionException && throwable.getCause() != null) {
+            return throwable.getCause();
+        }
+        return throwable;
     }
 }

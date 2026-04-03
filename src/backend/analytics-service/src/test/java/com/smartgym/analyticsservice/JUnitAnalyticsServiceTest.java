@@ -3,6 +3,8 @@ package com.smartgym.analyticsservice;
 import com.smartgym.analyticsservice.application.AnalyticsServiceAPIImpl;
 import com.smartgym.analyticsservice.application.ports.AnalyticsRepository;
 import com.smartgym.analyticsservice.model.AttendanceSnapshot;
+import com.smartgym.analyticsservice.model.AreaAttendanceSnapshot;
+import com.smartgym.analyticsservice.model.AreaPeakHourStat;
 import com.smartgym.analyticsservice.model.MachineUtilization;
 import com.smartgym.analyticsservice.model.PeakHourStat;
 import io.vertx.core.json.JsonObject;
@@ -75,6 +77,100 @@ public class JUnitAnalyticsServiceTest {
         assertEquals(1, util.size());
         assertEquals("treadmill-01", util.getFirst().getMachineId());
         assertEquals(1, util.getFirst().getUsageCount());
+    }
+
+    @Test
+    void ingestAreaAccessInUpdatesAreaAttendanceAndAreaPeakHours() {
+        AnalyticsRepository repository = new InMemoryAnalyticsRepository(
+                Map.of(),
+                List.of(),
+                List.of()
+        );
+
+        AnalyticsServiceAPIImpl analyticsService = new AnalyticsServiceAPIImpl(repository);
+
+        JsonObject event = new JsonObject()
+                .put("eventType", "AREA_ACCESS")
+                .put("payload", new JsonObject()
+                        .put("timeStamp", "2026-03-26T10:15:00Z")
+                        .put("areaId", "cardio")
+                        .put("direction", "IN")
+                );
+
+        analyticsService.ingestEvent(event).join();
+
+        Optional<AreaAttendanceSnapshot> snapshot = analyticsService
+                .getAreaAttendanceByDateAndAreaId("2026-03-26", "cardio")
+                .join();
+        List<AreaPeakHourStat> peakHours = analyticsService
+                .getAreaPeakHoursByDateAndAreaId("2026-03-26", "cardio")
+                .join();
+
+        assertTrue(snapshot.isPresent());
+        assertEquals(1, snapshot.get().getCurrentCount());
+        assertEquals(1, snapshot.get().getTotalEntries());
+        assertEquals(0, snapshot.get().getTotalExits());
+        assertEquals(1, peakHours.size());
+        assertEquals(10, peakHours.getFirst().getHour());
+        assertEquals(1, peakHours.getFirst().getAttendanceCount());
+    }
+
+    @Test
+    void ingestAreaAccessOutNeverDropsAreaAttendanceBelowZero() {
+        AnalyticsRepository repository = new InMemoryAnalyticsRepository(
+                Map.of(),
+                List.of(),
+                List.of()
+        );
+
+        AnalyticsServiceAPIImpl analyticsService = new AnalyticsServiceAPIImpl(repository);
+
+        JsonObject event = new JsonObject()
+                .put("eventType", "AREA_ACCESS")
+                .put("payload", new JsonObject()
+                        .put("timeStamp", "2026-03-26T10:15:00Z")
+                        .put("areaId", "cardio")
+                        .put("direction", "OUT")
+                );
+
+        analyticsService.ingestEvent(event).join();
+
+        Optional<AreaAttendanceSnapshot> snapshot = analyticsService
+                .getAreaAttendanceByDateAndAreaId("2026-03-26", "cardio")
+                .join();
+
+        assertTrue(snapshot.isPresent());
+        assertEquals(0, snapshot.get().getCurrentCount());
+        assertEquals(0, snapshot.get().getTotalEntries());
+        assertEquals(1, snapshot.get().getTotalExits());
+    }
+
+    @Test
+    void ingestAreaAccessFailsWhenDirectionIsInvalid() {
+        AnalyticsRepository repository = new InMemoryAnalyticsRepository(
+                Map.of(),
+                List.of(),
+                List.of()
+        );
+
+        AnalyticsServiceAPIImpl analyticsService = new AnalyticsServiceAPIImpl(repository);
+
+        JsonObject invalidEvent = new JsonObject()
+                .put("eventType", "AREA_ACCESS")
+                .put("payload", new JsonObject()
+                        .put("timeStamp", "2026-03-26T10:15:00Z")
+                        .put("areaId", "cardio")
+                        .put("direction", "SIDEWAYS")
+                );
+
+        CompletionException ex = assertThrows(
+                CompletionException.class,
+                () -> analyticsService.ingestEvent(invalidEvent).join()
+        );
+
+        assertNotNull(ex.getCause());
+        assertTrue(ex.getCause() instanceof IllegalArgumentException);
+        assertTrue(ex.getCause().getMessage().contains("direction IN or OUT"));
     }
 
     @Test
@@ -347,11 +443,197 @@ public class JUnitAnalyticsServiceTest {
         assertTrue(ex.getCause().getMessage().contains("date cannot be null or empty"));
     }
 
+    @Test
+    void ingestGymAccessEntryExitSequenceKeepsAttendanceConsistentAndTracksEntryPeaksOnly() {
+        AnalyticsRepository repository = new InMemoryAnalyticsRepository(
+                Map.of(),
+                List.of(),
+                List.of()
+        );
+
+        AnalyticsServiceAPIImpl analyticsService = new AnalyticsServiceAPIImpl(repository);
+
+        analyticsService.ingestEvent(new JsonObject()
+                .put("eventType", "GYM_ACCESS")
+                .put("payload", new JsonObject()
+                        .put("accessType", "ENTRY")
+                        .put("timeStamp", "2026-03-26T08:00:00Z"))
+        ).join();
+
+        analyticsService.ingestEvent(new JsonObject()
+                .put("eventType", "GYM_ACCESS")
+                .put("payload", new JsonObject()
+                        .put("accessType", "ENTRY")
+                        .put("timeStamp", "2026-03-26T09:00:00Z"))
+        ).join();
+
+        analyticsService.ingestEvent(new JsonObject()
+                .put("eventType", "GYM_ACCESS")
+                .put("payload", new JsonObject()
+                        .put("accessType", "EXIT")
+                        .put("timeStamp", "2026-03-26T09:30:00Z"))
+        ).join();
+
+        Optional<AttendanceSnapshot> snapshot = analyticsService.getAttendanceStats("2026-03-26").join();
+        List<PeakHourStat> peakHours = analyticsService.getPeakHoursByDate("2026-03-26").join();
+
+        assertTrue(snapshot.isPresent());
+        assertEquals(2, snapshot.get().getTotalEntries());
+        assertEquals(1, snapshot.get().getTotalExits());
+        assertEquals(1, snapshot.get().getGymCount());
+
+        Map<Integer, Integer> byHour = new LinkedHashMap<>();
+        for (PeakHourStat stat : peakHours) {
+            byHour.put(stat.getHour(), stat.getAttendanceCount());
+        }
+
+        assertEquals(2, byHour.size());
+        assertEquals(1, byHour.get(8));
+        assertEquals(1, byHour.get(9));
+    }
+
+    @Test
+    void ingestAreaAccessSequenceTracksCurrentEntriesExitsAndHourPeakAsMaxOccupancy() {
+        AnalyticsRepository repository = new InMemoryAnalyticsRepository(
+                Map.of(),
+                List.of(),
+                List.of()
+        );
+
+        AnalyticsServiceAPIImpl analyticsService = new AnalyticsServiceAPIImpl(repository);
+
+        analyticsService.ingestEvent(new JsonObject()
+                .put("eventType", "AREA_ACCESS")
+                .put("payload", new JsonObject()
+                        .put("areaId", "cardio")
+                        .put("direction", "IN")
+                        .put("timeStamp", "2026-03-26T10:00:00Z"))
+        ).join();
+
+        analyticsService.ingestEvent(new JsonObject()
+                .put("eventType", "AREA_ACCESS")
+                .put("payload", new JsonObject()
+                        .put("areaId", "cardio")
+                        .put("direction", "IN")
+                        .put("timeStamp", "2026-03-26T10:10:00Z"))
+        ).join();
+
+        analyticsService.ingestEvent(new JsonObject()
+                .put("eventType", "AREA_ACCESS")
+                .put("payload", new JsonObject()
+                        .put("areaId", "cardio")
+                        .put("direction", "OUT")
+                        .put("timeStamp", "2026-03-26T10:20:00Z"))
+        ).join();
+
+        analyticsService.ingestEvent(new JsonObject()
+                .put("eventType", "AREA_ACCESS")
+                .put("payload", new JsonObject()
+                        .put("areaId", "cardio")
+                        .put("direction", "IN")
+                        .put("timeStamp", "2026-03-26T10:30:00Z"))
+        ).join();
+
+        Optional<AreaAttendanceSnapshot> snapshot = analyticsService
+                .getAreaAttendanceByDateAndAreaId("2026-03-26", "cardio")
+                .join();
+        List<AreaPeakHourStat> peakHours = analyticsService
+                .getAreaPeakHoursByDateAndAreaId("2026-03-26", "cardio")
+                .join();
+
+        assertTrue(snapshot.isPresent());
+        assertEquals(2, snapshot.get().getCurrentCount());
+        assertEquals(3, snapshot.get().getTotalEntries());
+        assertEquals(1, snapshot.get().getTotalExits());
+        assertEquals(1, peakHours.size());
+        assertEquals(10, peakHours.getFirst().getHour());
+        assertEquals(2, peakHours.getFirst().getAttendanceCount());
+    }
+
+    @Test
+    void ingestMachineUsageCountsOnlyStartedAndKeepsDailyIsolation() {
+        AnalyticsRepository repository = new InMemoryAnalyticsRepository(
+                Map.of(),
+                List.of(),
+                List.of()
+        );
+
+        AnalyticsServiceAPIImpl analyticsService = new AnalyticsServiceAPIImpl(repository);
+
+        analyticsService.ingestEvent(new JsonObject()
+                .put("eventType", "MACHINE_USAGE")
+                .put("payload", new JsonObject()
+                        .put("machineId", "treadmill-01")
+                        .put("timeStamp", "2026-03-26T11:00:00Z")
+                        .put("usageState", "STARTED"))
+        ).join();
+
+        analyticsService.ingestEvent(new JsonObject()
+                .put("eventType", "MACHINE_USAGE")
+                .put("payload", new JsonObject()
+                        .put("machineId", "treadmill-01")
+                        .put("timeStamp", "2026-03-26T11:30:00Z")
+                        .put("usageState", "STOPPED"))
+        ).join();
+
+        analyticsService.ingestEvent(new JsonObject()
+                .put("eventType", "MACHINE_USAGE")
+                .put("payload", new JsonObject()
+                        .put("machineId", "treadmill-01")
+                        .put("timeStamp", "2026-03-27T08:30:00Z")
+                        .put("usageState", "STARTED"))
+        ).join();
+
+        List<MachineUtilization> day1 = analyticsService.getMachineUtilizationByDate("2026-03-26").join();
+        List<MachineUtilization> day2 = analyticsService.getMachineUtilizationByDate("2026-03-27").join();
+
+        assertEquals(1, day1.size());
+        assertEquals("treadmill-01", day1.getFirst().getMachineId());
+        assertEquals(1, day1.getFirst().getUsageCount());
+        assertEquals(30.0, day1.getFirst().getTotalUsageMinutes(), 0.0001);
+        assertEquals(50.0, day1.getFirst().getUtilizationRate(), 0.0001);
+
+        assertEquals(1, day2.size());
+        assertEquals("treadmill-01", day2.getFirst().getMachineId());
+        assertEquals(1, day2.getFirst().getUsageCount());
+        assertEquals(0.0, day2.getFirst().getTotalUsageMinutes(), 0.0001);
+        assertEquals(0.0, day2.getFirst().getUtilizationRate(), 0.0001);
+    }
+
+    @Test
+    void ingestMachineUsageStoppedWithoutStartedDoesNotIncreaseTotals() {
+        AnalyticsRepository repository = new InMemoryAnalyticsRepository(
+                Map.of(),
+                List.of(),
+                List.of()
+        );
+
+        AnalyticsServiceAPIImpl analyticsService = new AnalyticsServiceAPIImpl(repository);
+
+        analyticsService.ingestEvent(new JsonObject()
+                .put("eventType", "MACHINE_USAGE")
+                .put("payload", new JsonObject()
+                        .put("machineId", "bike-01")
+                        .put("timeStamp", "2026-03-26T12:00:00Z")
+                        .put("usageState", "STOPPED"))
+        ).join();
+
+        List<MachineUtilization> result = analyticsService.getMachineUtilizationByDate("2026-03-26").join();
+
+        assertEquals(1, result.size());
+        assertEquals("bike-01", result.getFirst().getMachineId());
+        assertEquals(0, result.getFirst().getUsageCount());
+        assertEquals(0.0, result.getFirst().getTotalUsageMinutes(), 0.0001);
+        assertEquals(0.0, result.getFirst().getUtilizationRate(), 0.0001);
+    }
+
     private static final class InMemoryAnalyticsRepository implements AnalyticsRepository {
 
         private final Map<String, AttendanceSnapshot> attendanceByDate;
         private final List<MachineUtilization> machineUtilizations;
         private final List<PeakHourStat> peakHourStats;
+        private final Map<String, AreaAttendanceSnapshot> areaAttendanceByDateAndArea;
+        private final List<AreaPeakHourStat> areaPeakHourStats;
 
         private InMemoryAnalyticsRepository(
                 Map<String, AttendanceSnapshot> attendanceByDate,
@@ -361,6 +643,8 @@ public class JUnitAnalyticsServiceTest {
             this.attendanceByDate = new LinkedHashMap<>(attendanceByDate);
             this.machineUtilizations = new ArrayList<>(machineUtilizations);
             this.peakHourStats = new ArrayList<>(peakHourStats);
+            this.areaAttendanceByDateAndArea = new LinkedHashMap<>();
+            this.areaPeakHourStats = new ArrayList<>();
         }
 
         @Override
@@ -381,7 +665,19 @@ public class JUnitAnalyticsServiceTest {
 
         @Override
         public CompletableFuture<Void> saveMachineUtilization(MachineUtilization machineUtilization) {
-            machineUtilizations.add(machineUtilization);
+            int existingIndex = -1;
+            for (int i = 0; i < machineUtilizations.size(); i++) {
+                if (machineUtilizations.get(i).getId().equals(machineUtilization.getId())) {
+                    existingIndex = i;
+                    break;
+                }
+            }
+
+            if (existingIndex >= 0) {
+                machineUtilizations.set(existingIndex, machineUtilization);
+            } else {
+                machineUtilizations.add(machineUtilization);
+            }
             return CompletableFuture.completedFuture(null);
         }
 
@@ -405,7 +701,19 @@ public class JUnitAnalyticsServiceTest {
 
         @Override
         public CompletableFuture<Void> savePeakHourStat(PeakHourStat peakHourStat) {
-            peakHourStats.add(peakHourStat);
+            int existingIndex = -1;
+            for (int i = 0; i < peakHourStats.size(); i++) {
+                if (peakHourStats.get(i).getId().equals(peakHourStat.getId())) {
+                    existingIndex = i;
+                    break;
+                }
+            }
+
+            if (existingIndex >= 0) {
+                peakHourStats.set(existingIndex, peakHourStat);
+            } else {
+                peakHourStats.add(peakHourStat);
+            }
             return CompletableFuture.completedFuture(null);
         }
 
@@ -426,5 +734,88 @@ public class JUnitAnalyticsServiceTest {
         public CompletableFuture<List<PeakHourStat>> findAllPeakHours() {
             return CompletableFuture.completedFuture(new ArrayList<>(peakHourStats));
         }
+
+        @Override
+        public CompletableFuture<Void> saveAreaAttendanceSnapshot(AreaAttendanceSnapshot snapshot) {
+            areaAttendanceByDateAndArea.put(areaKey(snapshot.getDate(), snapshot.getAreaId()), snapshot);
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public CompletableFuture<Optional<AreaAttendanceSnapshot>> findAreaAttendanceByDateAndAreaId(String date, String areaId) {
+            return CompletableFuture.completedFuture(Optional.ofNullable(areaAttendanceByDateAndArea.get(areaKey(date, areaId))));
+        }
+
+        @Override
+        public CompletableFuture<List<AreaAttendanceSnapshot>> findAreaAttendanceByDate(String date) {
+            List<AreaAttendanceSnapshot> result = new ArrayList<>();
+
+            for (AreaAttendanceSnapshot snapshot : areaAttendanceByDateAndArea.values()) {
+                if (date.equals(snapshot.getDate())) {
+                    result.add(snapshot);
+                }
+            }
+
+            return CompletableFuture.completedFuture(result);
+        }
+
+        @Override
+        public CompletableFuture<List<AreaAttendanceSnapshot>> findAllAreaAttendanceSnapshots() {
+            return CompletableFuture.completedFuture(new ArrayList<>(areaAttendanceByDateAndArea.values()));
+        }
+
+        @Override
+        public CompletableFuture<Void> saveAreaPeakHourStat(AreaPeakHourStat areaPeakHourStat) {
+            int existingIndex = -1;
+            for (int i = 0; i < areaPeakHourStats.size(); i++) {
+                if (areaPeakHourStats.get(i).getId().equals(areaPeakHourStat.getId())) {
+                    existingIndex = i;
+                    break;
+                }
+            }
+
+            if (existingIndex >= 0) {
+                areaPeakHourStats.set(existingIndex, areaPeakHourStat);
+            } else {
+                areaPeakHourStats.add(areaPeakHourStat);
+            }
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public CompletableFuture<List<AreaPeakHourStat>> findAreaPeakHoursByDate(String date) {
+            List<AreaPeakHourStat> result = new ArrayList<>();
+
+            for (AreaPeakHourStat areaPeakHourStat : areaPeakHourStats) {
+                if (date.equals(areaPeakHourStat.getDate())) {
+                    result.add(areaPeakHourStat);
+                }
+            }
+
+            return CompletableFuture.completedFuture(result);
+        }
+
+        @Override
+        public CompletableFuture<List<AreaPeakHourStat>> findAreaPeakHoursByDateAndAreaId(String date, String areaId) {
+            List<AreaPeakHourStat> result = new ArrayList<>();
+
+            for (AreaPeakHourStat areaPeakHourStat : areaPeakHourStats) {
+                if (date.equals(areaPeakHourStat.getDate()) && areaId.equals(areaPeakHourStat.getAreaId())) {
+                    result.add(areaPeakHourStat);
+                }
+            }
+
+            return CompletableFuture.completedFuture(result);
+        }
+
+        @Override
+        public CompletableFuture<List<AreaPeakHourStat>> findAllAreaPeakHours() {
+            return CompletableFuture.completedFuture(new ArrayList<>(areaPeakHourStats));
+        }
+
+        private String areaKey(String date, String areaId) {
+            return date + "::" + areaId;
+        }
     }
 }
+
