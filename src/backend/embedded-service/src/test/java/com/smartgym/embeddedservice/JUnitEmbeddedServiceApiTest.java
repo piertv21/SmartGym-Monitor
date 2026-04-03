@@ -113,7 +113,7 @@ public class JUnitEmbeddedServiceApiTest {
     }
 
     @Test
-    void processAreaAccessDoesNotSaveEventWhenAreaServiceFails() {
+    void processAreaAccessStillForwardsToAnalyticsWhenAreaServiceFails() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, true);
         RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
@@ -135,8 +135,8 @@ public class JUnitEmbeddedServiceApiTest {
         );
 
         assertThrows(CompletionException.class, () -> service.processAreaAccess(message).join());
-        assertEquals(List.of("area-service"), callOrder);
-        assertEquals(0, repository.savedEvents.size());
+        assertEquals(List.of("area-service", "analytics-service", "embedded-repository"), callOrder);
+        assertEquals(1, repository.savedEvents.size());
     }
 
     @Test
@@ -254,7 +254,7 @@ public class JUnitEmbeddedServiceApiTest {
     }
 
     @Test
-    void processMachineUsageDoesNotSaveEventWhenMachineServiceFails() {
+    void processMachineUsageStillForwardsToAnalyticsWhenMachineServiceFails() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
         RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
@@ -276,8 +276,8 @@ public class JUnitEmbeddedServiceApiTest {
         );
 
         assertThrows(CompletionException.class, () -> service.processMachineUsage(message).join());
-        assertEquals(List.of("machine-service-start"), callOrder);
-        assertEquals(0, repository.savedEvents.size());
+        assertEquals(List.of("machine-service-start", "analytics-service", "embedded-repository"), callOrder);
+        assertEquals(1, repository.savedEvents.size());
     }
 
     private static final class RecordingAreaServicePort implements AreaServicePort {
