@@ -20,4 +20,16 @@ public interface AnalyticsRestController {
     CompletableFuture<ResponseEntity<?>> getPeakHours();
 
     CompletableFuture<ResponseEntity<?>> getPeakHoursByDate(String date);
+
+    CompletableFuture<ResponseEntity<?>> getAreaAttendance();
+
+    CompletableFuture<ResponseEntity<?>> getAreaAttendanceByDate(String date);
+
+    CompletableFuture<ResponseEntity<?>> getAreaAttendanceByDateAndAreaId(String date, String areaId);
+
+    CompletableFuture<ResponseEntity<?>> getAreaPeakHours();
+
+    CompletableFuture<ResponseEntity<?>> getAreaPeakHoursByDate(String date);
+
+    CompletableFuture<ResponseEntity<?>> getAreaPeakHoursByDateAndAreaId(String date, String areaId);
 }

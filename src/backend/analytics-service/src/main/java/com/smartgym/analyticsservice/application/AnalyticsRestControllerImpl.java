@@ -69,4 +69,54 @@ public class AnalyticsRestControllerImpl implements AnalyticsRestController {
         return analyticsServiceAPI.getPeakHoursByDate(date)
                 .thenApply(ResponseEntity::ok);
     }
+
+    @Override
+    @GetMapping("/area-attendance")
+    public CompletableFuture<ResponseEntity<?>> getAreaAttendance() {
+        return analyticsServiceAPI.getAreaAttendance()
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
+    @GetMapping("/area-attendance/{date}")
+    public CompletableFuture<ResponseEntity<?>> getAreaAttendanceByDate(@PathVariable String date) {
+        return analyticsServiceAPI.getAreaAttendanceByDate(date)
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
+    @GetMapping("/area-attendance/{date}/{areaId}")
+    public CompletableFuture<ResponseEntity<?>> getAreaAttendanceByDateAndAreaId(
+            @PathVariable String date,
+            @PathVariable String areaId
+    ) {
+        return analyticsServiceAPI.getAreaAttendanceByDateAndAreaId(date, areaId)
+                .thenApply(snapshotOpt -> snapshotOpt
+                        .<ResponseEntity<?>>map(ResponseEntity::ok)
+                        .orElseGet(() -> ResponseEntity.notFound().build()));
+    }
+
+    @Override
+    @GetMapping("/area-peak-hours")
+    public CompletableFuture<ResponseEntity<?>> getAreaPeakHours() {
+        return analyticsServiceAPI.getAreaPeakHours()
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
+    @GetMapping("/area-peak-hours/{date}")
+    public CompletableFuture<ResponseEntity<?>> getAreaPeakHoursByDate(@PathVariable String date) {
+        return analyticsServiceAPI.getAreaPeakHoursByDate(date)
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
+    @GetMapping("/area-peak-hours/{date}/{areaId}")
+    public CompletableFuture<ResponseEntity<?>> getAreaPeakHoursByDateAndAreaId(
+            @PathVariable String date,
+            @PathVariable String areaId
+    ) {
+        return analyticsServiceAPI.getAreaPeakHoursByDateAndAreaId(date, areaId)
+                .thenApply(ResponseEntity::ok);
+    }
 }
