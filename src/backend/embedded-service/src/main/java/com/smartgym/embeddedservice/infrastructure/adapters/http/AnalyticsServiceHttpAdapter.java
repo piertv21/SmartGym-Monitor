@@ -27,7 +27,7 @@ public class AnalyticsServiceHttpAdapter implements AnalyticsServicePort {
         String normalizedBaseUrl = analyticsServiceBaseUrl.endsWith("/")
                 ? analyticsServiceBaseUrl.substring(0, analyticsServiceBaseUrl.length() - 1)
                 : analyticsServiceBaseUrl;
-        this.ingestEndpoint = URI.create(normalizedBaseUrl + "/analytics-service/events/ingest");
+        this.ingestEndpoint = URI.create(normalizedBaseUrl + "/events/ingest");
         logger.info("🔧 AnalyticsServiceHttpAdapter initialized with base URL: {}", normalizedBaseUrl);
         logger.info("   - Ingest Endpoint: {}", this.ingestEndpoint);
     }

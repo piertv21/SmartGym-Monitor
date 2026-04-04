@@ -5,6 +5,7 @@ import com.smartgym.embeddedservice.application.ports.AnalyticsServicePort;
 import com.smartgym.embeddedservice.application.ports.AreaServicePort;
 import com.smartgym.embeddedservice.application.ports.EmbeddedRepository;
 import com.smartgym.embeddedservice.application.ports.MachineServicePort;
+import com.smartgym.embeddedservice.application.ports.TrackingServicePort;
 import com.smartgym.embeddedservice.model.AreaAccessMessage;
 import com.smartgym.embeddedservice.model.GymAccessMessage;
 import com.smartgym.embeddedservice.model.MachineUsageMessage;
@@ -30,12 +31,14 @@ public class JUnitEmbeddedServiceApiTest {
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
         RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
         RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
         EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
                 repository,
                 areaServicePort,
                 analyticsServicePort,
-                machineServicePort
+                machineServicePort,
+                trackingServicePort
         );
 
         AreaAccessMessage message = new AreaAccessMessage(
@@ -58,12 +61,14 @@ public class JUnitEmbeddedServiceApiTest {
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
         RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
         RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
         EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
                 repository,
                 areaServicePort,
                 analyticsServicePort,
-                machineServicePort
+                machineServicePort,
+                trackingServicePort
         );
 
         AreaAccessMessage message = new AreaAccessMessage(
@@ -86,12 +91,14 @@ public class JUnitEmbeddedServiceApiTest {
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
         RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
         RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
         EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
                 repository,
                 areaServicePort,
                 analyticsServicePort,
-                machineServicePort
+                machineServicePort,
+                trackingServicePort
         );
 
         AreaAccessMessage invalidMessage = new AreaAccessMessage(
@@ -113,17 +120,19 @@ public class JUnitEmbeddedServiceApiTest {
     }
 
     @Test
-    void processAreaAccessDoesNotSaveEventWhenAreaServiceFails() {
+    void processAreaAccessStillForwardsToAnalyticsWhenAreaServiceFails() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, true);
         RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
         RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
         EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
                 repository,
                 areaServicePort,
                 analyticsServicePort,
-                machineServicePort
+                machineServicePort,
+                trackingServicePort
         );
 
         AreaAccessMessage message = new AreaAccessMessage(
@@ -135,8 +144,8 @@ public class JUnitEmbeddedServiceApiTest {
         );
 
         assertThrows(CompletionException.class, () -> service.processAreaAccess(message).join());
-        assertEquals(List.of("area-service"), callOrder);
-        assertEquals(0, repository.savedEvents.size());
+        assertEquals(List.of("area-service", "analytics-service", "embedded-repository"), callOrder);
+        assertEquals(1, repository.savedEvents.size());
     }
 
     @Test
@@ -145,12 +154,14 @@ public class JUnitEmbeddedServiceApiTest {
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
         RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, true);
         RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
         EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
                 repository,
                 areaServicePort,
                 analyticsServicePort,
-                machineServicePort
+                machineServicePort,
+                trackingServicePort
         );
 
         GymAccessMessage message = new GymAccessMessage(
@@ -161,7 +172,7 @@ public class JUnitEmbeddedServiceApiTest {
         );
 
         assertThrows(CompletionException.class, () -> service.processGymAccess(message).join());
-        assertEquals(List.of("analytics-service"), callOrder);
+        assertEquals(List.of("tracking-service-start", "analytics-service"), callOrder);
         assertEquals(0, repository.savedEvents.size());
     }
 
@@ -171,12 +182,14 @@ public class JUnitEmbeddedServiceApiTest {
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
         RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
         RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
         EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
                 repository,
                 areaServicePort,
                 analyticsServicePort,
-                machineServicePort
+                machineServicePort,
+                trackingServicePort
         );
 
         MachineUsageMessage message = new MachineUsageMessage(
@@ -199,12 +212,14 @@ public class JUnitEmbeddedServiceApiTest {
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
         RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
         RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
         EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
                 repository,
                 areaServicePort,
                 analyticsServicePort,
-                machineServicePort
+                machineServicePort,
+                trackingServicePort
         );
 
         MachineUsageMessage message = new MachineUsageMessage(
@@ -227,12 +242,14 @@ public class JUnitEmbeddedServiceApiTest {
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
         RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
         RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
         EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
                 repository,
                 areaServicePort,
                 analyticsServicePort,
-                machineServicePort
+                machineServicePort,
+                trackingServicePort
         );
 
         MachineUsageMessage invalidMessage = new MachineUsageMessage(
@@ -254,17 +271,19 @@ public class JUnitEmbeddedServiceApiTest {
     }
 
     @Test
-    void processMachineUsageDoesNotSaveEventWhenMachineServiceFails() {
+    void processMachineUsageStillForwardsToAnalyticsWhenMachineServiceFails() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
         RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
         RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, true);
+        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
         EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
                 repository,
                 areaServicePort,
                 analyticsServicePort,
-                machineServicePort
+                machineServicePort,
+                trackingServicePort
         );
 
         MachineUsageMessage message = new MachineUsageMessage(
@@ -276,8 +295,8 @@ public class JUnitEmbeddedServiceApiTest {
         );
 
         assertThrows(CompletionException.class, () -> service.processMachineUsage(message).join());
-        assertEquals(List.of("machine-service-start"), callOrder);
-        assertEquals(0, repository.savedEvents.size());
+        assertEquals(List.of("machine-service-start", "analytics-service", "embedded-repository"), callOrder);
+        assertEquals(1, repository.savedEvents.size());
     }
 
     private static final class RecordingAreaServicePort implements AreaServicePort {
@@ -353,6 +372,35 @@ public class JUnitEmbeddedServiceApiTest {
             callOrder.add("machine-service-end");
             if (fail) {
                 return CompletableFuture.failedFuture(new IllegalStateException("machine-service unavailable"));
+            }
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+
+    private static final class RecordingTrackingServicePort implements TrackingServicePort {
+
+        private final List<String> callOrder;
+        private final boolean fail;
+
+        private RecordingTrackingServicePort(List<String> callOrder, boolean fail) {
+            this.callOrder = callOrder;
+            this.fail = fail;
+        }
+
+        @Override
+        public CompletableFuture<Void> startGymSession(GymAccessMessage message) {
+            callOrder.add("tracking-service-start");
+            if (fail) {
+                return CompletableFuture.failedFuture(new IllegalStateException("tracking-service unavailable"));
+            }
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public CompletableFuture<Void> endGymSession(GymAccessMessage message) {
+            callOrder.add("tracking-service-end");
+            if (fail) {
+                return CompletableFuture.failedFuture(new IllegalStateException("tracking-service unavailable"));
             }
             return CompletableFuture.completedFuture(null);
         }

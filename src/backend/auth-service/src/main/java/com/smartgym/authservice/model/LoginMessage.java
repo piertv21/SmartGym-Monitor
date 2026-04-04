@@ -12,6 +12,9 @@ public class LoginMessage {
     @JsonProperty("password")
     private String password;
 
+    public LoginMessage() {
+    }
+
     public LoginMessage(String username, String password) {
         this.username = username;
         this.password = password;

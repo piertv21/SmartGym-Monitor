@@ -10,6 +10,7 @@ import com.smartgym.authservice.model.AuthUser;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -22,13 +23,20 @@ public class AuthRepositoryImpl implements AuthRepository {
 
     private final MongoCollection<Document> usersCollection;
     private final MongoCollection<Document> logsCollection;
+    private final PasswordEncoder passwordEncoder;
     private final String defaultAdminUsername;
     private final String defaultAdminPassword;
 
-    public AuthRepositoryImpl(MongoClient mongoClient, String defaultAdminUsername, String defaultAdminPassword) {
+    public AuthRepositoryImpl(
+            MongoClient mongoClient,
+            PasswordEncoder passwordEncoder,
+            String defaultAdminUsername,
+            String defaultAdminPassword
+    ) {
         MongoDatabase database = mongoClient.getDatabase("authservicedb");
         this.usersCollection = database.getCollection(USERS_COLLECTION);
         this.logsCollection = database.getCollection(LOGS_COLLECTION);
+        this.passwordEncoder = passwordEncoder;
         this.defaultAdminUsername = defaultAdminUsername;
         this.defaultAdminPassword = defaultAdminPassword;
         initializeIndexes();
@@ -79,21 +87,49 @@ public class AuthRepositoryImpl implements AuthRepository {
     }
 
     @Override
-    public CompletableFuture<Void> saveLoginLog(String username, long timestamp) {
+    public CompletableFuture<Void> saveLoginLog(String username, String timestamp) {
         return saveLog(username, timestamp, "LOGIN");
     }
 
     @Override
-    public CompletableFuture<Void> saveLogoutLog(String username, long timestamp) {
+    public CompletableFuture<Boolean> saveUser(AuthUser user) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+        try {
+            if (user == null || user.getUsername() == null || user.getUsername().isBlank()) {
+                throw new IllegalArgumentException("Invalid user payload");
+            }
+
+            Document existing = usersCollection.find(new Document("username", user.getUsername())).first();
+            if (existing != null) {
+                future.complete(false);
+                return future;
+            }
+
+            usersCollection.insertOne(toDocument(user));
+            future.complete(true);
+        } catch (Exception e) {
+            logger.error("Failed to save user '{}': {}", user != null ? user.getUsername() : "unknown", e.getMessage());
+            future.completeExceptionally(new RuntimeException("Failed to save user: " + e.getMessage(), e));
+        }
+
+        return future;
+    }
+
+    @Override
+    public CompletableFuture<Void> saveLogoutLog(String username, String timestamp) {
         return saveLog(username, timestamp, "LOGOUT");
     }
 
-    private CompletableFuture<Void> saveLog(String username, long timestamp, String action) {
+    private CompletableFuture<Void> saveLog(String username, String timestamp, String action) {
         CompletableFuture<Void> future = new CompletableFuture<>();
 
         try {
             if (username == null || username.isBlank()) {
                 throw new IllegalArgumentException("Invalid username");
+            }
+            if (timestamp == null || timestamp.isBlank()) {
+                throw new IllegalArgumentException("Invalid timestamp");
             }
 
             Document logDoc = new Document()
@@ -126,7 +162,11 @@ public class AuthRepositoryImpl implements AuthRepository {
                 return future;
             }
 
-            AuthUser defaultAdmin = new AuthUser(defaultAdminUsername, defaultAdminPassword);
+            String passwordToStore = defaultAdminPassword.startsWith("$2")
+                    ? defaultAdminPassword
+                    : passwordEncoder.encode(defaultAdminPassword);
+
+            AuthUser defaultAdmin = new AuthUser(defaultAdminUsername, passwordToStore);
             usersCollection.insertOne(toDocument(defaultAdmin));
             logger.info("✅ Default admin '{}' initialized", defaultAdminUsername);
             future.complete(null);

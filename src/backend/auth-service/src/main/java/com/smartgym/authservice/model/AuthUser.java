@@ -22,9 +22,6 @@ public class AuthUser {
         return username;
     }
 
-    public boolean matchesPassword(String rawPassword) {
-        return password.equals(rawPassword);
-    }
 
     public String getPassword() {
         return password;

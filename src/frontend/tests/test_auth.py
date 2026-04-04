@@ -10,7 +10,7 @@ def test_login_page_is_reachable(monkeypatch):
 
         @staticmethod
         def json():
-            return {}
+            return {"accessToken": "jwt-token-123", "tokenType": "Bearer", "expiresIn": 86400}
 
     monkeypatch.setattr(
         "smartgym_flask.routes.auth.get_user_service",
@@ -18,10 +18,9 @@ def test_login_page_is_reachable(monkeypatch):
             "S",
             (),
             {
-                "generate_gateway_token": lambda self: "token-123",
-                "login": lambda self, credentials, gateway_token: DummyResponse(),
-                "logout": lambda self, username, gateway_token: DummyResponse(),
-                "user_exists": lambda self, username, gateway_token: True,
+                "login": lambda self, credentials: DummyResponse(),
+                "logout": lambda self, access_token: DummyResponse(),
+                "user_exists": lambda self, username, access_token: True,
                 "base_url": "http://test-auth",
             },
         )(),
@@ -32,7 +31,7 @@ def test_login_page_is_reachable(monkeypatch):
     assert response.status_code == 200
 
     with client.session_transaction() as session:
-        assert session.get("gateway_token") == "token-123"
+        assert session.get("access_token") is None
 
 
 def test_login_success_redirects_to_dashboard(monkeypatch):
@@ -44,7 +43,7 @@ def test_login_success_redirects_to_dashboard(monkeypatch):
 
         @staticmethod
         def json():
-            return {}
+            return {"accessToken": "jwt-token-123", "tokenType": "Bearer", "expiresIn": 86400}
 
     monkeypatch.setattr(
         "smartgym_flask.routes.auth.get_user_service",
@@ -52,10 +51,9 @@ def test_login_success_redirects_to_dashboard(monkeypatch):
             "S",
             (),
             {
-                "generate_gateway_token": lambda self: "token-123",
-                "login": lambda self, credentials, gateway_token: DummyResponse(),
-                "logout": lambda self, username, gateway_token: DummyResponse(),
-                "user_exists": lambda self, username, gateway_token: True,
+                "login": lambda self, credentials: DummyResponse(),
+                "logout": lambda self, access_token: DummyResponse(),
+                "user_exists": lambda self, username, access_token: True,
                 "base_url": "http://test-auth",
             },
         )(),
@@ -69,4 +67,8 @@ def test_login_success_redirects_to_dashboard(monkeypatch):
 
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/dashboard")
+
+    with client.session_transaction() as session:
+        assert session.get("user") == "ADMIN"
+        assert session.get("access_token") == "jwt-token-123"
 

@@ -66,3 +66,9 @@ management:
       application: ${spring.application.name}
   server:
     port: 8080
+
+security:
+  jwt:
+    issuer: ${JWT_ISSUER:smartgym-auth}
+    audience: ${JWT_AUDIENCE:smartgym-gateway}
+    secret: ${JWT_SECRET:smartgym-jwt-secret-change-me-32-bytes-min}

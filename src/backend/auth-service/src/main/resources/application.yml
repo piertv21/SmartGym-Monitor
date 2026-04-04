@@ -47,3 +47,10 @@ auth:
     admin:
       username: ${AUTH_DEFAULT_ADMIN_USERNAME:ADMIN}
       password: ${AUTH_DEFAULT_ADMIN_PASSWORD:ADMIN}
+
+security:
+  jwt:
+    issuer: ${JWT_ISSUER:smartgym-auth}
+    audience: ${JWT_AUDIENCE:smartgym-gateway}
+    access-token-ttl-seconds: ${JWT_ACCESS_TOKEN_TTL_SECONDS:86400}
+    secret: ${JWT_SECRET:smartgym-jwt-secret-change-me-32-bytes-min}

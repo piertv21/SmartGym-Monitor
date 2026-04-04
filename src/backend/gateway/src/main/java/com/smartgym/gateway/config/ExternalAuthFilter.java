@@ -1,11 +1,12 @@
 package com.smartgym.gateway.config;
 
-import com.smartgym.gateway.service.TokenStore;
+import com.smartgym.gateway.service.JwtValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -20,17 +21,15 @@ public class ExternalAuthFilter implements GlobalFilter, Ordered {
 
     private static final Logger log = LoggerFactory.getLogger(ExternalAuthFilter.class);
 
-    private final TokenStore tokenStore;
+    private final JwtValidationService jwtValidationService;
 
-    public ExternalAuthFilter(TokenStore tokenStore) {
-        this.tokenStore = tokenStore;
+    public ExternalAuthFilter(JwtValidationService jwtValidationService) {
+        this.jwtValidationService = jwtValidationService;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String method = exchange.getRequest().getMethod() != null
-                ? exchange.getRequest().getMethod().name()
-                : "UNKNOWN";
+        String method = exchange.getRequest().getMethod().name();
         String path = exchange.getRequest().getURI().getPath();
         Route route = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR);
         String routeId = route != null ? route.getId() : "unknown";
@@ -43,16 +42,30 @@ public class ExternalAuthFilter implements GlobalFilter, Ordered {
 
         log.info("[GATEWAY] IN {} {} from {} -> route={} uri={}", method, path, remoteIp, routeId, routeUri);
 
-        // Keep token generation and actuator reachable without pre-existing gateway token.
-        if (path.startsWith("/auth/generate")
-                || path.startsWith("/actuator")) {
+        // Public endpoints that must remain accessible without a JWT.
+        if (path.startsWith("/actuator")
+                || path.endsWith("/login")
+                || path.endsWith("/register")) {
             return forwardWithLogging(exchange, chain, method, path, routeId);
         }
 
-        String token = exchange.getRequest().getHeaders().getFirst("X-Auth-Token");
-        if (token == null || !tokenStore.isValid(token)) {
+        String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            log.warn("[GATEWAY] BLOCKED {} {} from {} -> route={} reason=missing_or_invalid_token", method, path, remoteIp, routeId);
+            log.warn("[GATEWAY] BLOCKED {} {} from {} -> route={} reason=missing_bearer_token", method, path, remoteIp, routeId);
+            return exchange.getResponse().setComplete();
+        }
+
+        String token = authHeader.substring(7);
+        try {
+            String userId = jwtValidationService.validateAndExtractUserId(token);
+            ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
+                    .header("X-User-Id", userId)
+                    .build();
+            exchange = exchange.mutate().request(mutatedRequest).build();
+        } catch (IllegalStateException ex) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            log.warn("[GATEWAY] BLOCKED {} {} from {} -> route={} reason=invalid_jwt", method, path, remoteIp, routeId);
             return exchange.getResponse().setComplete();
         }
 
