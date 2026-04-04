@@ -40,35 +40,35 @@ We decide to split the domain in more subdomains as shown in the following secti
 > All terms listed in the table below must be used consistently in documentation,
 > diagrams, and source code.
 
-| Term                       | Description                                                                                                                 | Notes / Context                  |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| Gym                        | The physical facility composed of multiple areas.                                                                           | Gym Management                   |
-| Gym Area                   | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management / Gym Management |
-| Cardio Area                | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management / Gym Management |
-| Weight Area                | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management / Gym Management |
-| Class Area                 | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management / Gym Management |
-| Entrace Area               | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management / Gym Management |
-| Machine Area               | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management / Gym Management |
-| Area count                 | The number of people currently present in a gym area, including both people who are using machines and people waiting.      | Area Management                  |
-| Gym count                  | The number of people currently present in the gym.                                                                          | Area Management / Gym Management |
-| Turnstile                  | An element that allows access to the gym/a gym area if a badge is read correctly, is positioned at the entrance of the gym. | Embedded                         |
-| RFID reader                | A reader detecting user entry and exit, by using RFID.                                                                      | Embedded                         |
-| Door                       | An opening that allows passage from one area of the gym to another.                                                         | Embedded                         |
-| Access Area Direction      | The value that describe the direction of access between the areas. It can be _IN_ and _OUT_ area.                           | Embedded / Area Management       |
-| Machine                    | A gym equipment unit that can be used by a user.                                                                            | Machine Management               |
-| Proximity sensor           | A sensor that detects whether the machine is being used by a user.                                                          | Area Management / Gym Management |
-| Occupancy                  | The current status of a machine, which can be _Free_ or _Occupied_ or _Maintainance_.                                       | Area Management / Gym Management |
-| Gym Attendance             | Historic attendance of people at the gym.                                                                                   | Area Management / Gym Management |
-| Gym Member                 | A gym member accessing gym areas.                                                                                           | Area Management                  |
-| Enter Area Event           | Event indicating that a user entered a gym area.                                                                            | Embedded / Area Management       |
-| Exit Area Event            | Event indicating that a gym member left a gym area.                                                                         | Embedded / Area Management       |
-| Enter Gym Event            | Event indicating that a gym member left a gym area.                                                                         | Embedded / Area Management       |
-| Exit Gym Event             | Event indicating that a gym member left a gym area.                                                                         | Embedded / Area Management       |
-| Gym Member Machine Session | The time interval during which a gym member uses a machine.                                                                 | Area Management                  |
-| Gym Member Session         | The time interval during which a gym member stays in the gym.                                                               | Area Management                  |
-| Admin or Administrator     | Staff member responsible for monitoring gym usage and congestion.                                                           | Analytics / Authentication       |
+| Term                       | Description                                                                                                                 | Notes / Context            |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| Gym                        | The physical facility composed of multiple areas.                                                                           | Core Domain                |
+| Gym Area                   | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management            |
+| Cardio Area                | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management            |
+| Weight Area                | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management            |
+| Class Area                 | A specific physical zone inside the gym (e.g., cardio zone, free weights area, machines area).                              | Area Management            |
+| Entrance Area              | The entrance zone of the gym, where access is controlled by the turnstile.                                                  | Embedded / Tracking        |
+| Machine Area               | A specific physical zone inside the gym dedicated to machines.                                                              | Area Management            |
+| Area count                 | The number of people currently present in a gym area, including both people who are using machines and people waiting.      | Area Management            |
+| Gym count                  | The number of people currently present in the gym.                                                                          | Tracking Service           |
+| Turnstile                  | An element that allows access to the gym/a gym area if a badge is read correctly, is positioned at the entrance of the gym. | Embedded                   |
+| RFID reader                | A reader detecting user entry and exit, by using RFID.                                                                      | Embedded                   |
+| Door                       | An opening that allows passage from one area of the gym to another.                                                         | Embedded                   |
+| Access Area Direction      | The value that describes the direction of access between areas. It can be _IN_ or _OUT_.                                    | Embedded / Area Management |
+| Machine                    | A gym equipment unit that can be used by a user.                                                                            | Machine Management         |
+| Proximity sensor           | A sensor that detects whether the machine is being used by a user.                                                          | Machine Management         |
+| Occupancy                  | The current status of a machine, which can be _Free_, _Occupied_, or _Maintenance_.                                         | Machine Management         |
+| Gym Attendance             | Historic attendance of people at the gym.                                                                                   | Analytics Service          |
+| Gym Member                 | A gym member accessing gym areas.                                                                                           | Area Management            |
+| Enter Area Event           | Event indicating that a gym member entered a gym area.                                                                      | Embedded / Area Management |
+| Exit Area Event            | Event indicating that a gym member left a gym area.                                                                         | Embedded / Area Management |
+| Enter Gym Event            | Event indicating that a gym member entered the gym through the entrance turnstile.                                          | Embedded / Tracking        |
+| Exit Gym Event             | Event indicating that a gym member left the gym through the exit turnstile.                                                 | Embedded / Tracking        |
+| Gym Member Machine Session | The time interval during which a gym member uses a machine.                                                                 | Machine Management         |
+| Gym Member Session         | The time interval during which a gym member stays in the gym.                                                               | tracking-service           |
+| Admin or Administrator     | Staff member responsible for monitoring gym usage and congestion.                                                           | Analytics / Authentication |
 
-<p align="center"><em>Table 1: Glossary of SmartGym Domain</em></p>
+_Table 1: Glossary of SmartGym Domain_
 
 ## 2.4 System Requirements
 
@@ -120,7 +120,7 @@ In the following tables the description of each use case related to Administrato
 | View Machine Usage History | Allows the administrator to consult historical data about machine usage sessions.                                  |
 | Monitor Gym Attendance     | Shows aggregated data about gym attendance, including peak hours and occupancy trends.                             |
 
-<p align="center"><em>Table 2: Administrator Use Case Description</em></p>
+_Table 2: Administrator Use Case Description_
 
 | Use Case        | Description                                                                                                                         |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
@@ -129,28 +129,31 @@ In the following tables the description of each use case related to Administrato
 | Access Gym Area | Allows the gym member to enter a specific gym area using badge authentication.                                                      |
 | Use Machine     | Allows the gym member to use a machine if it is available. The system detects and records the machine session automatically.        |
 
-<p align="center"><em>Table 3: Gym Member Use Case Description</em></p>
+_Table 3: Gym Member Use Case Description_
 
 ## 2.6 User Stories
 
 > In order to better understand the domain following Domain Driven Design we
 > isolate user stories in order to better achieve acceptance criteria.
 
-| ID    | User Story                                       | Related FR |
-| ----- | ------------------------------------------------ | ---------- |
-| US-01 | As a **Gym Member**, I want ... , so that I .... | FR-1, FR-3 |
+| ID    | User Story                                                                                                                  | Related FR |
+| ----- | --------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| US-01 | As a **Gym Member**, I want to enter the gym with my badge, so that my presence is tracked automatically.                   | FR-1       |
+| US-02 | As a **Gym Member**, I want to access a gym area with RFID validation, so that area occupancy is updated in real time.      | FR-2, FR-3 |
+| US-03 | As a **Gym Member**, I want machine usage to be detected automatically, so that sessions are recorded without manual input. | FR-4, FR-5 |
+| US-04 | As an **Administrator**, I want to monitor machine occupancy and history, so that I can analyze usage trends.               | FR-6       |
 
 ## 2.7 Quality Attributes Scenarios
 
-| Quality Attribute  | Stimulus                                               | Environment                                              | Artifact                                         | Response                                                                            | Response Measure                                                        |
-| ------------------ | ------------------------------------------------------ | -------------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| **Performance**    | A gym member enters an area or starts using a machine. | Normal operating conditions with multiple users present. | Area Management and Machine Management services. | The system updates occupancy status and propagates the change to the dashboard.     | Updated data visible within **2 seconds**.                              |
-| **Scalability**    | Increase in number of users and machines.              | Peak hours with high concurrent usage.                   | Backend microservices and database.              | The system handles increased load without degradation.                              | Response time ≤ **3 seconds** under peak load; no data loss.            |
-| **Availability**   | A non-critical service failure occurs.                 | Production environment during operational hours.         | Embedded or Analytics service.                   | The system continues operating and restores the failed component or notifies admin. | At least **99% uptime** during operational hours.                       |
-| **Reliability**    | A badge is scanned at the turnstile.                   | Normal network conditions.                               | Authentication and Area Management services.     | The system validates the badge and records the access event correctly.              | No duplicated or missing events; guaranteed event persistence.          |
-| **Security**       | An administrator attempts to access the dashboard.     | Internal or external network access.                     | Authentication service and API Gateway.          | The system requires valid credentials and enforces authorization.                   | Unauthorized access denied and logged; communication encrypted (HTTPS). |
-| **Modifiability**  | A new gym area or machine is added.                    | Maintenance phase.                                       | Configuration files and Gym Management service.  | The system allows configuration without changing core logic.                        | New elements configurable without code modification.                    |
-| **Data Integrity** | Concurrent machine occupancy events occur.             | High concurrent usage.                                   | Machine Management aggregate and database.       | The system maintains consistent machine state transitions.                          | A machine cannot be both _Free_ and _Occupied_ simultaneously.          |
+| Quality Attribute  | Stimulus                                               | Environment                                              | Artifact                                                        | Response                                                                            | Response Measure                                                        |
+| ------------------ | ------------------------------------------------------ | -------------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Performance**    | A gym member enters an area or starts using a machine. | Normal operating conditions with multiple users present. | Area Management and Machine Management services.                | The system updates occupancy status and propagates the change to the dashboard.     | Updated data visible within **2 seconds**.                              |
+| **Scalability**    | Increase in number of users and machines.              | Peak hours with high concurrent usage.                   | Backend microservices and database.                             | The system handles increased load without degradation.                              | Response time ≤ **3 seconds** under peak load; no data loss.            |
+| **Availability**   | A non-critical service failure occurs.                 | Production environment during operational hours.         | Embedded or Analytics service.                                  | The system continues operating and restores the failed component or notifies admin. | At least **99% uptime** during operational hours.                       |
+| **Reliability**    | A badge is scanned at the turnstile.                   | Normal network conditions.                               | Authentication and Area Management services.                    | The system validates the badge and records the access event correctly.              | No duplicated or missing events; guaranteed event persistence.          |
+| **Security**       | An administrator attempts to access the dashboard.     | Internal or external network access.                     | Authentication service and API Gateway.                         | The system requires valid credentials and enforces authorization.                   | Unauthorized access denied and logged; communication encrypted (HTTPS). |
+| **Modifiability**  | A new gym area or machine is added.                    | Maintenance phase.                                       | Configuration files and the `area-service` / `machine-service`. | The system allows configuration without changing core logic.                        | New elements configurable without code modification.                    |
+| **Data Integrity** | Concurrent machine occupancy events occur.             | High concurrent usage.                                   | Machine Management aggregate and database.                      | The system maintains consistent machine state transitions.                          | A machine cannot be both _Free_ and _Occupied_ simultaneously.          |
 
 ## 2.8 Story Telling
 
@@ -198,10 +201,10 @@ The administrator can then view User Gym Sessions and User Machine Sessions in a
 | --------------- | ---------------- | -------------------------------------- | ------------------------------------------------------- | ------------------ |
 | Gym Area        | AreaId           | name, capacity, currentCount           | Update area count, enforce capacity constraint          | Area Management    |
 | Machine         | MachineId        | status, areaId                         | Change occupancy state, enforce valid state transitions | Machine Management |
-| Gym Session     | GymSessionId     | badgeId, startTime, endTime            | Track presence inside the gym                           | Area Management    |
+| Gym Session     | GymSessionId     | badgeId, startTime, endTime            | Track presence inside the gym                           | tracking-service   |
 | Machine Session | MachineSessionId | machineId, badgeId, startTime, endTime | Track machine usage duration                            | Machine Management |
 
-<p align="center"><em>Table X: Core Domain Entities</em></p>
+_Table X: Core Domain Entities_
 
 | Value Object        | Attributes                    | Role |
 | ------------------- | ----------------------------- | ---- |
@@ -209,10 +212,10 @@ The administrator can then view User Gym Sessions and User Machine Sessions in a
 | **TimeInterval**    | startTime, endTime            |      |
 | **Capacity**        | maxPeople                     |      |
 | **GymCount**        | currentCount                  |      |
-| **AreCount**        | currentCount                  |      |
+| **AreaCount**       | currentCount                  |      |
 | **BadgeId**         | string/uuid                   |      |
 
-<p align="center"><em>Table X: Core Domain Value Objects</em></p>
+_Table X: Core Domain Value Objects_
 
 ### 2.9.2 Aggregates
 
@@ -223,7 +226,7 @@ The administrator can then view User Gym Sessions and User Machine Sessions in a
 | **GymSession**     | Member presence inside the gym                      | A badge cannot have more than one active _GymSession_ at the same time; a session must have a start time and can only end through a valid exit event.                  |
 | **MachineSession** | Member usage of a machine                           | A machine cannot have more than one active session simultaneously; every _MachineSession_ must be associated with exactly one _Machine_.                               |
 
-<p align="center"><em>Table X: Core Domain Aggregates</em></p>
+_Table X: Core Domain Aggregates_
 
 ### 2.9.3 Domain Events
 
@@ -237,7 +240,7 @@ The administrator can then view User Gym Sessions and User Machine Sessions in a
 | **MachineSessionEnded**     | A machine transitions to _Free_          | Closes the active _MachineSession_ and sets the machine status to _Free_.            |
 | **MachineSetToMaintenance** | An administrator sets the machine status | Updates the machine status to _Maintenance_ and prevents new sessions from starting. |
 
-<p align="center"><em>Table X: Core Domain Events</em></p>
+_Table X: Core Domain Events_
 
 ## 2.10 Bounded Context
 
@@ -257,6 +260,18 @@ The SmartGym Monitor system is structured into **Core**, **Supporting**, and **G
 
 ## 2.11 Context Map
 
-- Describe relationships between bounded contexts
-- Identify integration patterns (e.g., Customer–Supplier, ACL, OHS)
-- Explain how data and events flow between contexts
+The context map reflects a **hub-and-spoke** style integration centered on occupancy and session management.
+
+- **Embedded → area-service / tracking-service / machine-service**: the embedded context acts as an event producer. It captures RFID scans, turnstile actions, and proximity changes, then forwards them to the backend via MQTT and HTTP adapters.
+- **area-service ↔ tracking-service**: the area context consumes gym access information and contributes to occupancy consistency. It depends on the tracking service for the lifecycle of gym sessions.
+- **machine-service ↔ tracking-service**: the machine context relies on session information to associate machine usage with a gym member and keep machine state synchronized with active sessions.
+- **analytics-service ← area-service / tracking-service / machine-service**: the analytics context is a read-oriented consumer. It aggregates historical data generated by operational services and exposes monitoring views for administrators.
+- **auth-service → gateway / dashboard**: the authentication context protects the administrative access path and issues JWT tokens consumed by the gateway and the Flask frontend.
+
+The main integration patterns are:
+
+- **Customer–Supplier** between embedded devices and operational services, because device events feed the core domain.
+- **Open Host Service** for shared access through REST endpoints and the API Gateway.
+- **Anti-Corruption Layer** in the embedded service, which translates low-level device messages into structured backend commands.
+
+This structure allows each bounded context to evolve independently while preserving a consistent system-wide model.
