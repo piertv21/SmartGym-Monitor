@@ -3,8 +3,7 @@ name: Build and Test
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [develop]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -22,17 +21,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: poetry
+          cache: pip
           cache-dependency-path: src/frontend/poetry.lock
 
       - name: Install Poetry
-        run: pip install poetry
+        run: python -m pip install poetry
 
       - name: Run frontend tests
         working-directory: ./src/frontend
         run: |
-          poetry install --no-interaction --no-root
-          poetry run pytest -q
+          python -m poetry install --no-interaction --no-root
+          python -m poetry run pytest -q
 
   test-integration-e2e:
     runs-on: ubuntu-latest

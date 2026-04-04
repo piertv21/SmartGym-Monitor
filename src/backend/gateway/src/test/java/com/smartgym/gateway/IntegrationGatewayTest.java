@@ -21,6 +21,8 @@ class IntegrationGatewayTest {
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
     private final String baseUrl = System.getenv().getOrDefault("GATEWAY_IT_BASE_URL", "http://localhost:8080");
+    private final String authUsername = System.getenv().getOrDefault("GATEWAY_IT_AUTH_USERNAME", "ADMIN");
+    private final String authPassword = System.getenv().getOrDefault("GATEWAY_IT_AUTH_PASSWORD", "ADMIN");
 
     @BeforeAll
     void checkPreconditions() {
@@ -43,15 +45,16 @@ class IntegrationGatewayTest {
     void generateTokenWithValidClientCredentials() throws Exception {
         String body = """
                 {
-                  "clientId": "smartgym-client",
-                  "clientSecret": "smartgym-secret"
+                  "username": "%s",
+                  "password": "%s"
                 }
-                """;
+                """.formatted(authUsername, authPassword);
 
-        HttpResponse<String> response = sendPost("/auth/generate", body);
+        HttpResponse<String> response = sendPost("/auth-service/login", body);
 
         assertEquals(200, response.statusCode());
-        assertTrue(response.body().contains("token"));
+        assertTrue(response.body().contains("accessToken"));
+        assertTrue(response.body().contains("Bearer"));
     }
 
     private boolean isServiceHealthy() {
@@ -84,4 +87,3 @@ class IntegrationGatewayTest {
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
 }
-
