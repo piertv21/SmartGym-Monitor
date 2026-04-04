@@ -12,6 +12,6 @@ import static io.cucumber.junit.platform.engine.Constants.GLUE_PROPERTY_NAME;
 @IncludeEngines("cucumber")
 @SelectClasspathResource("features")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "com.smartgym.e2e.steps")
-@ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "@auth")
+@ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "@e2e")
 public class RunCucumberTest {
 }

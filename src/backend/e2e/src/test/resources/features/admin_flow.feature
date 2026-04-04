@@ -1,3 +1,4 @@
+@e2e
 @auth
 Feature: Admin authentication flow
 
