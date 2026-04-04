@@ -1,3 +1,40 @@
+## [3.0.0](https://github.com/piertv21/SmartGym-Monitor/compare/2.0.0...3.0.0) (2026-04-04)
+
+### ⚠ BREAKING CHANGES
+
+- **auth:** authentication mechanism has been changed to JWT tokens
+
+### Features
+
+- add analytics for machine utilizations and area access ([b1271d4](https://github.com/piertv21/SmartGym-Monitor/commit/b1271d4ac5f184806acf5da6b60f5050b804da8c))
+- add integration test structure in each microservice ([e2841d4](https://github.com/piertv21/SmartGym-Monitor/commit/e2841d43a68087f09d45295e177c4582213ed5de))
+- add tracking service test, minor style improvements to naming and code style ([39a992c](https://github.com/piertv21/SmartGym-Monitor/commit/39a992c06f2e155666b84594aea73b65923bd315))
+- edit embedded-service configuration adding tracking service, tracking service http adapter ([6c671df](https://github.com/piertv21/SmartGym-Monitor/commit/6c671df9d06357cc7ede86553e69726785ce7699))
+- implemented tracking-service repository, controller and service api ([d4ea198](https://github.com/piertv21/SmartGym-Monitor/commit/d4ea19861330392ddeea3d896d5514d2011094fc))
+- rewritten frontend auth logic reflecting new auth-service, small visual improvements ([27cc413](https://github.com/piertv21/SmartGym-Monitor/commit/27cc413b843b54609c6d549a0a83edd516f5306c))
+- small style edit ([11cdf03](https://github.com/piertv21/SmartGym-Monitor/commit/11cdf03955e93a7774392e3b34fbd81d8234e211))
+
+### Bug Fixes
+
+- add tracking service port to costructor in embedded test ([d6fe1cb](https://github.com/piertv21/SmartGym-Monitor/commit/d6fe1cb4b6ecd6fa769b0d6177a86a94a468ca10))
+- e2e test for auth service ([2c64ca8](https://github.com/piertv21/SmartGym-Monitor/commit/2c64ca81c496cb4bd3f7527e8fb363c96eb1a2e8))
+- fix analytics adapter url ([e5c9535](https://github.com/piertv21/SmartGym-Monitor/commit/e5c95352dec57c4ad1f3a2f5cec563c9a2ea59ff))
+- logout flow response matching new timestamp format ([68abeef](https://github.com/piertv21/SmartGym-Monitor/commit/68abeef7f018e0cce5c17e0522e5e0bcb46fe2e2))
+- remove mapping analytics service because is called from the gateway ([21de9f6](https://github.com/piertv21/SmartGym-Monitor/commit/21de9f62486fc35e5e81bd0d426055ccc23cbabf))
+
+### Tests
+
+- add e2e github workflow ([793b593](https://github.com/piertv21/SmartGym-Monitor/commit/793b5938b6de71791a6be3796613ce53992982f4))
+
+### Build and continuous integration
+
+- update build and test workflow ([16f5967](https://github.com/piertv21/SmartGym-Monitor/commit/16f5967efc1d40ebc89f89aa85e751f276f12f89))
+
+### Refactoring
+
+- **auth:** rewrite authentication logic to use JWT tokens ([24279ae](https://github.com/piertv21/SmartGym-Monitor/commit/24279ae483a14dc7c8119d8912d181fb3dbb65d7))
+- edit timestamp format in auth db ([09e74e3](https://github.com/piertv21/SmartGym-Monitor/commit/09e74e39f60f47a5c277528fff63fd4522641922))
+
 ## [2.0.0](https://github.com/piertv21/SmartGym-Monitor/compare/1.2.0...2.0.0) (2026-03-30)
 
 ### ⚠ BREAKING CHANGES
