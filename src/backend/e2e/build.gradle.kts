@@ -7,6 +7,7 @@ dependencies {
     testImplementation(libs.junit.platform.suite)
     testImplementation(libs.cucumber.java)
     testImplementation(libs.cucumber.junit.platform.engine)
+    testImplementation(libs.spring.boot.starter.data.mongodb)
 }
 
 tasks.test {
