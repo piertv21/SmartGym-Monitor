@@ -1,8 +1,8 @@
-# 3. DevOps and Development Process
+# 6. DevOps and Development Process
 
 This section describes the DevOps practices, workflows, and automation strategies adopted during the development of the SmartGym Monitor system.
 
-## 3.1 Version Control Strategy
+## 6.1 Version Control Strategy
 
 The project follows a **Git Flow** branching model to ensure a structured and controlled development process.
 
@@ -26,7 +26,7 @@ This approach ensures:
 - Controlled integration
 - Clear separation between stable and in-progress code
 
-## 3.2 Branch Protection Rules
+## 6.2 Branch Protection Rules
 
 To preserve repository integrity and prevent accidental changes to production code, strict protection rules are applied to the `main` branch,
 using GitHub rulesets.
@@ -40,7 +40,7 @@ The following restrictions are enforced:
 
 This guarantees that production code is always reviewed, tested, and validated.
 
-## 3.3 Conventional Commits and Branch Naming
+## 6.3 Conventional Commits and Branch Naming
 
 The project adopts the **Conventional Commits specification** to standardize commit messages and improve traceability.
 More info on Conventional Commits can be found [here](https://www.conventionalcommits.org/en/v1.0.0/).
@@ -87,82 +87,79 @@ To enforce these conventions:
 
 This prevents inconsistent commit history and improves maintainability.
 
-## 3.4 Continuous Integration (CI)
+## 6.4 Continuous Integration (CI)
 
-A Continuous Integration pipeline is configured using GitHub Actions.
+The project uses GitHub Actions to validate pull requests and keep the main branch stable.
+The main CI workflow is `build-and-test.yml`, which performs the following checks:
 
-The CI workflow is triggered on:
+- frontend tests with Python 3.12 and Poetry;
+- backend microservice tests and integration validation with Gradle and Docker Compose;
+- e2e test execution for the full backend stack;
+- artifact collection for JUnit reports and Docker logs.
 
-- Pull Requests
-- Pushes to `develop` and `main`
+This workflow ensures that functional changes are verified before merging and that regressions are detected early.
 
-The pipeline includes:
+## 6.5 Continuous Deployment and Documentation Publishing
 
-- Automated testing
-- Validation of commit conventions
-- Build verification
+The documentation site is built with VitePress and deployed through GitHub Pages.
+The `deploy-report-site.yml` workflow is triggered when files under `docs/**` change on `main`.
 
-This ensures that:
+Its pipeline is straightforward:
 
-- The project always builds successfully
-- Tests are executed automatically
-- Errors are detected early in the development lifecycle
+- checkout the repository;
+- install Node.js dependencies in `docs/`;
+- build the static documentation site;
+- publish the generated artifact to GitHub Pages.
 
-## 3.5 Continuous Deployment (CD)
+This keeps the project documentation aligned with the latest code and report updates.
 
-The project includes automated deployment workflows.
+## 6.6 Automated Release Process
 
-### Documentation Deployment
+The repository uses Semantic Release for automated versioning and release generation.
+The release process is defined in `release.yml` together with `release.config.js`.
 
-The system documentation is built using **VitePress**.
+When a change reaches `main`, the workflow:
 
-A dedicated GitHub Action:
+- checks out the repository with release permissions;
+- installs Node.js dependencies;
+- runs `semantic-release`;
+- creates a new Git tag and release when the commit history contains a release-worthy change.
 
-- Builds the documentation site
-- Automatically deploys it (e.g., via GitHub Pages)
+Release automation is supported by Conventional Commits and commit validation, so version increments remain predictable and traceable.
 
-This ensures that the documentation is always aligned with the latest version of the project.
+## 6.7 Automated Testing
 
-### Automated Releases
+Automated tests are integrated into both the backend and frontend development flow.
+The repository includes:
 
-When code is merged into `main`, a release workflow is triggered.
+- JUnit tests for the Java services;
+- Cucumber-based e2e tests for the full backend stack;
+- pytest tests for the Flask frontend.
 
-- TO DO: describe the release process, e.g., using semantic versioning, generating release notes, etc.
+The combination of unit, integration, and e2e tests provides fast feedback on individual components while also validating the complete system behavior.
 
-## 3.6 Automated Testing
-
-Automated tests are integrated into the CI pipeline.
-
-This prevents regressions and increases confidence in code quality.
-
-Testing automation guarantees:
-
-- Early bug detection
-- Stable integration into `develop`
-- High reliability of releases to `main`
-
-## 3.7 Dependency Management with Renovate
+## 6.8 Dependency Management with Renovate
 
 The repository integrates **Renovate Bot** to automate dependency updates.
 
 Renovate:
 
-- Monitors project dependencies
-- Automatically creates Pull Requests when updates are available
-- Ensures dependencies remain up to date
+- monitors project dependencies;
+- automatically creates pull requests when updates are available;
+- can auto-merge safe minor and patch updates;
+- keeps the dependency tree up to date with minimal manual effort.
 
 Each update is reviewed and validated through the CI pipeline before being merged.
 
-## 3.8 DevOps Benefits
+## 6.9 DevOps Benefits
 
 The adopted DevOps strategy provides:
 
-- Structured collaboration
-- High code quality
-- Automated validation
-- Safe and controlled releases
-- Continuous documentation updates
-- Automated dependency management
+- structured collaboration;
+- high code quality;
+- automated validation;
+- safe and controlled releases;
+- continuous documentation updates;
+- automated dependency management.
 
-Overall, the combination of Git Flow, CI/CD automation, commit standardization, and dependency monitoring significantly increases
-the robustness and maintainability of the SmartGym Monitor system.
+Overall, the combination of Git Flow, CI/CD automation, commit standardization, and dependency monitoring significantly increases the robustness and maintainability of the SmartGym Monitor system.
