@@ -53,10 +53,10 @@ class IntegrationAnalyticsServiceTest {
                 }
                 """;
 
-        HttpResponse<String> ingest = sendPost("/analytics-service/events/ingest", payload);
+        HttpResponse<String> ingest = sendPost("/events/ingest", payload);
         assertEquals(202, ingest.statusCode());
 
-        HttpResponse<String> attendance = sendGet("/analytics-service/attendance/" + date);
+        HttpResponse<String> attendance = sendGet("/attendance/" + date);
         assertEquals(200, attendance.statusCode());
         assertTrue(attendance.body().contains(date));
     }
