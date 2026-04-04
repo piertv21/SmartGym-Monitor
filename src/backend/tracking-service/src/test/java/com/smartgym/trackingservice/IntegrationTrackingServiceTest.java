@@ -12,6 +12,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class IntegrationTrackingServiceTest {
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
+    private static final Pattern GYM_COUNT_PATTERN = Pattern.compile("\"gymCount\"\\s*:\\s*(\\d+)");
     private final String baseUrl = System.getenv().getOrDefault("TRACKING_SERVICE_IT_BASE_URL", "http://localhost:8087");
 
     @BeforeAll
@@ -44,24 +47,35 @@ class IntegrationTrackingServiceTest {
     void startAndEndSessionUpdatesGymCount() throws Exception {
         String badgeId = "badge-" + UUID.randomUUID();
 
+        HttpResponse<String> countBeforeStart = sendGet("/count");
+        assertEquals(200, countBeforeStart.statusCode());
+        int initialGymCount = extractGymCount(countBeforeStart.body());
+
         HttpResponse<String> startResponse = sendPost(
-                "/tracking-service/start-session",
+                "/start-session",
                 "{\"badgeId\":\"" + badgeId + "\"}"
         );
-        Assumptions.assumeTrue(
-                startResponse.statusCode() == 200,
-                "Tracking endpoints are not available on target integration environment"
-        );
+        assertEquals(200, startResponse.statusCode());
 
-        HttpResponse<String> countAfterStart = sendGet("/tracking-service/count");
+        HttpResponse<String> countAfterStart = sendGet("/count");
         assertEquals(200, countAfterStart.statusCode());
-        assertTrue(countAfterStart.body().contains("gymCount"));
+        assertEquals(initialGymCount + 1, extractGymCount(countAfterStart.body()));
 
         HttpResponse<String> endResponse = sendPost(
-                "/tracking-service/end-session",
+                "/end-session",
                 "{\"badgeId\":\"" + badgeId + "\"}"
         );
         assertEquals(200, endResponse.statusCode());
+
+        HttpResponse<String> countAfterEnd = sendGet("/count");
+        assertEquals(200, countAfterEnd.statusCode());
+        assertEquals(initialGymCount, extractGymCount(countAfterEnd.body()));
+    }
+
+    private int extractGymCount(String jsonBody) {
+        Matcher matcher = GYM_COUNT_PATTERN.matcher(jsonBody);
+        assertTrue(matcher.find(), "Expected 'gymCount' in response body: " + jsonBody);
+        return Integer.parseInt(matcher.group(1));
     }
 
     private boolean isServiceHealthy() {
