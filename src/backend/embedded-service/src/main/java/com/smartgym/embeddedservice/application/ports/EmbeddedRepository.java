@@ -15,4 +15,6 @@ public interface EmbeddedRepository {
     CompletableFuture<JsonArray> findAllEvents();
 
     CompletableFuture<JsonArray> findAllEventsByType(String eventType);
+
+    CompletableFuture<JsonArray> findLatestDeviceStatuses();
 }
