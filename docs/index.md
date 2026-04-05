@@ -4,16 +4,13 @@ layout: home
 
 hero:
   name: "SmartGym-Monitor"
-  text: "A tool for monitoring gym."
-  tagline: SPE Project
+  text: "A tool for monitoring gym occupancy, sessions, and machine usage."
+  tagline: Software Process Engineering project
   actions:
     - theme: brand
       text: Report
       link: report/Introduction
     - theme: alt
-      text: Docs
-      link: https://piertv21.github.io/ # TO DO
-    - theme: alt
-      text: Coverage
-      link: https://piertv21.github.io/ # TO DO
+      text: Repository
+      link: https://github.com/piertv21/SmartGym-Monitor
 ---

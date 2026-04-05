@@ -3,10 +3,7 @@ package com.smartgym.analyticsservice;
 import com.mongodb.client.MongoClient;
 import com.smartgym.analyticsservice.application.AnalyticsServiceAPIImpl;
 import com.smartgym.analyticsservice.application.ports.AnalyticsServiceAPI;
-import com.smartgym.analyticsservice.application.ports.DummyServicePort;
-import com.smartgym.analyticsservice.infrastructure.adapters.DummyServiceAdapter;
 import com.smartgym.analyticsservice.infrastructure.persistence.AnalyticsRepositoryImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,14 +22,6 @@ public class AnalyticsServiceApp {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalyticsServiceApp.class);
 
-    @Autowired
-    private MongoClient mongoClient;
-
-    @Value("${spring.application.name}")
-    private String appName;
-
-    @Value("${spring.data.mongodb.uri}")
-    private String mongoUri;
 
     @Value("${spring.data.mongodb.database:analyticsservicedb}")
     private String databaseName;
@@ -50,11 +39,6 @@ public class AnalyticsServiceApp {
         return new AnalyticsServiceAPIImpl(analyticsRepository);
     }
 
-    @Bean
-    public DummyServicePort dummyServicePort() {
-        logger.info("🔧 Initializing DummyServiceAdapter");
-        return new DummyServiceAdapter();
-    }
 
     public static void main(String[] args) {
         logger.info("🚀 Starting Analytics Service...");

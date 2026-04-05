@@ -1,4 +1,4 @@
-# Introduction
+# 1. Introduction
 
 Modern gyms are complex environments composed of different areas, various types of equipment, and a number of users that changes significantly during the day.  
 For this reason, monitoring the occupancy of gym areas and machines is important to ensure safety, improve user experience, and support better management decisions.
@@ -13,6 +13,7 @@ The project follows the **Domain-Driven Design (DDD)** approach, with the goal o
 Instead of focusing only on technical aspects, the design starts from the domain language and identifies concepts such as gym areas, access events, occupancy, and machine usage, organizing them into clearly defined **bounded contexts**.
 
 From a system point of view, SmartGym Monitor is composed of:
+
 - simulated sensors that generate events related to people entering and exiting gym areas, as well as the usage of gym machines,
 - a backend system that processes domain events, updates the current state of the gym, and stores historical data,
 - a web dashboard that displays real-time occupancy information and basic analytics for administrative users.

@@ -27,4 +27,6 @@ public interface EmbeddedServiceAPI {
     CompletableFuture<JsonArray> getAllEventsByType(String eventType);
 
     CompletableFuture<Optional<JsonObject>> getEventById(String eventId);
+
+    CompletableFuture<JsonArray> getAllDeviceStatuses();
 }

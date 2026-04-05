@@ -17,6 +17,20 @@ public interface AnalyticsRestController {
 
     CompletableFuture<ResponseEntity<?>> getMachineUtilizationByDate(String date);
 
+    CompletableFuture<ResponseEntity<?>> getMachineUtilizationByMonth(String month);
+
+    CompletableFuture<ResponseEntity<?>> getUniqueUsersByDate(String date);
+
+    CompletableFuture<ResponseEntity<?>> getUniqueUsersByMonth(String month);
+
+    CompletableFuture<ResponseEntity<?>> getGymSessionDurationByDate(String date);
+
+    CompletableFuture<ResponseEntity<?>> getGymSessionDurationByMonth(String month);
+
+    CompletableFuture<ResponseEntity<?>> getAreaSessionDurationByDate(String date, String areaId);
+
+    CompletableFuture<ResponseEntity<?>> getAreaSessionDurationByMonth(String month, String areaId);
+
     CompletableFuture<ResponseEntity<?>> getPeakHours();
 
     CompletableFuture<ResponseEntity<?>> getPeakHoursByDate(String date);

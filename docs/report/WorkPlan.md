@@ -11,6 +11,7 @@ The first phase focuses on understanding the gym domain and identifying its main
 During this phase, the problem domain is analyzed independently from technical implementation details.
 
 The main activities of this phase include:
+
 - identification of the core domain and relevant subdomains,
 - definition of the ubiquitous language shared by domain experts and developers,
 - identification of the main domain events related to access control, occupancy, and equipment usage.
@@ -22,6 +23,7 @@ The output of this phase is a clear domain description and a shared vocabulary t
 In the second phase, the domain is divided into **bounded contexts**, each representing a coherent part of the system with a well-defined responsibility and terminology.
 
 The activities of this phase include:
+
 - definition of bounded contexts related to access monitoring, equipment usage, occupancy projection, and analytics,
 - identification of relationships between bounded contexts,
 - construction of a context map describing how contexts interact and exchange information.
@@ -33,6 +35,7 @@ This phase helps reduce complexity and prevents ambiguity in the domain model by
 During this phase, the conceptual domain model is translated into a software-oriented model using DDD building blocks.
 
 The main activities include:
+
 - identification of entities, value objects, and aggregate roots,
 - definition of domain invariants and consistency rules,
 - modeling of domain events and domain services,
@@ -46,9 +49,10 @@ Once the domain model is defined, the overall system architecture is designed.
 This phase focuses on how domain concepts are implemented and how system components interact.
 
 The activities include:
+
 - definition of the backend architecture based on DDD principles,
 - design of interfaces between the backend, simulated sensors, and the web dashboard,
-- selection of communication mechanisms such as REST APIs and WebSockets,
+- selection of communication mechanisms such as REST APIs, MQTT, and service discovery,
 - definition of data persistence strategies.
 
 The architecture is designed to support modularity, scalability, and future extensions.
@@ -58,10 +62,11 @@ The architecture is designed to support modularity, scalability, and future exte
 In this phase, the system is implemented incrementally following the previously defined design.
 
 The main activities include:
+
 - implementation of simulated sensors for access control and equipment usage,
 - development of the backend services and domain logic,
-- implementation of real-time updates and data storage,
-- development of the web dashboard for monitoring and visualization.
+- implementation of event ingestion, persistence, and analytics,
+- development of the Flask web dashboard for authentication and monitoring.
 
 Continuous integration tools are used to ensure code quality and system consistency during development.
 

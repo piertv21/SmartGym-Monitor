@@ -1,4 +1,5 @@
 from flask import Blueprint, redirect, render_template, session, url_for
+from flask import current_app
 
 from smartgym_flask.extensions import get_user_service
 
@@ -29,5 +30,6 @@ def dashboard():
         username=username,
         user_exists=user_exists,
         auth_service_base_url=auth_service_base_url,
+        gateway_base_url=current_app.config.get("GATEWAY_BASE_URL", "http://localhost:8080"),
     )
 

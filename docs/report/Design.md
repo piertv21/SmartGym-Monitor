@@ -1,188 +1,258 @@
 # 3 Domain Driven Design to Microservices
 
-> In following subsections we describe how we created the microservices architecture starting
-> from the definition of the domain and subdomains described in previous sections.
+> In the following subsections we describe how the domain model has been translated into a distributed architecture based on microservices, service discovery, and event-driven integration.
 
 ## 3.1 System Operations
 
-> In this section are shown the mais systems operations identified in the smart gym
-> system. Operations are derived use cases and represent the main commands that guides
-> the behaviour of the system.
+> This section shows the main operations identified in the SmartGym Monitor system. Operations are derived from the use cases and represent the commands exposed by the services.
 
-| Actor      | Related Use Case   | Command                                   | Description                                                            |
-| ---------- | ------------------ | ----------------------------------------- | ---------------------------------------------------------------------- |
-| Gym Member | Access Gym         | `startGymSession(badgeId)`                | Creates a new GymSession when badge is validated at entrance turnstile |
-| Gym Member | Exit Gym           | `endGymSession(badgeId)`                  | Closes active GymSession and updates gym count                         |
-| Gym Member | Access Area        | `enterArea(badgeId, areaId)`              | Registers AreaEntered event and increments area count                  |
-| Gym Member | Exit Area          | `exitArea(badgeId, areaId)`               | Registers AreaExited event and decrements area count                   |
-| Gym Member | Use Machine        | `startMachineSession(machineId, badgeId)` | Sets machine status to Occupied and creates MachineSession             |
-| Gym Member | Stop Using Machine | `endMachineSession(machineId)`            | Closes MachineSession and sets machine status to Free                  |
-| Admin      | Create Machine     | `createMachine(machineId, areaId)`        | Creates a machine and associates it to an area                         |
-| Admin      | Update Machine     | `updateMachine(machineId, areaId)`        | Updates machine metadata and area association                          |
-| Admin      | Set Maintenance    | `setMachineMaintenance(machineId)`        | Changes machine state to Maintenance                                   |
-| Admin      | Login              | `authenticateAdmin(credentials)`          | Validates admin credentials                                            |
+| Actor      | Related Use Case   | Command                             | Description                                                                  |
+| ---------- | ------------------ | ----------------------------------- | ---------------------------------------------------------------------------- |
+| Gym Member | Access Gym         | `startGymSession(badgeId)`          | Creates a new gym session when the badge is validated at the entrance.       |
+| Gym Member | Exit Gym           | `endGymSession(badgeId)`            | Closes the active gym session and updates the global gym count.              |
+| Gym Member | Access Area        | `processAreaAccess(message)`        | Registers an access event for a specific area and increments area occupancy. |
+| Gym Member | Exit Area          | `processAreaExit(message)`          | Registers an exit event for a specific area and decrements area occupancy.   |
+| Gym Member | Use Machine        | `startMachineSession(message)`      | Starts a machine session and marks the machine as occupied.                  |
+| Gym Member | Stop Using Machine | `endMachineSession(message)`        | Ends the active machine session and frees the machine.                       |
+| Admin      | Create Machine     | `createMachine(message)`            | Creates a machine and associates it with an area.                            |
+| Admin      | Update Machine     | `updateMachine(machineId, message)` | Updates machine metadata and area association.                               |
+| Admin      | Set Maintenance    | `setMachineMaintenance(message)`    | Changes the machine state to maintenance.                                    |
+| Admin      | Login              | `handleLogin(credentials)`          | Validates admin credentials and issues a JWT token.                          |
 
-<p align="center"><em>Table X: Main System Operation Description</em></p>
+_Table 3.1: Main System Operations_
 
-| Query                          | Description                                       |
-| ------------------------------ | ------------------------------------------------- |
-| `getGymCount()`                | Returns total people currently inside the gym     |
-| `getAreaStatus(areaId)`        | Returns area occupancy and capacity               |
-| `getMachineStatus(machineId)`  | Returns machine state (Free/Occupied/Maintenance) |
-| `getActiveSessions()`          | Returns active gym sessions                       |
-| `getMachineHistory(machineId)` | Returns machine usage history                     |
-| `getAttendanceReport(date)`    | Returns aggregated attendance statistics          |
+| Query                          | Description                                                   |
+| ------------------------------ | ------------------------------------------------------------- |
+| `getGymCount()`                | Returns the total number of members currently inside the gym. |
+| `getAreaById(areaId)`          | Returns the occupancy status and capacity of a specific area. |
+| `getAllAreas()`                | Returns all configured gym areas.                             |
+| `getMachineStatus(machineId)`  | Returns the current state of a machine.                       |
+| `getMachineHistory(machineId)` | Returns historical usage sessions for a machine.              |
+| `getAttendanceStats(date)`     | Returns attendance statistics for a specific date.            |
+| `getMachineUtilization()`      | Returns aggregated machine usage metrics.                     |
 
-<p align="center"><em>Table X: Main System Queries Description</em></p>
+_Table 3.2: Main System Queries_
 
 ## 3.2 Subdomains to Microservices
 
-> To correctly apply the Decomposition by Subdomain pattern suggested by Domain-Driven Design, each identified bounded context has been mapped to a dedicated microservice.
-> This choice guarantees clear separation of concerns, independent evolution, service autonomy, and database isolation.
-> Each microservice owns its domain model, enforces its invariants, and exposes its behavior through well-defined REST APIs or asynchronous events.
-> The mapping between subdomains and microservices is described below.
+> Each bounded context has been mapped to a dedicated microservice in order to preserve separation of concerns, service autonomy, and database isolation.
 
-## 3.2.1 Occupancy Tracking Service (Core)
+## 3.2.1 Tracking Service (Core)
 
-This microservice implements the Core Domain of the SmartGym Monitor system.
-It is responsible for managing the lifecycle of gym sessions and maintaining the global consistency of gym occupancy.
+The `tracking-service` implements the core domain of the system.
+It manages gym sessions and the global count of members currently inside the gym.
 
-| Responsibility           | Description                                                                        |
-| ------------------------ | ---------------------------------------------------------------------------------- |
-| Gym Session Management   | Creates and terminates GymSession entities when members enter or exit the gym.     |
-| Global Gym Count         | Maintains the real-time number of people inside the gym.                           |
-| Invariant Enforcement    | Ensures that a badge cannot have more than one active GymSession at the same time. |
-| Domain Event Publication | Emits domain events such as GymSessionStarted and GymSessionEnded.                 |
+| Responsibility         | Description                                                                      |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| Gym Session Management | Creates and terminates `GymSession` entities when members enter or exit the gym. |
+| Global Gym Count       | Maintains the real-time number of people inside the gym.                         |
+| Invariant Enforcement  | Ensures that a badge cannot have more than one active session at the same time.  |
+| Persistence            | Stores session history in its own MongoDB database.                              |
 
 ## 3.2.2 Area Management Service (Supporting)
 
-| Responsibility       | Description                                                              |
-| -------------------- | ------------------------------------------------------------------------ |
-| Area Configuration   | Defines and updates area metadata (name, capacity).                      |
-| Occupancy Tracking   | Maintains the current number of people inside each GymArea.              |
-| Capacity Enforcement | Guarantees that the constraint 0 ≤ currentCount ≤ capacity always holds. |
-| Event Handling       | Processes AreaEntered and AreaExited events.                             |
+The `area-service` manages gym areas and area-level occupancy.
+
+| Responsibility       | Description                                                        |
+| -------------------- | ------------------------------------------------------------------ |
+| Area Configuration   | Defines and updates area metadata such as name and capacity.       |
+| Occupancy Tracking   | Maintains the current number of people inside each gym area.       |
+| Capacity Enforcement | Guarantees that `0 ≤ currentCount ≤ capacity` always holds.        |
+| Event Handling       | Processes access and exit messages coming from the embedded layer. |
 
 ## 3.2.3 Machine Management Service (Supporting)
+
+The `machine-service` manages machines, machine sessions, and state transitions.
 
 | Responsibility              | Description                                                                        |
 | --------------------------- | ---------------------------------------------------------------------------------- |
 | Machine Configuration       | Manages machine metadata and association with areas.                               |
-| Machine Session Lifecycle   | Creates and closes MachineSession entities.                                        |
-| State Transition Validation | Ensures valid transitions between Free, Occupied, and Maintenance states.          |
+| Machine Session Lifecycle   | Creates and closes `MachineSession` entities.                                      |
+| State Transition Validation | Ensures valid transitions between `Free`, `Occupied`, and `Maintenance`.           |
 | Consistency Enforcement     | Guarantees that a machine cannot have more than one active session simultaneously. |
 
 ## 3.2.4 Embedded Service (Supporting)
 
-| Responsibility             | Description                                                     |
-| -------------------------- | --------------------------------------------------------------- |
-| Device Integration         | Manages RFID readers, turnstiles, doors, and proximity sensors. |
-| Event Translation          | Converts hardware signals into structured backend events.       |
-| Asynchronous Communication | Publishes device events through an MQTT/Event Bus mechanism.    |
-| Device Monitoring          | Exposes device health and operational status for observability. |
+The `embedded-service` acts as the bridge between simulated devices and backend services.
+It is not a classic CRUD microservice: its main responsibility is to receive MQTT messages, translate them, and forward them to the operational services through HTTP adapters.
+
+| Responsibility             | Description                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| Device Integration         | Manages RFID readers, turnstiles, doors, and proximity sensors.               |
+| Message Translation        | Converts low-level device messages into structured application messages.      |
+| Asynchronous Communication | Consumes and publishes MQTT messages on the broker.                           |
+| Forwarding Layer           | Invokes the tracking, area, machine, and analytics services through adapters. |
 
 ## 3.2.5 Analytics Service (Generic)
 
-| Responsibility              | Description                                                  |
-| --------------------------- | ------------------------------------------------------------ |
-| Attendance Statistics       | Computes gym attendance trends and peak hours.               |
-| Machine Usage Analysis      | Calculates machine utilization rates and dwell time.         |
-| Historical Data Aggregation | Processes domain events to generate analytical reports.      |
-| Read Model Management       | Maintains optimized read models for dashboard visualization. |
+The `analytics-service` provides historical and aggregated information for monitoring.
+
+| Responsibility              | Description                                               |
+| --------------------------- | --------------------------------------------------------- |
+| Attendance Statistics       | Computes gym attendance trends and peak hours.            |
+| Machine Usage Analysis      | Calculates machine utilization rates and dwell time.      |
+| Historical Data Aggregation | Processes domain events to generate analytical snapshots. |
+| Read Model Management       | Maintains optimized read models for the dashboard.        |
 
 ## 3.2.6 Authentication Service (Generic)
 
-| Responsibility            | Description                               |
-| ------------------------- | ----------------------------------------- |
-| Admin Authentication      | Validates administrator credentials.      |
-| Token Management          | Issues and validates JWT tokens.          |
-| Role-Based Access Control | Enforces authorization rules.             |
-| Service Authentication    | Secures service-to-service communication. |
+The `auth-service` manages administrator authentication and token-based security.
+
+| Responsibility       | Description                                                             |
+| -------------------- | ----------------------------------------------------------------------- |
+| Admin Authentication | Validates administrator credentials.                                    |
+| Token Management     | Issues JWT access tokens and supports token validation in the gateway.  |
+| Access Control       | Protects dashboard access and service calls that require authorization. |
+| User Registry        | Stores the seeded administrator account and login history.              |
+
+## 3.2.7 Infrastructure Services
+
+The architecture also includes two supporting infrastructure services:
+
+- **`service-discovery`**: Eureka registry used to register and discover services;
+- **`gateway`**: Spring Cloud Gateway entry point that routes requests to the registered services and enforces JWT checks on protected calls.
 
 ## 3.3 System Operation Identification
 
-> In this section we identify the main operations exposed by each microservice of the SmartGym Monitor system.
-> Operations are derived from the use cases and represent the core commands that drive the behavior of the distributed system.
+> This section identifies the main operations exposed by each microservice and the components they collaborate with.
 
-| Micro-service                  | Operations                                                                                                                                     | Collaborators                                                                                 |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| **Occupancy Tracking Service** | startGymSession(), endGymSession(), getGymCount(), getActiveGymSessions()                                                                      | Embedded Service, Area Management Service, Authentication Service                             |
-| **Area Management Service**    | enterArea(), exitArea(), getAreaStatus(), updateAreaCapacity()                                                                                 | Embedded Service, Occupancy Tracking Service, Authentication Service                          |
-| **Machine Management Service** | createMachine(), updateMachine(), startMachineSession(), endMachineSession(), setMachineMaintenance(), getMachineStatus(), getMachineHistory() | Embedded Service, Area Management Service, Occupancy Tracking Service, Authentication Service |
-| **Embedded Service**           | publishBadgeScanned(), publishAreaAccess(), publishMachineUsage(), getDeviceStatus()                                                           | none (event producer)                                                                         |
-| **Analytics Service**          | generateAttendanceReport(), getAttendanceStats(), getMachineUtilization(), getPeakHours()                                                      | Occupancy Tracking Service, Area Management Service, Machine Management Service               |
-| **Authentication Service**     | login(), logout(), validateToken()                                                                                                             | none                                                                                          |
+| Microservice        | Operations                                                                                                                                                   | Collaborators                                                              |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `tracking-service`  | `startGymSession()`, `endGymSession()`, `getGymCount()`, `getActiveSessions()`                                                                               | `embedded-service`, `auth-service`                                         |
+| `area-service`      | `processAreaAccess()`, `processAreaExit()`, `getAreaById()`, `getAllAreas()`, `updateAreaCapacity()`                                                         | `embedded-service`, `tracking-service`                                     |
+| `machine-service`   | `createMachine()`, `updateMachine()`, `startMachineSession()`, `endMachineSession()`, `setMachineMaintenance()`, `getMachineStatus()`, `getMachineHistory()` | `embedded-service`, `tracking-service`, `area-service`                     |
+| `analytics-service` | `ingestEvent()`, `getAttendanceStats()`, `getAllAttendanceStats()`, `getMachineUtilization()`, `getPeakHours()`, `getAreaAttendance()`, `getAreaPeakHours()` | `tracking-service`, `area-service`, `machine-service`                      |
+| `auth-service`      | `handleLogin()`, `handleRegister()`, `handleVerifyUser()`, `handleLogout()`                                                                                  | `gateway`, `frontend`                                                      |
+| `embedded-service`  | MQTT event handling and HTTP forwarding                                                                                                                      | `tracking-service`, `area-service`, `machine-service`, `analytics-service` |
 
 ## 3.4 API Interface Definition and Identification
 
-> In this section, the interfaces of the SmartGym Monitor system are described.
-> Since the system integrates embedded devices and backend microservices, two communication layers are defined:
-> Asynchronous communication (MQTT/Event Bus) between embedded devices and backend. Synchronous REST APIs between microservices and the API Gateway.
-> Each microservice exposes a set of REST endpoints that implement the identified system operations.
+> The system exposes two integration layers: asynchronous MQTT communication for simulated devices and synchronous REST APIs for the backend microservices and the frontend.
 
-## 3.4.1 Embedded Service
+## 3.4.1 Gateway and Service Discovery
 
-The Embedded Service communicates with physical or simulated devices and publishes structured domain events to backend services.
+The gateway is the external HTTP entry point of the backend.
+It uses Eureka to discover the registered services and applies JWT validation through a global filter.
 
-| Endpoint                          | Type | Description                                                                          |
-| --------------------------------- | ---- | ------------------------------------------------------------------------------------ |
-| `/embedded-service/badge-scanned` | POST | Receives a badge scan event from an RFID reader and forwards it to backend services. |
-| `/embedded-service/area-access`   | POST | Receives an area access event (IN/OUT direction).                                    |
-| `/embedded-service/machine-usage` | POST | Receives proximity sensor events related to machine usage.                           |
-| `/embedded-service/device-status` | GET  | Returns operational status of all connected devices.                                 |
+Relevant behavior:
 
-## 3.4.2 Occupancy Tracking Service
+- public access is allowed for actuator paths and authentication endpoints such as `/login` and `/register`;
+- protected requests must carry a Bearer token in the `Authorization` header;
+- after validation, the gateway injects `X-User-Id` into the forwarded request;
+- routes are resolved through service discovery (`lb://...`) rather than hard-coded hostnames.
 
-This service manages gym sessions and global occupancy consistency.
-| Endpoint | Type | Description |
-| ------------------------------------ | ---- | ------------------------------------------------------------- |
-| `/occupancy-service/start-session` | POST | Creates a new GymSession when a member enters the gym. |
-| `/occupancy-service/end-session` | POST | Terminates the active GymSession of a member. |
-| `/occupancy-service/count` | GET | Returns the total number of members currently inside the gym. |
-| `/occupancy-service/active-sessions` | GET | Returns all currently active gym sessions. |
+The gateway routes the following service families:
 
-## 3.4.3 Area Management Service
+- `auth-service`
+- `analytics-service`
+- `embedded-service`
+- `machine-service`
+- `area-service`
+- `tracking-service`
 
-This service manages area configuration and area-level occupancy.
+## 3.4.2 Authentication Service
 
-| Endpoint                        | Type | Description                                                |
-| ------------------------------- | ---- | ---------------------------------------------------------- |
-| `/area-service/enter`           | POST | Registers entry of a member into a specific area.          |
-| `/area-service/exit`            | POST | Registers exit of a member from a specific area.           |
-| `/area-service/{areaId}`        | GET  | Returns occupancy status and capacity of a specific area.  |
-| `/area-service/update-capacity` | POST | Updates the maximum capacity of an area (admin operation). |
+The authentication service exposes the following controller paths:
 
-## 3.4.4 Machine Management Service
+| Endpoint            | Type | Description                                              |
+| ------------------- | ---- | -------------------------------------------------------- |
+| `/login`            | POST | Authenticates an administrator and returns a JWT token.  |
+| `/register`         | POST | Registers a new user.                                    |
+| `/login/{username}` | GET  | Verifies whether a user exists.                          |
+| `/logout`           | POST | Registers the logout event using the `X-User-Id` header. |
 
-This service handles machine lifecycle and machine sessions.
+## 3.4.3 Tracking Service
 
-| Endpoint                                | Type | Description                                                     |
-| --------------------------------------- | ---- | --------------------------------------------------------------- |
-| `/machine-service/machines`             | POST | Creates a new machine and associates it to an area.             |
-| `/machine-service/machines/{machineId}` | PUT  | Updates machine metadata (e.g. associated area).                |
-| `/machine-service/start-session`        | POST | Starts a MachineSession and sets machine status to Occupied.    |
-| `/machine-service/end-session`          | POST | Ends the active MachineSession and sets machine status to Free. |
-| `/machine-service/set-maintenance`      | POST | Sets machine status to Maintenance (admin operation).           |
-| `/machine-service/{machineId}`          | GET  | Returns the current state of a machine.                         |
-| `/machine-service/history/{machineId}`  | GET  | Returns historical usage sessions of a machine.                 |
+The tracking service exposes the following controller paths:
 
-## 3.4.5 Analytics Service
+| Endpoint           | Type | Description                    |
+| ------------------ | ---- | ------------------------------ |
+| `/start-session`   | POST | Creates a new gym session.     |
+| `/end-session`     | POST | Ends the active gym session.   |
+| `/count`           | GET  | Returns the current gym count. |
+| `/active-sessions` | GET  | Returns active gym sessions.   |
 
-The Analytics Service provides aggregated and historical data for administrative monitoring.
+## 3.4.4 Area Management Service
 
-| Endpoint                                 | Type | Description                                        |
-| ---------------------------------------- | ---- | -------------------------------------------------- |
-| `/analytics-service/attendance/{date}`   | GET  | Returns attendance statistics for a specific date. |
-| `/analytics-service/machine-utilization` | GET  | Returns aggregated machine usage statistics.       |
-| `/analytics-service/peak-hours`          | GET  | Returns peak attendance periods.                   |
-| `/analytics-service/reports`             | GET  | Retrieves generated analytical reports.            |
+The area service exposes the following controller paths:
 
-## 3.4.6 Authentication Service
+| Endpoint                 | Type | Description                              |
+| ------------------------ | ---- | ---------------------------------------- |
+| `/area-service/access`   | POST | Registers entry to a specific area.      |
+| `/area-service/exit`     | POST | Registers exit from a specific area.     |
+| `/area-service/{areaId}` | GET  | Returns a specific area by id.           |
+| `/area-service`          | GET  | Returns all areas.                       |
+| `/area-service/capacity` | PUT  | Updates the maximum capacity of an area. |
 
-The Authentication Service manages identity verification and token-based security.
+## 3.4.5 Machine Management Service
 
-| Endpoint                 | Type | Description                                               |
-| ------------------------ | ---- | --------------------------------------------------------- |
-| `/auth-service/login`    | POST | Authenticates an administrator and generates a JWT token. |
-| `/auth-service/logout`   | POST | Invalidates the active token.                             |
-| `/auth-service/validate` | GET  | Validates a token for service-to-service communication.   |
+The machine service exposes the following controller paths:
+
+| Endpoint                | Type | Description                                                 |
+| ----------------------- | ---- | ----------------------------------------------------------- |
+| `/machines`             | POST | Creates a new machine.                                      |
+| `/machines/{machineId}` | PUT  | Updates machine metadata.                                   |
+| `/start-session`        | POST | Starts a machine session and marks the machine as occupied. |
+| `/end-session`          | POST | Ends the active machine session and frees the machine.      |
+| `/set-maintenance`      | POST | Sets the machine status to maintenance.                     |
+| `/{machineId}`          | GET  | Returns the current state of a machine.                     |
+| `/history/{machineId}`  | GET  | Returns the historical usage sessions of a machine.         |
+
+## 3.4.6 Analytics Service
+
+The analytics service exposes the following controller paths:
+
+| Endpoint                           | Type | Description                                                   |
+| ---------------------------------- | ---- | ------------------------------------------------------------- |
+| `/events/ingest`                   | POST | Ingests a domain event into the analytics pipeline.           |
+| `/attendance/{date}`               | GET  | Returns attendance statistics for a specific date.            |
+| `/attendance`                      | GET  | Returns all attendance statistics.                            |
+| `/machine-utilization`             | GET  | Returns aggregated machine utilization statistics.            |
+| `/machine-utilization/{date}`      | GET  | Returns machine utilization for a specific date.              |
+| `/peak-hours`                      | GET  | Returns peak attendance periods.                              |
+| `/peak-hours/{date}`               | GET  | Returns peak attendance periods for a specific date.          |
+| `/area-attendance`                 | GET  | Returns aggregated area attendance statistics.                |
+| `/area-attendance/{date}`          | GET  | Returns area attendance for a specific date.                  |
+| `/area-attendance/{date}/{areaId}` | GET  | Returns area attendance for a specific date and area.         |
+| `/area-peak-hours`                 | GET  | Returns peak attendance periods per area.                     |
+| `/area-peak-hours/{date}`          | GET  | Returns peak attendance periods per area for a specific date. |
+| `/area-peak-hours/{date}/{areaId}` | GET  | Returns peak attendance periods for a specific date and area. |
+
+## 3.4.7 Embedded Service and MQTT Topics
+
+The embedded layer is driven by MQTT rather than by business REST endpoints.
+The Go simulator publishes events to the broker using the following topics:
+
+- `smartgym/gym-access`
+- `smartgym/area-access`
+- `smartgym/machine-usage`
+- `smartgym/device-status`
+
+The embedded service consumes these messages, normalizes their payloads, and forwards the resulting commands to the backend services through HTTP adapters.
+
+## 3.4.8 Frontend Flask Application
+
+The frontend is a lightweight Flask application used as the administrative entry point.
+Its main routes are:
+
+| Endpoint      | Type | Description                                                        |
+| ------------- | ---- | ------------------------------------------------------------------ |
+| `/`           | GET  | Redirects to the dashboard or login page depending on the session. |
+| `/login`      | GET  | Renders the login form.                                            |
+| `/login`      | POST | Authenticates the administrator via `auth-service`.                |
+| `/logout`     | GET  | Clears the session and notifies the auth service.                  |
+| `/dashboard`  | GET  | Displays the user dashboard and service connectivity summary.      |
+| `/api/health` | GET  | Returns a simple health response for deployment checks.            |
+
+## 3.5 Architectural Notes
+
+The design follows a database-per-service approach with independent MongoDB instances for the operational and analytical services.
+This reduces coupling and allows each bounded context to evolve separately.
+
+The overall flow is:
+
+1. the simulator generates device events via MQTT;
+2. the embedded service translates them into application-level messages;
+3. the operational services update their local state;
+4. analytics stores and aggregates historical data;
+5. the frontend interacts with the auth service and displays the dashboard to administrators.
