@@ -1,3 +1,30 @@
+## [3.1.0](https://github.com/piertv21/SmartGym-Monitor/compare/3.0.0...3.1.0) (2026-04-05)
+
+### Features
+
+- add e2e scenarios for area machine and gym usage ([ccfbefe](https://github.com/piertv21/SmartGym-Monitor/commit/ccfbefecd78e87f156f35e05de98752433e830d9))
+- add sensr statuses to frontend ([b593993](https://github.com/piertv21/SmartGym-Monitor/commit/b59399343adb2c236dde0d4b46c00df212f51b13))
+
+### Bug Fixes
+
+- add endpoint statuses to embedded services ([f190758](https://github.com/piertv21/SmartGym-Monitor/commit/f190758bd10329a93f72ae01dcf67f99781e0534))
+- divide simulator architecture and add test ([f4e0f40](https://github.com/piertv21/SmartGym-Monitor/commit/f4e0f405f95f7f888436344a35d513f950b8837a))
+- improve analytics service simplifying db store ([6578a01](https://github.com/piertv21/SmartGym-Monitor/commit/6578a01a2aa6cfbb32d999ae2995a0de6d81daef))
+
+### Documentation
+
+- add project logo and README ([fbfbc5b](https://github.com/piertv21/SmartGym-Monitor/commit/fbfbc5b0db21c1494e9b916f7fca306ee0d96863))
+- refactor and improve docs ([27f3bcf](https://github.com/piertv21/SmartGym-Monitor/commit/27f3bcf0ab12cd44d7dc66d2a4965a13193184a6))
+
+### Tests
+
+- fix gateway and tracking service integration tests ([7887f6d](https://github.com/piertv21/SmartGym-Monitor/commit/7887f6d2959bade3df6289849ffdd7dac7db0c8f))
+
+### Build and continuous integration
+
+- fix build and test workflow ([10cb0d8](https://github.com/piertv21/SmartGym-Monitor/commit/10cb0d829755bc4c45b09d7e8b0c482ea0bf6b05))
+- fix build and test workflow start conditions ([c2099e8](https://github.com/piertv21/SmartGym-Monitor/commit/c2099e8f4e626950f2af9802f96eb32c821f89c5))
+
 ## [3.0.0](https://github.com/piertv21/SmartGym-Monitor/compare/2.0.0...3.0.0) (2026-04-04)
 
 ### ⚠ BREAKING CHANGES
