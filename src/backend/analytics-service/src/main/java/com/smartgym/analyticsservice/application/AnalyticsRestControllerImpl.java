@@ -56,6 +56,61 @@ public class AnalyticsRestControllerImpl implements AnalyticsRestController {
     }
 
     @Override
+    @GetMapping("/machine-utilization/month/{month}")
+    public CompletableFuture<ResponseEntity<?>> getMachineUtilizationByMonth(@PathVariable String month) {
+        return analyticsServiceAPI.getMachineUtilizationByMonth(month)
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
+    @GetMapping("/unique-users/{date}")
+    public CompletableFuture<ResponseEntity<?>> getUniqueUsersByDate(@PathVariable String date) {
+        return analyticsServiceAPI.getUniqueUsersByDate(date)
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
+    @GetMapping("/unique-users/month/{month}")
+    public CompletableFuture<ResponseEntity<?>> getUniqueUsersByMonth(@PathVariable String month) {
+        return analyticsServiceAPI.getUniqueUsersByMonth(month)
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
+    @GetMapping("/gym-session-duration/{date}")
+    public CompletableFuture<ResponseEntity<?>> getGymSessionDurationByDate(@PathVariable String date) {
+        return analyticsServiceAPI.getGymSessionDurationByDate(date)
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
+    @GetMapping("/gym-session-duration/month/{month}")
+    public CompletableFuture<ResponseEntity<?>> getGymSessionDurationByMonth(@PathVariable String month) {
+        return analyticsServiceAPI.getGymSessionDurationByMonth(month)
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
+    @GetMapping("/area-session-duration/{date}/{areaId}")
+    public CompletableFuture<ResponseEntity<?>> getAreaSessionDurationByDate(
+            @PathVariable String date,
+            @PathVariable String areaId
+    ) {
+        return analyticsServiceAPI.getAreaSessionDurationByDate(date, areaId)
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
+    @GetMapping("/area-session-duration/month/{month}/{areaId}")
+    public CompletableFuture<ResponseEntity<?>> getAreaSessionDurationByMonth(
+            @PathVariable String month,
+            @PathVariable String areaId
+    ) {
+        return analyticsServiceAPI.getAreaSessionDurationByMonth(month, areaId)
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
     @GetMapping("/peak-hours")
     public CompletableFuture<ResponseEntity<?>> getPeakHours() {
         return analyticsServiceAPI.getPeakHours()

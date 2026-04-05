@@ -647,12 +647,25 @@ func main() {
 	fmt.Println("Connected to MQTT broker:", brokerURL)
 	fmt.Println("Base topic:", baseTopic)
 
-	members := []GymMember{
-		{BadgeID: "badge-001"},
-		//{BadgeID: "badge-002"},
-		//{BadgeID: "badge-003"},
-        //{BadgeID: "badge-004"},
-	}
+
+    members := []GymMember{
+        {BadgeID: "badge-001"},
+        {BadgeID: "badge-002"},
+        {BadgeID: "badge-003"},
+        {BadgeID: "badge-004"},
+        {BadgeID: "badge-005"},
+        {BadgeID: "badge-006"},
+        {BadgeID: "badge-007"},
+        {BadgeID: "badge-008"},
+        {BadgeID: "badge-009"},
+        {BadgeID: "badge-010"},
+        {BadgeID: "badge-011"},
+        {BadgeID: "badge-012"},
+        {BadgeID: "badge-013"},
+        {BadgeID: "badge-014"},
+        {BadgeID: "badge-015"},
+    }
+
 
 	businessTicker := time.NewTicker(businessTick)
 	// healthTicker := time.NewTicker(30 * time.Second)
