@@ -7,6 +7,7 @@ import com.smartgym.embeddedservice.application.ports.EmbeddedRepository;
 import com.smartgym.embeddedservice.application.ports.MachineServicePort;
 import com.smartgym.embeddedservice.application.ports.TrackingServicePort;
 import com.smartgym.embeddedservice.model.AreaAccessMessage;
+import com.smartgym.embeddedservice.model.DeviceStatusMessage;
 import com.smartgym.embeddedservice.model.GymAccessMessage;
 import com.smartgym.embeddedservice.model.MachineUsageMessage;
 import io.vertx.core.json.JsonArray;
@@ -22,6 +23,7 @@ import java.util.concurrent.CompletionException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JUnitEmbeddedServiceApiTest {
 
@@ -299,6 +301,63 @@ public class JUnitEmbeddedServiceApiTest {
         assertEquals(1, repository.savedEvents.size());
     }
 
+    @Test
+    void processDeviceStatusPersistsDeviceStatusEvent() {
+        List<String> callOrder = new ArrayList<>();
+        RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
+        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
+        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
+                repository,
+                areaServicePort,
+                analyticsServicePort,
+                machineServicePort,
+                trackingServicePort
+        );
+
+        DeviceStatusMessage message = new DeviceStatusMessage(
+                "sensor-01",
+                "2026-03-28T10:00:00Z",
+                "PROXIMITY_SENSOR",
+                true,
+                "OK"
+        );
+
+        service.processDeviceStatus(message).join();
+
+        assertEquals(List.of("embedded-repository"), callOrder);
+        assertEquals(1, repository.savedEvents.size());
+        assertEquals("DEVICE_STATUS", repository.savedEvents.getFirst().getString("eventType"));
+    }
+
+    @Test
+    void getAllDeviceStatusesReturnsRepositorySnapshot() {
+        List<String> callOrder = new ArrayList<>();
+        RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
+        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
+        repository.latestDeviceStatuses = new JsonArray()
+                .add(new JsonObject().put("deviceId", "sensor-01").put("online", true));
+
+        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
+                repository,
+                areaServicePort,
+                analyticsServicePort,
+                machineServicePort,
+                trackingServicePort
+        );
+
+        JsonArray statuses = service.getAllDeviceStatuses().join();
+
+        assertEquals(1, statuses.size());
+        assertEquals("sensor-01", statuses.getJsonObject(0).getString("deviceId"));
+        assertTrue(callOrder.contains("embedded-repository-statuses"));
+    }
+
     private static final class RecordingAreaServicePort implements AreaServicePort {
 
         private final List<String> callOrder;
@@ -410,6 +469,7 @@ public class JUnitEmbeddedServiceApiTest {
 
         private final List<String> callOrder;
         private final List<JsonObject> savedEvents = new ArrayList<>();
+        private JsonArray latestDeviceStatuses = new JsonArray();
 
         private RecordingEmbeddedRepository(List<String> callOrder) {
             this.callOrder = callOrder;
@@ -435,6 +495,12 @@ public class JUnitEmbeddedServiceApiTest {
         @Override
         public CompletableFuture<JsonArray> findAllEventsByType(String eventType) {
             return CompletableFuture.completedFuture(new JsonArray());
+        }
+
+        @Override
+        public CompletableFuture<JsonArray> findLatestDeviceStatuses() {
+            callOrder.add("embedded-repository-statuses");
+            return CompletableFuture.completedFuture(latestDeviceStatuses);
         }
     }
 }

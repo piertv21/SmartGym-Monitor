@@ -668,8 +668,9 @@ func main() {
 
 
 	businessTicker := time.NewTicker(businessTick)
-	// healthTicker := time.NewTicker(30 * time.Second)
+	healthTicker := time.NewTicker(30 * time.Second)
 	defer businessTicker.Stop()
+	defer healthTicker.Stop()
 
 	for {
 		select {
@@ -688,8 +689,8 @@ func main() {
 				maybeStartMachine(client, baseTopic, m, machines, devices, now)
 			}
 
-		// case <-healthTicker.C:
-		// 	publishDeviceStatuses(client, baseTopic, devices)
+		case <-healthTicker.C:
+			publishDeviceStatuses(client, baseTopic, devices)
 		}
 	}
 }

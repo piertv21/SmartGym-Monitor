@@ -164,6 +164,11 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
         return embeddedRepository.findEventById(eventId);
     }
 
+    @Override
+    public CompletableFuture<JsonArray> getAllDeviceStatuses() {
+        return embeddedRepository.findLatestDeviceStatuses();
+    }
+
     private JsonObject buildGymAccessEvent(GymAccessMessage message) {
         return new JsonObject()
                 .put(EVENT_ID, UUID.randomUUID().toString())

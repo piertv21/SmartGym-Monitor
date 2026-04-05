@@ -117,6 +117,7 @@ public class VertxMqttClientAdapter extends AbstractVerticle {
 
                     System.out.println("Updated status for device [" +
                             statusMessage.getDeviceId() + "]: " + json.encodePrettily());
+                    vertx.eventBus().publish(EventBusAddresses.DEVICE_STATUS, json.encode());
                     return;
                 }
 
