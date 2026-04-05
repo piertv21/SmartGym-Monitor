@@ -149,6 +149,57 @@ main {
   background: rgba(255, 255, 255, 0.02);
 }
 
+.panel--statuses {
+  margin-top: 14px;
+}
+
+.statuses__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.status-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.status-table th,
+.status-table td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 14px;
+}
+
+.status-table th {
+  font-weight: 700;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 12px;
+}
+
+.badge--up {
+  color: #8ff0c3;
+  border-color: rgba(143, 240, 195, 0.45);
+}
+
+.badge--down {
+  color: #ff9ca5;
+  border-color: rgba(255, 156, 165, 0.45);
+}
+
 .ok {
   color: #8ff0c3;
 }

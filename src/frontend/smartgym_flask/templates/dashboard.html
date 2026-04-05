@@ -22,13 +22,41 @@
       <p class="muted">Useful during the SPE demo.</p>
       <ul>
         <li>Frontend: <code>http://localhost:5001</code></li>
-        <li>Gateway: <code>http://localhost:8080</code></li>
+        <li>Gateway: <code>{{ gateway_base_url }}</code></li>
         <li>Auth-service: <code>{{ auth_service_base_url }}</code></li>
+        <li>Statuses API (frontend): <code>/api/statuses</code></li>
         <li>Eureka: <code>http://localhost:8761</code></li>
         <li>Prometheus: <code>http://localhost:9090</code></li>
         <li>Grafana: <code>http://localhost:3000</code></li>
       </ul>
     </div>
   </div>
+
+  <div class="panel panel--statuses">
+    <div class="statuses__header">
+      <h2 class="h2">Stati macchinari e sensori</h2>
+      <button id="refresh-statuses" class="btn" type="button">Refresh</button>
+    </div>
+    <p class="muted">Aggiornamento automatico ogni 10 secondi.</p>
+
+    <p id="statuses-feedback" class="muted">Caricamento in corso...</p>
+
+    <div class="table-wrap">
+      <table class="status-table" aria-label="Stato dispositivi">
+        <thead>
+          <tr>
+            <th>Device ID</th>
+            <th>Tipo</th>
+            <th>Stato</th>
+            <th>Dettaglio</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="statuses-body"></tbody>
+      </table>
+    </div>
+  </div>
 </section>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard_statuses.js') }}"></script>
 {% endblock %}

@@ -5,7 +5,7 @@ import os
 from flask import Flask
 
 from smartgym_flask.config import Config
-from smartgym_flask.extensions import teardown_user_service
+from smartgym_flask.extensions import teardown_status_service, teardown_user_service
 from smartgym_flask.routes import api_bp, auth_bp, dashboard_bp
 
 
@@ -20,6 +20,7 @@ def create_app(config_overrides: dict | None = None) -> Flask:
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(api_bp)
     app.teardown_appcontext(teardown_user_service)
+    app.teardown_appcontext(teardown_status_service)
 
     return app
 
