@@ -176,6 +176,11 @@ public class JUnitMachineServiceTest {
         private final Map<String, MachineSession> sessionsById = new LinkedHashMap<>();
 
         @Override
+        public CompletableFuture<List<Machine>> findAllMachines() {
+            return CompletableFuture.completedFuture(new ArrayList<>(machinesById.values()));
+        }
+
+        @Override
         public CompletableFuture<Void> saveMachine(Machine machine) {
             machinesById.put(machine.getMachineId(), machine);
             return CompletableFuture.completedFuture(null);

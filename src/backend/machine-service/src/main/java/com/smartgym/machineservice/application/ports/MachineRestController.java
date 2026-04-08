@@ -27,6 +27,8 @@ public interface MachineRestController {
 
 	CompletableFuture<ResponseEntity<?>> setMachineMaintenance(@RequestBody SetMachineMaintenanceMessage message);
 
+	CompletableFuture<ResponseEntity<?>> getAllMachines();
+
 	CompletableFuture<ResponseEntity<?>> getMachineStatus(@PathVariable String machineId);
 
 	CompletableFuture<ResponseEntity<?>> getMachineHistory(@PathVariable String machineId);

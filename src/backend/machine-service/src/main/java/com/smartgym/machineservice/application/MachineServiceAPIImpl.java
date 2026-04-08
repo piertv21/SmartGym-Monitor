@@ -125,12 +125,24 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
     }
 
     @Override
+    public CompletableFuture<List<Machine>> getAllMachines() {
+        return repository.findAllMachines();
+    }
+
+    @Override
     public CompletableFuture<Machine> setMachineMaintenance(SetMachineMaintenanceMessage message) {
         return CompletableFuture.supplyAsync(() -> {
             validateMaintenanceMessage(message);
 
             Machine machine = getRequiredMachine(message.getMachineId());
-            machine.setMaintenance();
+            boolean active = message.getActive() != null ? message.getActive() : true;
+            
+            if (active) {
+                machine.setMaintenance();
+            } else {
+                machine.setAvailable();
+            }
+            
             repository.saveMachine(machine).join();
             return machine;
         });

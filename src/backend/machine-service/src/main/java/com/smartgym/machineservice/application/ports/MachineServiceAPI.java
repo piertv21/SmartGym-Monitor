@@ -26,6 +26,8 @@ public interface MachineServiceAPI {
 
 	CompletableFuture<MachineSession> endMachineSession(EndMachineSessionMessage message);
 
+	CompletableFuture<List<Machine>> getAllMachines();
+
 	CompletableFuture<Machine> setMachineMaintenance(SetMachineMaintenanceMessage message);
 
 	CompletableFuture<Machine> getMachineStatus(String machineId);

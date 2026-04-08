@@ -106,6 +106,13 @@ public class MachineRestControllerImpl implements MachineRestController {
     }
 
     @Override
+    @GetMapping("/machines")
+    public CompletableFuture<ResponseEntity<?>> getAllMachines() {
+        return machineService.getAllMachines()
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
     @GetMapping("/{machineId}")
     public CompletableFuture<ResponseEntity<?>> getMachineStatus(@PathVariable String machineId) {
         return machineService.getMachineStatus(machineId)

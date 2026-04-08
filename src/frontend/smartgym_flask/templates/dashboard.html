@@ -1,5 +1,20 @@
 {% extends "base.html" %} {% block content %}
-<h1 class="h4 mb-4">Dashboard</h1>
+<div class="d-flex align-items-start justify-content-between mb-4">
+  <h1 class="h4 mb-0">Dashboard</h1>
+  <div class="text-end">
+    <p id="page-last-update" class="text-secondary small mb-2">
+      Ultimo aggiornamento: --:--:--
+    </p>
+    <button
+      id="refresh-statuses"
+      class="btn btn-outline-secondary btn-sm"
+      type="button"
+      aria-label="Aggiorna dashboard"
+    >
+      Refresh
+    </button>
+  </div>
+</div>
 
 <!-- KPI Grid -->
 <div class="row g-3 mb-4" aria-label="KPI principali dashboard">
@@ -41,13 +56,11 @@
 <div class="row g-3">
   <!-- Manutenzione macchine -->
   <div class="col-12 col-xl-6">
-    <section class="card">
+    <section class="card h-100">
       <div class="card-body">
         <div class="d-flex align-items-center justify-content-between mb-1">
           <h2 class="card-title h6 mb-0">Manutenzione macchine</h2>
-          <div class="btn btn-sm invisible" aria-hidden="true">Refresh</div>
         </div>
-        <p class="text-secondary small mb-2 invisible" aria-hidden="true">-</p>
         <p
           id="maintenance-feedback"
           class="text-secondary small mb-2"
@@ -62,6 +75,7 @@
           >
             <thead>
               <tr>
+                <th>#</th>
                 <th>Nome macchina</th>
                 <th>Stato</th>
                 <th>Azione</th>
@@ -69,7 +83,7 @@
             </thead>
             <tbody id="maintenance-body">
               <tr>
-                <td colspan="3" class="text-secondary">
+                <td colspan="4" class="text-secondary">
                   Caricamento dati macchinari...
                 </td>
               </tr>
@@ -82,22 +96,11 @@
 
   <!-- Stati macchinari e sensori -->
   <div class="col-12 col-xl-6">
-    <section class="card">
+    <section class="card h-100">
       <div class="card-body">
         <div class="d-flex align-items-center justify-content-between mb-1">
           <h2 class="card-title h6 mb-0">Stati macchinari e sensori</h2>
-          <button
-            id="refresh-statuses"
-            class="btn btn-outline-secondary btn-sm"
-            type="button"
-            aria-label="Aggiorna stati"
-          >
-            Refresh
-          </button>
         </div>
-        <p class="text-secondary small mb-2">
-          Aggiornamento automatico ogni 10 secondi.
-        </p>
         <p
           id="statuses-feedback"
           class="text-secondary small mb-2"

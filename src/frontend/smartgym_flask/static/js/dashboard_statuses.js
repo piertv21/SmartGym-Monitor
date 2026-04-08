@@ -3,34 +3,42 @@ const statusesFeedback = document.getElementById("statuses-feedback");
 const refreshButton = document.getElementById("refresh-statuses");
 const maintenanceBody = document.getElementById("maintenance-body");
 const maintenanceFeedback = document.getElementById("maintenance-feedback");
+const pageLastUpdate = document.getElementById("page-last-update");
 
 const kpiUsersInside = document.getElementById("kpi-users-inside");
 const kpiUsersEntered = document.getElementById("kpi-users-entered");
 const kpiUsersExited = document.getElementById("kpi-users-exited");
 const kpiAverageSession = document.getElementById("kpi-average-session");
 
-const maintenanceState = new Map([
-  ["Treadmill 1", false],
-  ["Treadmill 2", false],
-  ["Bike 1", true],
-  ["Ellittica 1", false],
-  ["Rower 1", false],
-  ["Chest Press 1", false],
-  ["Rower 12", false],
-  ["Rower 13", false],
-  ["Rower 14", false],
-  ["Rower 15", false],
-  ["Rower 16", false],
-]);
+let internalMachines = [];
+const DASHBOARD_REFRESH_MS = 5000;
+let dashboardRefreshInFlight = false;
+
+const ENDPOINTS = {
+  analyticsDashboard: "/api/analytics/dashboard",
+  machines: "/api/machines",
+  maintenanceToggle: "/api/maintenance/toggle",
+  statuses: "/api/statuses",
+};
+
+const MESSAGE_SESSION_EXPIRED = "Sessione scaduta. Esegui di nuovo il login.";
+
+function setLastUpdateLabel(date = new Date()) {
+  if (!pageLastUpdate) {
+    return;
+  }
+
+  pageLastUpdate.textContent = `Ultimo aggiornamento: ${date.toLocaleTimeString()}`;
+}
 
 function statusBadge(online) {
   if (online === true) {
-    return '<span class="badge text-bg-success">ONLINE</span>';
+    return '<span class="badge badge--up">ONLINE</span>';
   }
   if (online === false) {
-    return '<span class="badge text-bg-danger">OFFLINE</span>';
+    return '<span class="badge badge--down">OFFLINE</span>';
   }
-  return '<span class="badge text-bg-secondary">N/A</span>';
+  return '<span class="badge">N/A</span>';
 }
 
 function escapeHtml(value) {
@@ -42,14 +50,50 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function toggleMaintenance(deviceId) {
-  if (!deviceId) {
+function setFeedback(element, message) {
+  if (!element) {
     return;
   }
+  element.textContent = message;
+}
 
-  const currentValue = maintenanceState.get(deviceId) === true;
-  maintenanceState.set(deviceId, !currentValue);
-  renderMaintenanceRows();
+async function extractErrorMessage(response, fallbackMessage) {
+  try {
+    const payload = await response.json();
+    if (payload && typeof payload.error === "string" && payload.error.trim()) {
+      return payload.error;
+    }
+  } catch (_error) {
+    // Keep fallback if response body is empty or not JSON.
+  }
+  return fallbackMessage;
+}
+
+function machineStatusBadge(status) {
+  const normalizedStatus = String(status ?? "").toUpperCase();
+  if (normalizedStatus === "MAINTENANCE") {
+    return '<span class="badge bg-warning text-dark">IN MANUTENZIONE</span>';
+  }
+  if (normalizedStatus === "OCCUPIED") {
+    return '<span class="badge bg-danger">IN USO</span>';
+  }
+  if (normalizedStatus === "FREE") {
+    return '<span class="badge bg-success">FREE</span>';
+  }
+  return '<span class="badge bg-secondary">N/A</span>';
+}
+
+function normalizeMachinePayload(payload) {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  if (payload && Array.isArray(payload.list)) {
+    return payload.list.map((item) => (item && item.map ? item.map : item));
+  }
+  if (payload && Array.isArray(payload.machines)) {
+    return payload.machines;
+  }
+  return [];
 }
 
 function renderMaintenanceRows() {
@@ -57,29 +101,41 @@ function renderMaintenanceRows() {
     return;
   }
 
-  const rows = Array.from(maintenanceState.entries());
-  if (rows.length === 0) {
+  if (!Array.isArray(internalMachines) || internalMachines.length === 0) {
     maintenanceBody.innerHTML =
-      '<tr><td colspan="3" class="muted">Nessun macchinario disponibile.</td></tr>';
+      '<tr><td colspan="4" class="text-secondary">Nessun macchinario disponibile.</td></tr>';
     return;
   }
 
-  maintenanceBody.innerHTML = rows
-    .map(([deviceId, inMaintenance]) => {
+  maintenanceBody.innerHTML = internalMachines
+    .map((machine, index) => {
+      const machineId = String(machine.machineId ?? machine.id ?? "");
+      const status = String(machine.status ?? "FREE");
+      const normalizedStatus = status.toUpperCase();
+      const inMaintenance = normalizedStatus === "MAINTENANCE";
+      const occupied = normalizedStatus === "OCCUPIED";
+      const canToggleMaintenance =
+        Boolean(machineId) && (inMaintenance || !occupied);
       const actionLabel = inMaintenance ? "Fine manutenzione" : "Manutenzione";
-      const statusLabel = inMaintenance ? "In manutenzione" : "FREE";
+      const disabledHint =
+        occupied && !inMaintenance ? "Macchinario in uso" : "";
+
       return `
       <tr>
-        <td>${escapeHtml(deviceId)}</td>
-        <td class="fw-semibold">${escapeHtml(statusLabel)}</td>
+        <td>${index + 1}</td>
+        <td>${escapeHtml(machineId || "-")}</td>
+        <td>${machineStatusBadge(status)}</td>
         <td>
           <button
-            class="btn btn-warning btn-sm"
+            class="btn btn-sm btn-outline-warning btn-maintenance-action"
             type="button"
-            data-maintenance-id="${escapeHtml(deviceId)}"
-            aria-label="${escapeHtml(actionLabel)} ${escapeHtml(deviceId)}"
+            data-maintenance-id="${escapeHtml(machineId)}"
+            data-maintenance-active="${inMaintenance ? "false" : "true"}"
+            aria-label="${escapeHtml(actionLabel)} ${escapeHtml(machineId)}"
+            ${canToggleMaintenance ? "" : "disabled"}
+            ${disabledHint ? `title="${escapeHtml(disabledHint)}"` : ""}
           >
-            ${escapeHtml(actionLabel)}
+            ${escapeHtml(disabledHint || actionLabel)}
           </button>
         </td>
       </tr>
@@ -88,7 +144,7 @@ function renderMaintenanceRows() {
     .join("");
 }
 
-function updateKpis(statuses) {
+function renderKpis(attendance, session) {
   if (
     !kpiUsersInside ||
     !kpiUsersEntered ||
@@ -98,110 +154,187 @@ function updateKpis(statuses) {
     return;
   }
 
-  const onlineDevices = statuses.filter(
-    (status) => status.online === true,
-  ).length;
-  const totalDevices = statuses.length;
-  const estimatedInside = Math.max(onlineDevices, 15);
-  const estimatedEntered = Math.max(totalDevices * 2, 30);
-  const estimatedExited = Math.max(estimatedEntered - estimatedInside, 15);
+  const gymCount = Number(attendance?.gymCount ?? 0);
+  const totalEntries = Number(attendance?.totalEntries ?? 0);
+  const totalExits = Number(attendance?.totalExits ?? 0);
+  const avgDuration = Number(session?.averageDurationMinutes ?? 0);
 
-  kpiUsersInside.textContent = `${estimatedInside} utenti`;
-  kpiUsersEntered.textContent = `${estimatedEntered} utenti`;
-  kpiUsersExited.textContent = `${estimatedExited} utenti`;
-  kpiAverageSession.textContent = "4.3 minuti";
+  kpiUsersInside.textContent = `${Number.isFinite(gymCount) ? gymCount : 0} utenti`;
+  kpiUsersEntered.textContent = `${Number.isFinite(totalEntries) ? totalEntries : 0} utenti`;
+  kpiUsersExited.textContent = `${Number.isFinite(totalExits) ? totalExits : 0} utenti`;
+  kpiAverageSession.textContent = `${Number.isFinite(avgDuration) ? avgDuration.toFixed(1) : "0.0"} minuti`;
 }
 
-function updateMaintenance(statuses) {
-  if (!maintenanceBody || !maintenanceFeedback) {
-    return;
-  }
+async function loadKpis() {
+  try {
+    const response = await fetch(ENDPOINTS.analyticsDashboard, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
 
-  const machines = statuses.filter((status) => {
-    const deviceType = String(status.deviceType ?? "").toUpperCase();
-    return deviceType.includes("MACHINE") || deviceType.includes("MACCH");
-  });
-
-  if (machines.length === 0) {
-    // Nessun macchinario dall'API: mantieni i dati demo già presenti
-    maintenanceFeedback.textContent =
-      "Nessun macchinario rilevato dall'API. Dati demo visualizzati.";
-    return;
-  }
-
-  for (const machine of machines) {
-    const deviceId = String(machine.deviceId ?? "");
-    if (!deviceId || maintenanceState.has(deviceId)) {
-      continue;
+    if (!response.ok) {
+      return false;
     }
 
-    maintenanceState.set(deviceId, false);
+    const payload = await response.json();
+    renderKpis(payload.attendance ?? {}, payload.session ?? {});
+    return true;
+  } catch (error) {
+    console.error("Error loading KPIs:", error);
+    return false;
   }
-
-  renderMaintenanceRows();
-  maintenanceFeedback.textContent = `${machines.length} macchinari monitorati.`;
 }
 
-function renderStatuses(statuses) {
-  if (!Array.isArray(statuses) || statuses.length === 0) {
-    statusesBody.innerHTML =
-      '<tr><td colspan="5" class="muted">Nessuno stato disponibile al momento.</td></tr>';
-    statusesFeedback.textContent = "Nessuno stato disponibile al momento.";
-    updateKpis([]);
-    updateMaintenance([]);
-    return;
+async function loadMachines(showLoading = false) {
+  if (!maintenanceBody) {
+    return false;
   }
 
-  statusesBody.innerHTML = statuses
-    .map(
-      (status, index) => `
-	  <tr>
-		<td>${index + 1}</td>
-		<td>${escapeHtml(status.deviceId)}</td>
-		<td>${escapeHtml(status.deviceType)}</td>
-		<td>${statusBadge(status.online)}</td>
-		<td>${escapeHtml(status.timeStamp)}</td>
-	  </tr>
-	`,
-    )
-    .join("");
-
-  statusesFeedback.textContent = `Ultimo aggiornamento: ${new Date().toLocaleTimeString()} (${statuses.length} dispositivi)`;
-  updateKpis(statuses);
-  updateMaintenance(statuses);
-}
-
-async function loadStatuses() {
   try {
-    statusesFeedback.textContent = "Caricamento stati...";
-    const response = await fetch("/api/statuses", {
+    if (showLoading) {
+      setFeedback(maintenanceFeedback, "Caricamento macchinari...");
+    }
+    const response = await fetch(ENDPOINTS.machines, {
       method: "GET",
       headers: { Accept: "application/json" },
     });
 
     if (!response.ok) {
       if (response.status === 401) {
-        statusesFeedback.textContent =
-          "Sessione scaduta. Esegui di nuovo il login.";
-        return;
+        setFeedback(maintenanceFeedback, MESSAGE_SESSION_EXPIRED);
+        return false;
       }
-      statusesFeedback.textContent = `Errore caricamento stati (${response.status}).`;
+      setFeedback(
+        maintenanceFeedback,
+        `Errore caricamento macchinari (${response.status}).`,
+      );
+      return false;
+    }
+
+    const payload = await response.json();
+    internalMachines = normalizeMachinePayload(payload);
+    renderMaintenanceRows();
+    setFeedback(maintenanceFeedback, "");
+    return true;
+  } catch (error) {
+    setFeedback(maintenanceFeedback, `Errore di rete: ${error}`);
+    return false;
+  }
+}
+
+async function toggleMaintenance(deviceId, active) {
+  if (!deviceId || typeof active !== "boolean") {
+    return;
+  }
+
+  try {
+    const response = await fetch(ENDPOINTS.maintenanceToggle, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ machineId: deviceId, active }),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await extractErrorMessage(
+        response,
+        `Errore aggiornamento manutenzione (${response.status}).`,
+      );
+      setFeedback(maintenanceFeedback, errorMessage);
       return;
+    }
+
+    await loadMachines();
+  } catch (error) {
+    setFeedback(maintenanceFeedback, `Errore di rete: ${error}`);
+  }
+}
+
+function renderStatuses(statuses) {
+  if (!Array.isArray(statuses) || statuses.length === 0) {
+    statusesBody.innerHTML =
+      '<tr><td colspan="5" class="text-secondary">Nessuno stato disponibile al momento.</td></tr>';
+    setFeedback(statusesFeedback, "");
+    return;
+  }
+
+  statusesBody.innerHTML = statuses
+    .map(
+      (status, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${escapeHtml(status.deviceId)}</td>
+        <td>${escapeHtml(status.deviceType)}</td>
+        <td>${statusBadge(status.online)}</td>
+        <td>${escapeHtml(status.timeStamp)}</td>
+      </tr>
+    `,
+    )
+    .join("");
+
+  setFeedback(statusesFeedback, "");
+}
+
+async function loadStatuses(showLoading = false) {
+  try {
+    if (showLoading) {
+      setFeedback(statusesFeedback, "Caricamento stati...");
+    }
+    const response = await fetch(ENDPOINTS.statuses, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        setFeedback(statusesFeedback, MESSAGE_SESSION_EXPIRED);
+        return false;
+      }
+      setFeedback(
+        statusesFeedback,
+        `Errore caricamento stati (${response.status}).`,
+      );
+      return false;
     }
 
     const payload = await response.json();
     renderStatuses(payload.statuses || []);
+    return true;
   } catch (error) {
-    statusesFeedback.textContent = `Errore di rete: ${error}`;
+    setFeedback(statusesFeedback, `Errore di rete: ${error}`);
+    return false;
+  }
+}
+
+async function refreshDashboardData(showLoading = false) {
+  if (dashboardRefreshInFlight) {
+    return;
+  }
+
+  dashboardRefreshInFlight = true;
+  try {
+    const results = await Promise.all([
+      loadStatuses(showLoading),
+      loadKpis(),
+      loadMachines(showLoading),
+    ]);
+
+    if (results.some(Boolean)) {
+      setLastUpdateLabel();
+    }
+  } finally {
+    dashboardRefreshInFlight = false;
   }
 }
 
 if (refreshButton) {
-  refreshButton.addEventListener("click", loadStatuses);
+  refreshButton.addEventListener("click", () => refreshDashboardData(true));
 }
 
 if (maintenanceBody) {
-  maintenanceBody.addEventListener("click", (event) => {
+  maintenanceBody.addEventListener("click", async (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) {
       return;
@@ -213,14 +346,14 @@ if (maintenanceBody) {
     }
 
     const deviceId = button.getAttribute("data-maintenance-id");
-    toggleMaintenance(deviceId);
+    const active = button.getAttribute("data-maintenance-active") === "true";
+    await toggleMaintenance(deviceId, active);
   });
 }
 
 renderMaintenanceRows();
-if (maintenanceFeedback) {
-  maintenanceFeedback.textContent = `${maintenanceState.size} macchinari monitorati (demo).`;
-}
+refreshDashboardData(true);
 
-loadStatuses();
-setInterval(loadStatuses, 10000);
+setInterval(() => {
+  refreshDashboardData(false);
+}, DASHBOARD_REFRESH_MS);

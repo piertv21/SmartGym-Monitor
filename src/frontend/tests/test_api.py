@@ -70,3 +70,26 @@ def test_api_statuses_returns_normalized_data(monkeypatch):
     assert payload["statuses"][1]["deviceId"] == "sensor-2"
 
 
+def test_toggle_maintenance_returns_backend_conflict_message(monkeypatch):
+    app = create_app({"TESTING": True, "SECRET_KEY": "test"})
+    client = app.test_client()
+
+    class DummyResponse:
+        status_code = 409
+
+        @staticmethod
+        def json():
+            return {"message": "cannot set maintenance while occupied: machine-1"}
+
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_machine_service",
+        lambda: type("S", (), {"set_maintenance": lambda self, access_token, machine_id, active: DummyResponse()})(),
+    )
+
+    with client.session_transaction() as session:
+        session["access_token"] = "jwt-token-123"
+
+    response = client.post("/api/maintenance/toggle", json={"machineId": "machine-1", "active": True})
+
+    assert response.status_code == 409
+    assert response.get_json() == {"error": "cannot set maintenance while occupied: machine-1"}

@@ -218,3 +218,46 @@ footer {
 .blink-dot {
   animation: blink-animation 1.5s infinite ease-in-out;
 }
+
+.badge--up,
+.badge--down {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.28rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+[data-bs-theme="dark"] .badge--up {
+  color: #77e6b6;
+  background-color: rgba(33, 186, 122, 0.18);
+  border-color: rgba(33, 186, 122, 0.45);
+}
+
+[data-bs-theme="dark"] .badge--down {
+  color: #ffb3bb;
+  background-color: rgba(220, 53, 69, 0.2);
+  border-color: rgba(220, 53, 69, 0.45);
+}
+
+[data-bs-theme="light"] .badge--up {
+  color: #0f5132;
+  background-color: rgba(25, 135, 84, 0.16);
+  border-color: rgba(25, 135, 84, 0.42);
+}
+
+[data-bs-theme="light"] .badge--down {
+  color: #842029;
+  background-color: rgba(220, 53, 69, 0.14);
+  border-color: rgba(220, 53, 69, 0.38);
+}
+
+.btn-maintenance-action {
+  min-width: 9.4rem;
+  font-weight: 600;
+}
