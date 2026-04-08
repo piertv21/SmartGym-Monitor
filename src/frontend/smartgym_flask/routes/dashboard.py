@@ -33,3 +33,14 @@ def dashboard():
         gateway_base_url=current_app.config.get("GATEWAY_BASE_URL", "http://localhost:8080"),
     )
 
+
+@dashboard_bp.get("/live")
+def live_monitor():
+    username = session.get("user")
+    access_token = session.get("access_token")
+    if not username:
+        return redirect(url_for("auth.login"))
+    if not access_token:
+        return redirect(url_for("auth.login"))
+
+    return render_template("live_monitor.html")

@@ -38,6 +38,17 @@ public class MachineRepositoryImpl implements MachineRepository {
     }
 
     @Override
+    public CompletableFuture<List<Machine>> findAllMachines() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Machine> machines = new ArrayList<>();
+            for (Document document : machinesCollection.find()) {
+                machines.add(fromMachineDocument(document));
+            }
+            return machines;
+        });
+    }
+
+    @Override
     public CompletableFuture<Void> saveMachine(Machine machine) {
         return CompletableFuture.runAsync(() -> {
             Document filter = new Document("machineId", machine.getMachineId());

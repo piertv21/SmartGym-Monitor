@@ -13,6 +13,8 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface MachineRepository {
 
+	CompletableFuture<List<Machine>> findAllMachines();
+
 	CompletableFuture<Void> saveMachine(Machine machine);
 
 	CompletableFuture<Optional<Machine>> findMachineById(String machineId);
