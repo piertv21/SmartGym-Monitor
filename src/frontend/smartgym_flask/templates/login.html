@@ -1,32 +1,38 @@
-{% extends "base.html" %} {% block content %}
-<section class="card">
-  <h1 class="h1">Login</h1>
-  <p class="muted">
-    This UI calls the <code>auth-service</code> directly. Default demo
-    credentials are <code>ADMIN / ADMIN</code>.
-  </p>
+{% extends "base_auth.html" %} {% block content %}
+<div class="card">
+  <div class="card-body p-4">
+    <h1 class="h4 mb-2">Login</h1>
+    <p class="text-secondary small mb-3">
+      This UI calls the <code>auth-service</code> directly. Default demo
+      credentials are <code>ADMIN / ADMIN</code>.
+    </p>
 
-  <form method="post" class="form">
-    <label class="label" for="username">Username</label>
-    <input
-      class="input"
-      id="username"
-      name="username"
-      placeholder="ADMIN"
-      autocomplete="username"
-    />
+    <form method="post">
+      <div class="mb-3">
+        <label class="form-label" for="username">Username</label>
+        <input
+          class="form-control"
+          id="username"
+          name="username"
+          placeholder="ADMIN"
+          autocomplete="username"
+        />
+      </div>
 
-    <label class="label" for="password">Password</label>
-    <input
-      class="input"
-      id="password"
-      type="password"
-      name="password"
-      placeholder="ADMIN"
-      autocomplete="current-password"
-    />
+      <div class="mb-3">
+        <label class="form-label" for="password">Password</label>
+        <input
+          class="form-control"
+          id="password"
+          type="password"
+          name="password"
+          placeholder="ADMIN"
+          autocomplete="current-password"
+        />
+      </div>
 
-    <button class="btn" type="submit">Sign in</button>
-  </form>
-</section>
+      <button class="btn btn-primary w-100" type="submit">Sign in</button>
+    </form>
+  </div>
+</div>
 {% endblock %}
