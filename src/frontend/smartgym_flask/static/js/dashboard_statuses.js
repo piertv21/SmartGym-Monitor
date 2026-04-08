@@ -74,7 +74,7 @@ function renderMaintenanceRows() {
         <td class="fw-semibold">${escapeHtml(statusLabel)}</td>
         <td>
           <button
-            class="btn btn-outline-secondary btn-sm"
+            class="btn btn-warning btn-sm"
             type="button"
             data-maintenance-id="${escapeHtml(deviceId)}"
             aria-label="${escapeHtml(actionLabel)} ${escapeHtml(deviceId)}"

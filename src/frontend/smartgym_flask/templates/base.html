@@ -34,52 +34,74 @@
     />
   </head>
   <body class="d-flex flex-column min-vh-100">
-    <nav class="navbar bg-body-tertiary border-bottom">
-      <div class="container-xl d-flex align-items-center gap-2">
-        <span class="navbar-brand fw-bold me-auto">SmartGym Monitor</span>
-
-        <!-- Theme toggle -->
-        <button
-          class="btn btn-sm btn-outline-secondary"
-          data-theme-toggle
-          aria-label="Passa alla modalità chiara"
-          title="Light mode"
-        >
-          <i class="bi bi-sun-fill"></i>
-        </button>
-
-        {% if session.get('user') %}
-        <div class="dropdown">
-          <button
-            class="btn btn-outline-secondary btn-sm dropdown-toggle"
-            type="button"
-            id="userMenuToggle"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            {{ session.get('user') }}
-          </button>
-          <ul
-            class="dropdown-menu dropdown-menu-end"
-            aria-labelledby="userMenuToggle"
-          >
-            <li>
-              <a class="dropdown-item" href="{{ url_for('auth.logout') }}"
-                >Logout</a
-              >
-            </li>
-          </ul>
-        </div>
-        {% else %}
+    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom py-3">
+      <div class="container-xl d-flex align-items-center position-relative">
         <a
-          class="btn btn-outline-secondary btn-sm"
-          href="{{ url_for('auth.login') }}"
-          >Login</a
+          class="navbar-brand fw-bold m-0"
+          href="{{ url_for('dashboard.index') }}"
+          >SmartGym Monitor</a
         >
-        {% endif %}
+
+        <!-- Desktop Links Center -->
+        <div
+          class="d-none d-lg-flex gap-4 position-absolute start-50 translate-middle-x"
+        >
+          <a
+            class="nav-link text-body {{ 'fw-bold' if request.endpoint == 'dashboard.dashboard' else '' }}"
+            href="{{ url_for('dashboard.dashboard') }}"
+            >Home</a
+          >
+          <a
+            class="nav-link text-body {{ 'fw-bold' if request.endpoint == 'dashboard.live_monitor' else '' }}"
+            href="{{ url_for('dashboard.live_monitor') }}"
+            >Live Monitor</a
+          >
+          <a class="nav-link text-body" href="#">History</a>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <!-- Theme toggle -->
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            data-theme-toggle
+            aria-label="Passa alla modalità chiara"
+            title="Light mode"
+          >
+            <i class="bi bi-sun-fill"></i>
+          </button>
+
+          {% if session.get('user') %}
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-secondary btn-sm dropdown-toggle text-uppercase"
+              type="button"
+              id="userMenuToggle"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              {{ session.get('user') }}
+            </button>
+            <ul
+              class="dropdown-menu dropdown-menu-end"
+              aria-labelledby="userMenuToggle"
+            >
+              <li>
+                <a class="dropdown-item" href="{{ url_for('auth.logout') }}"
+                  >Logout</a
+                >
+              </li>
+            </ul>
+          </div>
+          {% else %}
+          <a
+            class="btn btn-outline-secondary btn-sm"
+            href="{{ url_for('auth.login') }}"
+            >Login</a
+          >
+          {% endif %}
+        </div>
       </div>
     </nav>
-
     <main class="container-xl flex-grow-1 py-4">
       {% with messages = get_flashed_messages(with_categories=true) %} {% if
       messages %}

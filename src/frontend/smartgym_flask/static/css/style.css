@@ -127,3 +127,94 @@ footer {
   background-color: var(--bs-card-bg);
   box-shadow: inset 0 -1px 0 var(--bs-border-color);
 }
+
+/* ── Live Monitor ────────────────────────────────────────── */
+[data-bs-theme="light"] .live-progress-card,
+[data-bs-theme="light"] .live-area-card {
+  background-color: #ffffff;
+  border-width: 1px !important;
+  border-color: #000 !important;
+}
+
+.live-progress-card .card-body,
+.live-area-card .card-body {
+  padding: 0;
+}
+
+.live-progress-card .card-body {
+  padding: 4px;
+}
+
+.live-progress-container {
+  min-height: 80px;
+}
+
+/* Progress Circle */
+.progress-circle {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: conic-gradient(#f9cd69 var(--p, 45%), var(--bs-secondary-bg) 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.progress-circle::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  background-color: var(--bs-card-bg);
+  border-radius: 50%;
+}
+
+.progress-circle span {
+  position: relative;
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: var(--bs-body-color);
+}
+
+.progress-circle.p45 {
+  --p: 45%;
+}
+
+/* Equipment Boxes */
+.equipment-item {
+  width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.equipment-box {
+  width: 55px;
+  height: 45px;
+}
+
+[data-bs-theme="light"] .equipment-box {
+  border-color: #000 !important;
+}
+
+.equipment-label {
+  font-size: 0.65rem;
+  margin-top: 4px;
+  color: var(--bs-body-color);
+}
+
+@keyframes blink-animation {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.blink-dot {
+  animation: blink-animation 1.5s infinite ease-in-out;
+}
