@@ -69,6 +69,12 @@ async function extractErrorMessage(response, fallbackMessage) {
   return fallbackMessage;
 }
 
+function compareAlphabetically(left, right) {
+  return String(left ?? "").localeCompare(String(right ?? ""), "it", {
+    sensitivity: "base",
+  });
+}
+
 function machineStatusBadge(status) {
   const normalizedStatus = String(status ?? "").toUpperCase();
   if (normalizedStatus === "MAINTENANCE") {
@@ -107,7 +113,12 @@ function renderMaintenanceRows() {
     return;
   }
 
-  maintenanceBody.innerHTML = internalMachines
+  maintenanceBody.innerHTML = [...internalMachines]
+    .sort((left, right) => {
+      const leftId = left?.machineId ?? left?.id ?? "";
+      const rightId = right?.machineId ?? right?.id ?? "";
+      return compareAlphabetically(leftId, rightId);
+    })
     .map((machine, index) => {
       const machineId = String(machine.machineId ?? machine.id ?? "");
       const status = String(machine.status ?? "FREE");
@@ -260,7 +271,10 @@ function renderStatuses(statuses) {
     return;
   }
 
-  statusesBody.innerHTML = statuses
+  statusesBody.innerHTML = [...statuses]
+    .sort((left, right) =>
+      compareAlphabetically(left?.deviceId, right?.deviceId),
+    )
     .map(
       (status, index) => `
       <tr>

@@ -29,3 +29,10 @@ class AnalyticsService:
             headers=self._bearer_headers(access_token),
             timeout=self.timeout,
         )
+
+    def fetch_area_attendance(self, access_token: str, date: str) -> requests.Response:
+        return requests.get(
+            f"{self.gateway_base_url}/analytics-service/area-attendance/{date}",
+            headers=self._bearer_headers(access_token),
+            timeout=self.timeout,
+        )

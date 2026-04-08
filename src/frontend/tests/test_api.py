@@ -93,3 +93,74 @@ def test_toggle_maintenance_returns_backend_conflict_message(monkeypatch):
 
     assert response.status_code == 409
     assert response.get_json() == {"error": "cannot set maintenance while occupied: machine-1"}
+
+
+def test_live_monitor_requires_login_session():
+    app = create_app({"TESTING": True, "SECRET_KEY": "test"})
+    client = app.test_client()
+
+    response = client.get("/api/live-monitor")
+
+    assert response.status_code == 401
+    assert response.get_json() == {"error": "Unauthorized"}
+
+
+def test_live_monitor_returns_aggregated_data(monkeypatch):
+    app = create_app({"TESTING": True, "SECRET_KEY": "test"})
+    client = app.test_client()
+
+    class AttendanceResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return [
+                {"areaId": "area-weight", "currentCount": 10},
+                {"areaId": "area-cardio", "currentCount": 4},
+            ]
+
+    class MachinesResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return [
+                {"machineId": "bench-1", "areaId": "area-weight", "status": "FREE"},
+                {"machineId": "treadmill-1", "areaId": "area-cardio", "status": "OCCUPIED"},
+            ]
+
+    class AreasResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return [
+                {"id": "area-weight", "name": "Weight", "capacity": 20, "areaType": "WEIGHT"},
+                {"id": "area-cardio", "name": "Cardio", "capacity": 8, "areaType": "CARDIO"},
+            ]
+
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_analytics_service",
+        lambda: type("S", (), {"fetch_area_attendance": lambda self, access_token, date: AttendanceResponse()})(),
+    )
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_machine_service",
+        lambda: type("S", (), {"fetch_machines": lambda self, access_token: MachinesResponse()})(),
+    )
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_area_service",
+        lambda: type("S", (), {"fetch_areas": lambda self, access_token: AreasResponse()})(),
+    )
+
+    with client.session_transaction() as session:
+        session["access_token"] = "jwt-token-123"
+
+    response = client.get("/api/live-monitor")
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert len(payload["areas"]) == 2
+    assert payload["areas"][0]["name"] == "Cardio"
+    assert payload["areas"][0]["occupancyPercent"] == 50.0
+    assert payload["areas"][1]["name"] == "Weight"
+    assert payload["areas"][1]["occupancyPercent"] == 50.0

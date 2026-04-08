@@ -13,6 +13,7 @@ class Config:
     AUTH_TIMEOUT_SECONDS = float(os.getenv("AUTH_TIMEOUT_SECONDS", "5"))
     EMBEDDED_STATUSES_PATH = os.getenv("EMBEDDED_STATUSES_PATH", "/embedded-service/statuses")
     STATUS_TIMEOUT_SECONDS = float(os.getenv("STATUS_TIMEOUT_SECONDS", str(AUTH_TIMEOUT_SECONDS)))
+    AREA_TIMEOUT_SECONDS = float(os.getenv("AREA_TIMEOUT_SECONDS", str(AUTH_TIMEOUT_SECONDS)))
 
 
 class TestingConfig(Config):
