@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-@RequestMapping("/area-service")
 public class AreaRestControllerImpl implements AreaRestController {
 
     private final AreaServiceAPI areaServiceAPI;

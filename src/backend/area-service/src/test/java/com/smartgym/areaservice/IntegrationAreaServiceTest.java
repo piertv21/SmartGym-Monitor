@@ -41,7 +41,7 @@ class IntegrationAreaServiceTest {
 
     @Test
     void getAllAreasReturnsOk() throws Exception {
-        HttpResponse<String> response = sendGet("/area-service");
+        HttpResponse<String> response = sendGet("/");
 
         assertEquals(200, response.statusCode());
         assertTrue(response.body().startsWith("["));

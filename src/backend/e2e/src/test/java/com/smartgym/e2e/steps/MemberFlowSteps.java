@@ -11,7 +11,6 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -94,9 +93,10 @@ public class MemberFlowSteps {
 
     @When("The member enters area {string}")
     public void theMemberEntersArea(String areaId) {
-        lastResponse = postAreaWithFallback(
-                List.of("/area-service/access", "/area-service/area-service/access"),
-                areaMessage(areaId, "IN")
+        lastResponse = postJsonAndWait(
+                gatewayUrl + "/area-service/access",
+                areaMessage(areaId, "IN"),
+                accessToken
         );
     }
 
@@ -108,9 +108,10 @@ public class MemberFlowSteps {
 
     @When("The member exits area {string}")
     public void theMemberExitsArea(String areaId) {
-        lastResponse = postAreaWithFallback(
-                List.of("/area-service/exit", "/area-service/area-service/exit"),
-                areaMessage(areaId, "OUT")
+        lastResponse = postJsonAndWait(
+                gatewayUrl + "/area-service/exit",
+                areaMessage(areaId, "OUT"),
+                accessToken
         );
     }
 
@@ -183,9 +184,10 @@ public class MemberFlowSteps {
         );
         assertSuccess(startGym, "Gym start failed in complete journey");
 
-        HttpResponse<?> enterArea = postAreaWithFallback(
-                List.of("/area-service/access", "/area-service/area-service/access"),
-                areaMessage(areaId, "IN")
+        HttpResponse<?> enterArea = postJsonAndWait(
+                gatewayUrl + "/area-service/access",
+                areaMessage(areaId, "IN"),
+                accessToken
         );
         assertSuccess(enterArea, "Area entry failed in complete journey");
 
@@ -203,9 +205,10 @@ public class MemberFlowSteps {
         );
         assertSuccess(endMachine, "Machine end failed in complete journey");
 
-        HttpResponse<?> exitArea = postAreaWithFallback(
-                List.of("/area-service/exit", "/area-service/area-service/exit"),
-                areaMessage(areaId, "OUT")
+        HttpResponse<?> exitArea = postJsonAndWait(
+                gatewayUrl + "/area-service/exit",
+                areaMessage(areaId, "OUT"),
+                accessToken
         );
         assertSuccess(exitArea, "Area exit failed in complete journey");
 
@@ -229,7 +232,7 @@ public class MemberFlowSteps {
     }
 
     private int getAreaCount(String areaId) {
-        HttpResponse<?> response = getAreaByIdWithFallback(areaId);
+        HttpResponse<?> response = getAreaById(areaId);
         assertSuccess(response, "Unable to read area status");
 
         JsonObject payload = unwrapPayload(response.bodyAsJsonObject());
@@ -258,31 +261,8 @@ public class MemberFlowSteps {
                 .put("direction", direction);
     }
 
-    private HttpResponse<?> postAreaWithFallback(List<String> candidatePaths, JsonObject body) {
-        HttpResponse<?> response = null;
-        for (String path : candidatePaths) {
-            response = postJsonAndWait(gatewayUrl + path, body, accessToken);
-            if (response != null && response.statusCode() >= 200 && response.statusCode() < 300) {
-                return response;
-            }
-        }
-        return response;
-    }
-
-    private HttpResponse<?> getAreaByIdWithFallback(String areaId) {
-        List<String> paths = List.of(
-                gatewayUrl + "/area-service/" + areaId,
-                gatewayUrl + "/area-service/area-service/" + areaId
-        );
-
-        HttpResponse<?> response = null;
-        for (String path : paths) {
-            response = getJsonAndWait(path, accessToken);
-            if (response != null && response.statusCode() >= 200 && response.statusCode() < 300) {
-                return response;
-            }
-        }
-        return response;
+    private HttpResponse<?> getAreaById(String areaId) {
+        return getJsonAndWait(gatewayUrl + "/area-service/" + areaId, accessToken);
     }
 
     private HttpResponse<?> postJsonAndWait(String url, JsonObject body, String bearerToken) {
