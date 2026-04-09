@@ -1,3 +1,5 @@
+import requests
+
 from smartgym_flask import create_app
 
 
@@ -109,16 +111,6 @@ def test_live_monitor_returns_aggregated_data(monkeypatch):
     app = create_app({"TESTING": True, "SECRET_KEY": "test"})
     client = app.test_client()
 
-    class AttendanceResponse:
-        status_code = 200
-
-        @staticmethod
-        def json():
-            return [
-                {"areaId": "area-weight", "currentCount": 10},
-                {"areaId": "area-cardio", "currentCount": 4},
-            ]
-
     class MachinesResponse:
         status_code = 200
 
@@ -135,14 +127,10 @@ def test_live_monitor_returns_aggregated_data(monkeypatch):
         @staticmethod
         def json():
             return [
-                {"id": "area-weight", "name": "Weight", "capacity": 20, "areaType": "WEIGHT"},
-                {"id": "area-cardio", "name": "Cardio", "capacity": 8, "areaType": "CARDIO"},
+                {"id": "area-weight", "name": "Weight", "capacity": 20, "currentCount": 10, "areaType": "WEIGHT"},
+                {"id": "area-cardio", "name": "Cardio", "capacity": 8, "currentCount": 4, "areaType": "CARDIO"},
             ]
 
-    monkeypatch.setattr(
-        "smartgym_flask.routes.api.get_analytics_service",
-        lambda: type("S", (), {"fetch_area_attendance": lambda self, access_token, date: AttendanceResponse()})(),
-    )
     monkeypatch.setattr(
         "smartgym_flask.routes.api.get_machine_service",
         lambda: type("S", (), {"fetch_machines": lambda self, access_token: MachinesResponse()})(),
@@ -161,6 +149,116 @@ def test_live_monitor_returns_aggregated_data(monkeypatch):
     assert response.status_code == 200
     assert len(payload["areas"]) == 2
     assert payload["areas"][0]["name"] == "Cardio"
+    assert payload["areas"][0]["currentUsers"] == 4
     assert payload["areas"][0]["occupancyPercent"] == 50.0
     assert payload["areas"][1]["name"] == "Weight"
+    assert payload["areas"][1]["currentUsers"] == 10
     assert payload["areas"][1]["occupancyPercent"] == 50.0
+
+
+def test_dashboard_stats_uses_areas_current_count_for_gym_count(monkeypatch):
+    app = create_app({"TESTING": True, "SECRET_KEY": "test"})
+    client = app.test_client()
+
+    class AttendanceResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {"gymCount": 3, "totalEntries": 18, "totalExits": 9}
+
+    class SessionResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {"averageDurationMinutes": 44.5}
+
+    class AreasResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return [
+                {"id": "a1", "currentCount": 10},
+                {"id": "a2", "currentCount": "15"},
+                {"id": "a3", "currentCount": -3},
+                {"id": "a4", "currentCount": "invalid"},
+            ]
+
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_analytics_service",
+        lambda: type(
+            "S",
+            (),
+            {
+                "fetch_attendance": lambda self, access_token, date: AttendanceResponse(),
+                "fetch_gym_session_duration": lambda self, access_token, date: SessionResponse(),
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_area_service",
+        lambda: type("S", (), {"fetch_areas": lambda self, access_token: AreasResponse()})(),
+    )
+
+    with client.session_transaction() as session:
+        session["access_token"] = "jwt-token-123"
+
+    response = client.get("/api/analytics/dashboard")
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert payload["attendance"]["gymCount"] == 25
+    assert payload["attendance"]["totalEntries"] == 18
+    assert payload["attendance"]["totalExits"] == 9
+    assert payload["session"]["averageDurationMinutes"] == 44.5
+
+
+def test_dashboard_stats_keeps_analytics_gym_count_when_areas_unreachable(monkeypatch):
+    app = create_app({"TESTING": True, "SECRET_KEY": "test"})
+    client = app.test_client()
+
+    class AttendanceResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {"gymCount": 7, "totalEntries": 20, "totalExits": 13}
+
+    class SessionResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {"averageDurationMinutes": 38.0}
+
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_analytics_service",
+        lambda: type(
+            "S",
+            (),
+            {
+                "fetch_attendance": lambda self, access_token, date: AttendanceResponse(),
+                "fetch_gym_session_duration": lambda self, access_token, date: SessionResponse(),
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_area_service",
+        lambda: type(
+            "S",
+            (),
+            {"fetch_areas": lambda self, access_token: (_ for _ in ()).throw(requests.RequestException("boom"))},
+        )(),
+    )
+
+    with client.session_transaction() as session:
+        session["access_token"] = "jwt-token-123"
+
+    response = client.get("/api/analytics/dashboard")
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert payload["attendance"]["gymCount"] == 7
+    assert payload["attendance"]["totalEntries"] == 20
