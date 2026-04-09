@@ -3,6 +3,7 @@ package com.smartgym.analyticsservice;
 import com.smartgym.analyticsservice.application.AnalyticsServiceAPIImpl;
 import com.smartgym.analyticsservice.application.ports.AnalyticsRepository;
 import com.smartgym.analyticsservice.model.AttendanceSnapshot;
+import com.smartgym.analyticsservice.model.AttendanceSeriesResponse;
 import com.smartgym.analyticsservice.model.AreaAttendanceSnapshot;
 import com.smartgym.analyticsservice.model.AreaSessionDurationStat;
 import com.smartgym.analyticsservice.model.MachineUtilization;
@@ -250,6 +251,60 @@ class JUnitAnalyticsServiceTest {
         assertEquals(9, stats.getFirst().getHour());
     }
 
+    @Test
+    void attendanceSeriesDailyGlobalIncludesZeroBuckets() {
+        AnalyticsServiceAPIImpl service = new AnalyticsServiceAPIImpl(new InMemoryAnalyticsRepository());
+
+        service.ingestEvent(gymEvent("ENTRY", "2026-04-01T09:00:00Z", "badge-01")).join();
+        service.ingestEvent(gymEvent("EXIT", "2026-04-03T10:00:00Z", "badge-01")).join();
+
+        AttendanceSeriesResponse response = service
+                .getAttendanceSeries("2026-04-01", "2026-04-03", "daily", null)
+                .join();
+
+        assertEquals("global", response.getMeta().getScope());
+        assertEquals("daily", response.getMeta().getGranularity());
+        assertEquals(3, response.getSeries().size());
+        assertEquals("2026-04-02", response.getSeries().get(1).getPeriod());
+        assertEquals(0, response.getSeries().get(1).getTotalEntries());
+        assertEquals(0, response.getSeries().get(1).getTotalExits());
+    }
+
+    @Test
+    void attendanceSeriesMonthlyAreaFiltersByAreaId() {
+        AnalyticsServiceAPIImpl service = new AnalyticsServiceAPIImpl(new InMemoryAnalyticsRepository());
+
+        service.ingestEvent(areaEvent("IN", "2026-03-01T10:00:00Z", "badge-01", "cardio")).join();
+        service.ingestEvent(areaEvent("OUT", "2026-03-01T10:30:00Z", "badge-01", "cardio")).join();
+        service.ingestEvent(areaEvent("IN", "2026-03-15T11:00:00Z", "badge-02", "weights")).join();
+        service.ingestEvent(areaEvent("IN", "2026-04-01T12:00:00Z", "badge-03", "cardio")).join();
+
+        AttendanceSeriesResponse response = service
+                .getAttendanceSeries("2026-03-01", "2026-04-30", "monthly", "cardio")
+                .join();
+
+        assertEquals("area", response.getMeta().getScope());
+        assertEquals("monthly", response.getMeta().getGranularity());
+        assertEquals("cardio", response.getFilters().getAreaId());
+        assertEquals(2, response.getSeries().size());
+        assertEquals("2026-03", response.getSeries().get(0).getPeriod());
+        assertEquals(1, response.getSeries().get(0).getTotalEntries());
+        assertEquals(1, response.getSeries().get(0).getTotalExits());
+        assertEquals("2026-04", response.getSeries().get(1).getPeriod());
+        assertEquals(1, response.getSeries().get(1).getTotalEntries());
+    }
+
+    @Test
+    void attendanceSeriesRejectsInvalidRange() {
+        AnalyticsServiceAPIImpl service = new AnalyticsServiceAPIImpl(new InMemoryAnalyticsRepository());
+
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> service.getAttendanceSeries("2026-04-10", "2026-04-01", "daily", null)
+        );
+        assertTrue(ex.getMessage().contains("from cannot be after to"));
+    }
+
     private JsonObject gymEvent(String accessType, String ts, String badgeId) {
         return new JsonObject()
                 .put("eventType", "GYM_ACCESS")
@@ -310,6 +365,18 @@ class JUnitAnalyticsServiceTest {
         public CompletableFuture<List<JsonObject>> findEventsByTypeAndDate(String eventType, String date) {
             return CompletableFuture.completedFuture(events.stream()
                     .filter(event -> eventType.equals(event.getString("eventType")) && date.equals(event.getString("eventDate")))
+                    .map(JsonObject::copy)
+                    .toList());
+        }
+
+        @Override
+        public CompletableFuture<List<JsonObject>> findEventsByTypeAndDateRange(String eventType, String from, String to) {
+            return CompletableFuture.completedFuture(events.stream()
+                    .filter(event -> eventType.equals(event.getString("eventType")))
+                    .filter(event -> {
+                        String eventDate = event.getString("eventDate");
+                        return eventDate.compareTo(from) >= 0 && eventDate.compareTo(to) <= 0;
+                    })
                     .map(JsonObject::copy)
                     .toList());
         }

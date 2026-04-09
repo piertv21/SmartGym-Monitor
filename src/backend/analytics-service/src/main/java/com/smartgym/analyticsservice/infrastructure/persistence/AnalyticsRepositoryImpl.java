@@ -3,9 +3,11 @@ package com.smartgym.analyticsservice.infrastructure.persistence;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import com.smartgym.analyticsservice.application.ports.AnalyticsRepository;
 import io.vertx.core.json.JsonObject;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -50,6 +52,22 @@ public class AnalyticsRepositoryImpl implements AnalyticsRepository {
         return CompletableFuture.supplyAsync(() -> {
             List<JsonObject> result = new ArrayList<>();
             for (Document document : eventsCollection.find(new Document("eventType", eventType).append("eventDate", date))) {
+                result.add(fromDocument(document));
+            }
+            return result;
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<JsonObject>> findEventsByTypeAndDateRange(String eventType, String from, String to) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<JsonObject> result = new ArrayList<>();
+            Bson filter = Filters.and(
+                    Filters.eq("eventType", eventType),
+                    Filters.gte("eventDate", from),
+                    Filters.lte("eventDate", to)
+            );
+            for (Document document : eventsCollection.find(filter)) {
                 result.add(fromDocument(document));
             }
             return result;

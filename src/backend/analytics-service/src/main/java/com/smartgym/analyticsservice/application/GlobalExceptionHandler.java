@@ -34,10 +34,29 @@ public class GlobalExceptionHandler {
             );
         }
 
+        if (cause instanceof IllegalStateException) {
+            return ResponseEntity.unprocessableEntity().body(
+                    Map.of(
+                            "error", "Unprocessable Entity",
+                            "message", cause.getMessage()
+                    )
+            );
+        }
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 Map.of(
                         "error", "Internal Server Error",
                         "message", cause.getMessage()
+                )
+        );
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<?> handleIllegalStateException(IllegalStateException ex) {
+        return ResponseEntity.unprocessableEntity().body(
+                Map.of(
+                        "error", "Unprocessable Entity",
+                        "message", ex.getMessage()
                 )
         );
     }

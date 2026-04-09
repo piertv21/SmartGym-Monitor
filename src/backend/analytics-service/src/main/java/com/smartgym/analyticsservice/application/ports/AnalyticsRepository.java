@@ -14,5 +14,8 @@ public interface AnalyticsRepository {
 
     CompletableFuture<List<JsonObject>> findEventsByTypeAndDate(String eventType, String date);
 
+    CompletableFuture<List<JsonObject>> findEventsByTypeAndDateRange(String eventType, String from, String to);
+
+
     CompletableFuture<List<JsonObject>> findEventsByTypeAndMonth(String eventType, String month);
 }
