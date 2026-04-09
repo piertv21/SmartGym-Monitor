@@ -7,6 +7,7 @@ import com.smartgym.analyticsservice.model.AreaAttendanceSnapshot;
 import com.smartgym.analyticsservice.model.AreaSessionDurationStat;
 import com.smartgym.analyticsservice.model.MachineUtilization;
 import com.smartgym.analyticsservice.model.GymSessionDurationStat;
+import com.smartgym.analyticsservice.model.PeakHourStat;
 import com.smartgym.analyticsservice.model.UniqueUsersStat;
 import io.vertx.core.json.JsonObject;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,8 @@ import java.util.concurrent.CompletableFuture;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JUnitAnalyticsServiceTest {
+
+    private static final ZoneId ANALYTICS_ZONE = ZoneId.of("Europe/Rome");
 
     @Test
     void ingestAndReadAttendanceByDate() {
@@ -235,6 +238,18 @@ class JUnitAnalyticsServiceTest {
         assertEquals("z-bike", stats.get(1).getMachineId());
     }
 
+    @Test
+    void peakHoursUsesEuropeRomeTimezone() {
+        AnalyticsServiceAPIImpl service = new AnalyticsServiceAPIImpl(new InMemoryAnalyticsRepository());
+
+        service.ingestEvent(gymEvent("ENTRY", "2026-03-26T08:00:00Z", "badge-01")).join();
+
+        List<PeakHourStat> stats = service.getPeakHoursByDate("2026-03-26").join();
+
+        assertEquals(1, stats.size());
+        assertEquals(9, stats.getFirst().getHour());
+    }
+
     private JsonObject gymEvent(String accessType, String ts, String badgeId) {
         return new JsonObject()
                 .put("eventType", "GYM_ACCESS")
@@ -270,7 +285,7 @@ class JUnitAnalyticsServiceTest {
         public CompletableFuture<Void> saveEvent(JsonObject event) {
             JsonObject payload = event.getJsonObject("payload", new JsonObject());
             String timestamp = payload.getString("timeStamp", payload.getString("timestamp"));
-            LocalDate date = Instant.parse(timestamp).atZone(ZoneOffset.UTC).toLocalDate();
+            LocalDate date = Instant.parse(timestamp).atZone(ANALYTICS_ZONE).toLocalDate();
 
             events.add(new JsonObject()
                     .put("eventType", event.getString("eventType"))

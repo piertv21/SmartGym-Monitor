@@ -10,7 +10,7 @@ import org.bson.Document;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -19,6 +19,7 @@ public class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
     private static final String DATABASE = "analyticsservicedb";
     private static final String EVENTS_COLLECTION = "analyticsEvents";
+    private static final ZoneId ANALYTICS_ZONE = ZoneId.of("Europe/Rome");
 
     private final MongoCollection<Document> eventsCollection;
 
@@ -110,7 +111,7 @@ public class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
     private LocalDate parseDate(String timestamp) {
         try {
-            return Instant.parse(timestamp).atZone(ZoneOffset.UTC).toLocalDate();
+            return Instant.parse(timestamp).atZone(ANALYTICS_ZONE).toLocalDate();
         } catch (Exception ignored) {
             return LocalDate.parse(timestamp.substring(0, 10));
         }

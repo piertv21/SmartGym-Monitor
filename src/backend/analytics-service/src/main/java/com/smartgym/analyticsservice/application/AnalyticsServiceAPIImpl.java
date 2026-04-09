@@ -17,7 +17,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
 
     private static final double MINUTES_PER_HOUR = 60.0;
+    private static final ZoneId ANALYTICS_ZONE = ZoneId.of("Europe/Rome");
 
     private final AnalyticsRepository analyticsRepository;
 
@@ -572,7 +573,7 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
 
     private LocalDateTime parseTimestamp(String timestamp) {
         try {
-            return LocalDateTime.ofInstant(Instant.parse(timestamp), ZoneOffset.UTC);
+            return LocalDateTime.ofInstant(Instant.parse(timestamp), ANALYTICS_ZONE);
         } catch (Exception ignored) {
             try {
                 return LocalDateTime.parse(timestamp);
