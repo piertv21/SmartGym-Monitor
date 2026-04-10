@@ -311,7 +311,11 @@ def test_dashboard_stats_uses_today_attendance_snapshot_when_attendance_is_a_lis
     )
     monkeypatch.setattr(
         "smartgym_flask.routes.api.datetime",
-        type("FakeDatetime", (), {"now": staticmethod(lambda: real_datetime(2026, 4, 10, 8, 0, 0))}),
+        type(
+            "FakeDatetime",
+            (),
+            {"now": staticmethod(lambda *args, **kwargs: real_datetime(2026, 4, 10, 8, 0, 0))},
+        ),
     )
 
     with client.session_transaction() as session:
@@ -451,3 +455,4 @@ def test_history_returns_attendance_and_flattened_sessions(monkeypatch):
     assert payload["totalSessions"] == 1
     assert payload["sessions"][0]["machineId"] == "m-01"
     assert payload["sessions"][0]["period"] == "2026-04-10"
+

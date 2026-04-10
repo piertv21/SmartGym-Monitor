@@ -1,6 +1,7 @@
 import requests
 from flask import Blueprint, jsonify, request, session
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from smartgym_flask.extensions import (
     get_analytics_service,
@@ -10,6 +11,7 @@ from smartgym_flask.extensions import (
 )
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
+ANALYTICS_TIMEZONE = ZoneInfo("Europe/Rome")
 
 
 @api_bp.get("/health")
@@ -139,7 +141,7 @@ def dashboard_stats():
     if not access_token:
         return jsonify({"error": "Unauthorized"}), 401
 
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now(ANALYTICS_TIMEZONE).strftime("%Y-%m-%d")
     analytics_service = get_analytics_service()
 
     attendance_data = {}
