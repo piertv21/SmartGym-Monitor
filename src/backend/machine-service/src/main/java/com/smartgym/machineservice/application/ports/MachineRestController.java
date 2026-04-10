@@ -38,7 +38,8 @@ public interface MachineRestController {
 			@RequestParam String from,
 			@RequestParam String to,
 			@RequestParam(defaultValue = "daily") String granularity,
-			@RequestParam(required = false) String areaId
+			@RequestParam(required = false) String areaId,
+			@RequestParam(required = false) String machineId
 	);
 
 }

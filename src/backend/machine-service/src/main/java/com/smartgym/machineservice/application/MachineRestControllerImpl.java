@@ -133,9 +133,10 @@ public class MachineRestControllerImpl implements MachineRestController {
             @RequestParam String from,
             @RequestParam String to,
             @RequestParam(defaultValue = "daily") String granularity,
-            @RequestParam(required = false) String areaId
+            @RequestParam(required = false) String areaId,
+            @RequestParam(required = false) String machineId
     ) {
-        return machineService.getMachineUsageSeries(from, to, granularity, areaId)
+        return machineService.getMachineUsageSeries(from, to, granularity, areaId, machineId)
                 .thenApply(ResponseEntity::ok);
     }
 }

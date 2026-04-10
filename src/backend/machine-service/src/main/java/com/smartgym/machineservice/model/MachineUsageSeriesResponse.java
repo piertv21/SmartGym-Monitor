@@ -55,11 +55,14 @@ public class MachineUsageSeriesResponse {
         private final String to;
         @JsonProperty("areaId")
         private final String areaId;
+        @JsonProperty("machineId")
+        private final String machineId;
 
-        public Filters(String from, String to, String areaId) {
+        public Filters(String from, String to, String areaId, String machineId) {
             this.from = from;
             this.to = to;
             this.areaId = areaId;
+            this.machineId = machineId;
         }
 
         public String getFrom() {
@@ -72,6 +75,10 @@ public class MachineUsageSeriesResponse {
 
         public String getAreaId() {
             return areaId;
+        }
+
+        public String getMachineId() {
+            return machineId;
         }
     }
 

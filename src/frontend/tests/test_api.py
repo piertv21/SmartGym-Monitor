@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime as real_datetime
 
 from smartgym_flask import create_app
 
@@ -192,7 +193,7 @@ def test_dashboard_stats_uses_areas_current_count_for_gym_count(monkeypatch):
             "S",
             (),
             {
-                "fetch_attendance": lambda self, access_token, date: AttendanceResponse(),
+                "fetch_attendance": lambda self, access_token: AttendanceResponse(),
                 "fetch_gym_session_duration": lambda self, access_token, date: SessionResponse(),
             },
         )(),
@@ -239,11 +240,12 @@ def test_dashboard_stats_keeps_analytics_gym_count_when_areas_unreachable(monkey
             "S",
             (),
             {
-                "fetch_attendance": lambda self, access_token, date: AttendanceResponse(),
+                "fetch_attendance": lambda self, access_token: AttendanceResponse(),
                 "fetch_gym_session_duration": lambda self, access_token, date: SessionResponse(),
             },
         )(),
     )
+
     monkeypatch.setattr(
         "smartgym_flask.routes.api.get_area_service",
         lambda: type(
@@ -262,3 +264,190 @@ def test_dashboard_stats_keeps_analytics_gym_count_when_areas_unreachable(monkey
     assert response.status_code == 200
     assert payload["attendance"]["gymCount"] == 7
     assert payload["attendance"]["totalEntries"] == 20
+
+
+def test_dashboard_stats_uses_today_attendance_snapshot_when_attendance_is_a_list(monkeypatch):
+    app = create_app({"TESTING": True, "SECRET_KEY": "test"})
+    client = app.test_client()
+
+    class AttendanceResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return [
+                {"date": "2026-04-09", "gymCount": 4, "totalEntries": 11, "totalExits": 6},
+                {"date": "2026-04-10", "gymCount": 8, "totalEntries": 21, "totalExits": 13},
+            ]
+
+    class SessionResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {"averageDurationMinutes": 31.0}
+
+    class AreasResponse:
+        status_code = 503
+
+        @staticmethod
+        def json():
+            return {"error": "upstream unavailable"}
+
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_analytics_service",
+        lambda: type(
+            "S",
+            (),
+            {
+                "fetch_attendance": lambda self, access_token: AttendanceResponse(),
+                "fetch_gym_session_duration": lambda self, access_token, date: SessionResponse(),
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_area_service",
+        lambda: type("S", (), {"fetch_areas": lambda self, access_token: AreasResponse()})(),
+    )
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.datetime",
+        type("FakeDatetime", (), {"now": staticmethod(lambda: real_datetime(2026, 4, 10, 8, 0, 0))}),
+    )
+
+    with client.session_transaction() as session:
+        session["access_token"] = "jwt-token-123"
+
+    response = client.get("/api/analytics/dashboard")
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert payload["attendance"]["date"] == "2026-04-10"
+    assert payload["attendance"]["gymCount"] == 8
+    assert payload["attendance"]["totalEntries"] == 21
+    assert payload["attendance"]["totalExits"] == 13
+
+
+def test_history_filters_requires_login_session():
+    app = create_app({"TESTING": True, "SECRET_KEY": "test"})
+    client = app.test_client()
+
+    response = client.get("/api/history/filters")
+
+    assert response.status_code == 401
+    assert response.get_json() == {"error": "Unauthorized"}
+
+
+def test_history_filters_returns_areas_and_machines(monkeypatch):
+    app = create_app({"TESTING": True, "SECRET_KEY": "test"})
+    client = app.test_client()
+
+    class MachinesResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return [
+                {"machineId": "m-02", "areaId": "a2"},
+                {"machineId": "m-01", "areaId": "a1"},
+            ]
+
+    class AreasResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return [
+                {"id": "a2", "name": "Strength"},
+                {"id": "a1", "name": "Cardio"},
+            ]
+
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_machine_service",
+        lambda: type("S", (), {"fetch_machines": lambda self, access_token: MachinesResponse()})(),
+    )
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_area_service",
+        lambda: type("S", (), {"fetch_areas": lambda self, access_token: AreasResponse()})(),
+    )
+
+    with client.session_transaction() as session:
+        session["access_token"] = "jwt-token-123"
+
+    response = client.get("/api/history/filters")
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert payload["areas"][0] == {"id": "a1", "name": "Cardio"}
+    assert payload["machines"][0] == {"machineId": "m-01", "areaId": "a1"}
+
+
+def test_history_returns_attendance_and_flattened_sessions(monkeypatch):
+    app = create_app({"TESTING": True, "SECRET_KEY": "test"})
+    client = app.test_client()
+
+    class AttendanceSeriesResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {
+                "series": [
+                    {"period": "2026-04-10", "currentCount": 12, "totalEntries": 30, "totalExits": 18}
+                ]
+            }
+
+    class MachineHistoryResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {
+                "series": [
+                    {
+                        "period": "2026-04-10",
+                        "sessions": [
+                            {
+                                "machineId": "m-01",
+                                "areaId": "a1",
+                                "startTime": "2026-04-10T10:00:00",
+                                "endTime": "2026-04-10T10:30:00",
+                                "durationSeconds": 1800,
+                                "badgeId": "usr-1",
+                            }
+                        ],
+                    }
+                ]
+            }
+
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_analytics_service",
+        lambda: type(
+            "S",
+            (),
+            {
+                "fetch_attendance_series": lambda self, access_token, from_date, to_date, granularity, area_id: AttendanceSeriesResponse(),
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_machine_service",
+        lambda: type(
+            "S",
+            (),
+            {
+                "fetch_machine_history_series": lambda self, access_token, from_date, to_date, granularity, area_id, machine_id: MachineHistoryResponse(),
+            },
+        )(),
+    )
+
+    with client.session_transaction() as session:
+        session["access_token"] = "jwt-token-123"
+
+    response = client.get("/api/history?from=2026-04-10&to=2026-04-10&granularity=daily&areaId=a1&machineId=m-01")
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert payload["attendanceSeries"]["series"][0]["currentCount"] == 12
+    assert payload["totalSessions"] == 1
+    assert payload["sessions"][0]["machineId"] == "m-01"
+    assert payload["sessions"][0]["period"] == "2026-04-10"

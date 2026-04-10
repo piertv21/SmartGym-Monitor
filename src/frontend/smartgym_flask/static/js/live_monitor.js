@@ -108,7 +108,7 @@ function renderAreas(areas) {
                 <div class="fs-4 fw-bold lh-1">
                   ${currentUsers}<span class="fs-6 text-muted fw-normal">/${capacity}</span>
                 </div>
-                <div class="text-muted small" style="font-size: 0.65rem">Current Users</div>
+                <div class="text-muted small" style="font-size: 0.65rem">Utenti</div>
               </div>
             </div>
           </div>

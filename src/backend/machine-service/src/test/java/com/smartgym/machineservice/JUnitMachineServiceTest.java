@@ -195,7 +195,7 @@ public class JUnitMachineServiceTest {
         MachineServiceAPIImpl service = new MachineServiceAPIImpl(repository);
 
         MachineUsageSeriesResponse response = service
-                .getMachineUsageSeries("2026-03-27", "2026-03-28", "daily", null)
+                .getMachineUsageSeries("2026-03-27", "2026-03-28", "daily", null, null)
                 .join();
 
         assertEquals("daily", response.getMeta().getGranularity());
@@ -234,12 +234,45 @@ public class JUnitMachineServiceTest {
         MachineServiceAPIImpl service = new MachineServiceAPIImpl(repository);
 
         MachineUsageSeriesResponse response = service
-                .getMachineUsageSeries("2026-03-27", "2026-03-27", "daily", "area-cardio")
+                .getMachineUsageSeries("2026-03-27", "2026-03-27", "daily", "area-cardio", null)
                 .join();
 
         assertEquals(1, response.getSeries().size());
         assertEquals(1, response.getSeries().get(0).getSessions().size());
         assertEquals("m-01", response.getSeries().get(0).getSessions().get(0).getMachineId());
+    }
+
+    @Test
+    void getMachineUsageSeriesFiltersByMachineId() {
+        InMemoryMachineRepository repository = new InMemoryMachineRepository();
+        repository.saveMachine(new Machine("m-01", "area-cardio")).join();
+        repository.saveMachine(new Machine("m-02", "area-cardio")).join();
+
+        repository.saveMachineSession(new MachineSession(
+                "session-01",
+                "m-01",
+                "badge-01",
+                LocalDateTime.of(2026, 3, 27, 10, 0),
+                LocalDateTime.of(2026, 3, 27, 10, 30)
+        )).join();
+        repository.saveMachineSession(new MachineSession(
+                "session-02",
+                "m-02",
+                "badge-02",
+                LocalDateTime.of(2026, 3, 27, 11, 0),
+                LocalDateTime.of(2026, 3, 27, 11, 15)
+        )).join();
+
+        MachineServiceAPIImpl service = new MachineServiceAPIImpl(repository);
+
+        MachineUsageSeriesResponse response = service
+                .getMachineUsageSeries("2026-03-27", "2026-03-27", "daily", "area-cardio", "m-02")
+                .join();
+
+        assertEquals(1, response.getSeries().size());
+        assertEquals("m-02", response.getFilters().getMachineId());
+        assertEquals(1, response.getSeries().get(0).getSessions().size());
+        assertEquals("m-02", response.getSeries().get(0).getSessions().get(0).getMachineId());
     }
 
     private static final class InMemoryMachineRepository implements MachineRepository {

@@ -1,6 +1,13 @@
 {% extends "base.html" %} {% block content %}
-<div class="d-flex align-items-start justify-content-between mb-4">
-  <h1 class="h4 mb-0">Dashboard</h1>
+<div
+  class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3"
+>
+  <div>
+    <h1 class="page-title mb-1">Dashboard</h1>
+    <p class="page-description mb-0">
+      Panoramica KPI e stato operativo di macchine e sensori.
+    </p>
+  </div>
   <div class="text-end">
     <p id="page-last-update" class="text-secondary small mb-2">
       Ultimo aggiornamento: --:--:--
@@ -21,7 +28,13 @@
   <div class="col-6 col-xl-3">
     <article class="card h-100">
       <div class="card-body d-flex flex-column justify-content-between">
-        <h2 class="card-title h6">Utenti in palestra</h2>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h2 class="card-title h6 mb-0">Utenti in palestra</h2>
+          <i
+            class="fa-solid fa-users text-secondary fs-4"
+            aria-hidden="true"
+          ></i>
+        </div>
         <p id="kpi-users-inside" class="display-6 fw-bold mb-0">15 utenti</p>
       </div>
     </article>
@@ -29,7 +42,13 @@
   <div class="col-6 col-xl-3">
     <article class="card h-100">
       <div class="card-body d-flex flex-column justify-content-between">
-        <h2 class="card-title h6">Utenti entrati oggi</h2>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h2 class="card-title h6 mb-0">Utenti entrati oggi</h2>
+          <i
+            class="fa-solid fa-right-to-bracket text-secondary fs-4"
+            aria-hidden="true"
+          ></i>
+        </div>
         <p id="kpi-users-entered" class="display-6 fw-bold mb-0">30 utenti</p>
       </div>
     </article>
@@ -37,7 +56,13 @@
   <div class="col-6 col-xl-3">
     <article class="card h-100">
       <div class="card-body d-flex flex-column justify-content-between">
-        <h2 class="card-title h6">Utenti usciti oggi</h2>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h2 class="card-title h6 mb-0">Utenti usciti oggi</h2>
+          <i
+            class="fa-solid fa-right-from-bracket text-secondary fs-4"
+            aria-hidden="true"
+          ></i>
+        </div>
         <p id="kpi-users-exited" class="display-6 fw-bold mb-0">15 utenti</p>
       </div>
     </article>
@@ -45,7 +70,13 @@
   <div class="col-6 col-xl-3">
     <article class="card h-100">
       <div class="card-body d-flex flex-column justify-content-between">
-        <h2 class="card-title h6">Durata media sessione</h2>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h2 class="card-title h6 mb-0">Durata media sessione</h2>
+          <i
+            class="fa-regular fa-clock text-secondary fs-4"
+            aria-hidden="true"
+          ></i>
+        </div>
         <p id="kpi-average-session" class="display-6 fw-bold mb-0">4.3 min</p>
       </div>
     </article>
@@ -61,6 +92,9 @@
         <div class="d-flex align-items-center justify-content-between mb-1">
           <h2 class="card-title h6 mb-0">Manutenzione macchine</h2>
         </div>
+        <p class="text-secondary small mb-2">
+          Elenco macchine con stato operativo e azioni di manutenzione.
+        </p>
         <p
           id="maintenance-feedback"
           class="text-secondary small mb-2"
@@ -101,6 +135,9 @@
         <div class="d-flex align-items-center justify-content-between mb-1">
           <h2 class="card-title h6 mb-0">Stati macchinari e sensori</h2>
         </div>
+        <p class="text-secondary small mb-2">
+          Monitoraggio in tempo reale dello stato dei dispositivi registrati.
+        </p>
         <p
           id="statuses-feedback"
           class="text-secondary small mb-2"

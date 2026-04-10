@@ -35,6 +35,6 @@ public interface MachineServiceAPI {
 
 	CompletableFuture<List<MachineSession>> getMachineHistory(String machineId);
 
-	CompletableFuture<MachineUsageSeriesResponse> getMachineUsageSeries(String from, String to, String granularity, String areaId);
+	CompletableFuture<MachineUsageSeriesResponse> getMachineUsageSeries(String from, String to, String granularity, String areaId, String machineId);
 
 }
