@@ -358,7 +358,7 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
                     int totalExits = entry.getValue()[1];
                     return new AttendanceSeriesPoint(
                             entry.getKey(),
-                            Math.max(totalEntries - totalExits, 0),
+                            totalEntries,
                             totalEntries,
                             totalExits
                     );

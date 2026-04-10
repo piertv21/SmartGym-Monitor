@@ -265,7 +265,9 @@ class JUnitAnalyticsServiceTest {
         assertEquals("global", response.getMeta().getScope());
         assertEquals("daily", response.getMeta().getGranularity());
         assertEquals(3, response.getSeries().size());
+        assertEquals(1, response.getSeries().get(0).getCurrentCount());
         assertEquals("2026-04-02", response.getSeries().get(1).getPeriod());
+        assertEquals(0, response.getSeries().get(1).getCurrentCount());
         assertEquals(0, response.getSeries().get(1).getTotalEntries());
         assertEquals(0, response.getSeries().get(1).getTotalExits());
     }
@@ -288,10 +290,29 @@ class JUnitAnalyticsServiceTest {
         assertEquals("cardio", response.getFilters().getAreaId());
         assertEquals(2, response.getSeries().size());
         assertEquals("2026-03", response.getSeries().get(0).getPeriod());
+        assertEquals(1, response.getSeries().get(0).getCurrentCount());
         assertEquals(1, response.getSeries().get(0).getTotalEntries());
         assertEquals(1, response.getSeries().get(0).getTotalExits());
         assertEquals("2026-04", response.getSeries().get(1).getPeriod());
+        assertEquals(1, response.getSeries().get(1).getCurrentCount());
         assertEquals(1, response.getSeries().get(1).getTotalEntries());
+    }
+
+    @Test
+    void attendanceSeriesCurrentCountTracksEnteredUsersNotNetPresence() {
+        AnalyticsServiceAPIImpl service = new AnalyticsServiceAPIImpl(new InMemoryAnalyticsRepository());
+
+        service.ingestEvent(gymEvent("ENTRY", "2026-04-10T09:00:00Z", "badge-01")).join();
+        service.ingestEvent(gymEvent("EXIT", "2026-04-10T10:00:00Z", "badge-01")).join();
+
+        AttendanceSeriesResponse response = service
+                .getAttendanceSeries("2026-04-10", "2026-04-10", "daily", null)
+                .join();
+
+        assertEquals(1, response.getSeries().size());
+        assertEquals(1, response.getSeries().getFirst().getCurrentCount());
+        assertEquals(1, response.getSeries().getFirst().getTotalEntries());
+        assertEquals(1, response.getSeries().getFirst().getTotalExits());
     }
 
     @Test

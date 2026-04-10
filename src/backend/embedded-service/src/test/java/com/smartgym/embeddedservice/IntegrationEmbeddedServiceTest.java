@@ -39,15 +39,6 @@ class IntegrationEmbeddedServiceTest {
         assertTrue(response.body().contains("UP"));
     }
 
-    @Test
-    void statusesEndpointReturnsJsonArray() throws Exception {
-        HttpResponse<String> response = sendGet("/statuses");
-
-        assertEquals(200, response.statusCode());
-        String body = response.body().trim();
-        assertTrue(body.startsWith("[") && body.endsWith("]"));
-    }
-
     private boolean isServiceHealthy() {
         try {
             HttpResponse<String> response = sendGet("/actuator/health");

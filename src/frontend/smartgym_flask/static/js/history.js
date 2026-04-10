@@ -147,7 +147,7 @@ function ensureChart() {
       labels: [],
       datasets: [
         {
-          label: "Utenti in palestra",
+          label: "Utenti entrati",
           data: [],
           borderColor: HISTORY_LINE_COLOR,
           backgroundColor: "rgba(57, 217, 138, 0.15)",
@@ -173,7 +173,7 @@ function ensureChart() {
           callbacks: {
             label(context) {
               const value = Number(context.parsed?.y ?? 0);
-              return `Valore: ${Number.isFinite(value) ? value : 0}`;
+              return `Entrati: ${Number.isFinite(value) ? value : 0}`;
             },
           },
         },
@@ -194,7 +194,7 @@ function ensureChart() {
           ticks: { color: "#9aa3b2" },
           title: {
             display: true,
-            text: "Utenti presenti",
+            text: "Utenti entrati",
             color: "#9aa3b2",
           },
         },
@@ -390,11 +390,11 @@ async function loadHistoryData() {
     renderAttendanceChart(payload.attendanceSeries || {});
     const chart = ensureChart();
     if (chart) {
-      chart.data.datasets[0].label = "Utenti in palestra";
-      chart.options.scales.y.title.text = "Utenti presenti";
+      chart.data.datasets[0].label = "Utenti entrati";
+      chart.options.scales.y.title.text = "Utenti entrati";
       chart.options.plugins.tooltip.callbacks.label = (context) => {
         const value = Number(context.parsed?.y ?? 0);
-        return `Valore: ${Number.isFinite(value) ? value : 0}`;
+        return `Entrati: ${Number.isFinite(value) ? value : 0}`;
       };
       chart.update();
     }
