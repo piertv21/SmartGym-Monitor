@@ -3,6 +3,7 @@ package com.smartgym.machineservice.infrastructure.persistence;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import com.smartgym.machineservice.application.ports.MachineRepository;
 import com.smartgym.machineservice.model.Machine;
 import com.smartgym.machineservice.model.MachineSession;
@@ -108,6 +109,22 @@ public class MachineRepositoryImpl implements MachineRepository {
         return CompletableFuture.supplyAsync(() -> {
             List<MachineSession> result = new ArrayList<>();
             for (Document document : machineSessionsCollection.find(new Document("machineId", machineId)).sort(Sorts.descending("startTime"))) {
+                result.add(fromSessionDocument(document));
+            }
+            return result;
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<MachineSession>> findMachineSessionsByStartTimeRange(String fromInclusive, String toExclusive) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<MachineSession> result = new ArrayList<>();
+            for (Document document : machineSessionsCollection
+                    .find(Filters.and(
+                            Filters.gte("startTime", fromInclusive),
+                            Filters.lt("startTime", toExclusive)
+                    ))
+                    .sort(Sorts.ascending("startTime"))) {
                 result.add(fromSessionDocument(document));
             }
             return result;

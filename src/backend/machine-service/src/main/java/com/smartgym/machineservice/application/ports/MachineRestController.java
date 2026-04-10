@@ -8,6 +8,7 @@ import com.smartgym.machineservice.model.StartMachineSessionMessage;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -32,5 +33,12 @@ public interface MachineRestController {
 	CompletableFuture<ResponseEntity<?>> getMachineStatus(@PathVariable String machineId);
 
 	CompletableFuture<ResponseEntity<?>> getMachineHistory(@PathVariable String machineId);
+
+	CompletableFuture<ResponseEntity<?>> getMachineUsageSeries(
+			@RequestParam String from,
+			@RequestParam String to,
+			@RequestParam(defaultValue = "daily") String granularity,
+			@RequestParam(required = false) String areaId
+	);
 
 }
