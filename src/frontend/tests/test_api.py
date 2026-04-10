@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime as real_datetime
 
 from smartgym_flask import create_app
 
@@ -192,7 +193,7 @@ def test_dashboard_stats_uses_areas_current_count_for_gym_count(monkeypatch):
             "S",
             (),
             {
-                "fetch_attendance": lambda self, access_token, date: AttendanceResponse(),
+                "fetch_attendance": lambda self, access_token: AttendanceResponse(),
                 "fetch_gym_session_duration": lambda self, access_token, date: SessionResponse(),
             },
         )(),
@@ -239,11 +240,12 @@ def test_dashboard_stats_keeps_analytics_gym_count_when_areas_unreachable(monkey
             "S",
             (),
             {
-                "fetch_attendance": lambda self, access_token, date: AttendanceResponse(),
+                "fetch_attendance": lambda self, access_token: AttendanceResponse(),
                 "fetch_gym_session_duration": lambda self, access_token, date: SessionResponse(),
             },
         )(),
     )
+
     monkeypatch.setattr(
         "smartgym_flask.routes.api.get_area_service",
         lambda: type(
@@ -262,6 +264,67 @@ def test_dashboard_stats_keeps_analytics_gym_count_when_areas_unreachable(monkey
     assert response.status_code == 200
     assert payload["attendance"]["gymCount"] == 7
     assert payload["attendance"]["totalEntries"] == 20
+
+
+def test_dashboard_stats_uses_today_attendance_snapshot_when_attendance_is_a_list(monkeypatch):
+    app = create_app({"TESTING": True, "SECRET_KEY": "test"})
+    client = app.test_client()
+
+    class AttendanceResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return [
+                {"date": "2026-04-09", "gymCount": 4, "totalEntries": 11, "totalExits": 6},
+                {"date": "2026-04-10", "gymCount": 8, "totalEntries": 21, "totalExits": 13},
+            ]
+
+    class SessionResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {"averageDurationMinutes": 31.0}
+
+    class AreasResponse:
+        status_code = 503
+
+        @staticmethod
+        def json():
+            return {"error": "upstream unavailable"}
+
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_analytics_service",
+        lambda: type(
+            "S",
+            (),
+            {
+                "fetch_attendance": lambda self, access_token: AttendanceResponse(),
+                "fetch_gym_session_duration": lambda self, access_token, date: SessionResponse(),
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.get_area_service",
+        lambda: type("S", (), {"fetch_areas": lambda self, access_token: AreasResponse()})(),
+    )
+    monkeypatch.setattr(
+        "smartgym_flask.routes.api.datetime",
+        type("FakeDatetime", (), {"now": staticmethod(lambda: real_datetime(2026, 4, 10, 8, 0, 0))}),
+    )
+
+    with client.session_transaction() as session:
+        session["access_token"] = "jwt-token-123"
+
+    response = client.get("/api/analytics/dashboard")
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert payload["attendance"]["date"] == "2026-04-10"
+    assert payload["attendance"]["gymCount"] == 8
+    assert payload["attendance"]["totalEntries"] == 21
+    assert payload["attendance"]["totalExits"] == 13
 
 
 def test_history_filters_requires_login_session():

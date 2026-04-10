@@ -225,34 +225,6 @@ function renderAttendanceChart(attendancePayload) {
   chart.update();
 }
 
-function renderMachineUsageChart(machineHistoryPayload) {
-  const chart = ensureChart();
-  if (!chart) {
-    return;
-  }
-
-  const periods = Array.isArray(machineHistoryPayload?.series)
-    ? machineHistoryPayload.series
-    : [];
-
-  chart.data.labels = periods.map((point) => String(point?.period ?? "-"));
-  chart.data.datasets[0].data = periods.map((point) => {
-    const sessions = Array.isArray(point?.sessions) ? point.sessions : [];
-    return sessions.length;
-  });
-
-  chart.data.datasets[0].label = "Sessioni macchina";
-  chart.options.scales.y.title.text = "Numero sessioni";
-  chart.options.plugins.tooltip.callbacks.label = (context) => {
-    const value = Number(context.parsed?.y ?? 0);
-    return `Sessioni: ${Number.isFinite(value) ? value : 0}`;
-  };
-
-  chart.data.datasets[0].pointRadius = periods.length <= 1 ? 4 : 0;
-  chart.data.datasets[0].pointHoverRadius = periods.length <= 1 ? 5 : 4;
-  chart.update();
-}
-
 function renderMachineOptions() {
   if (!machineFilter) {
     return;
@@ -415,20 +387,16 @@ async function loadHistoryData() {
     }
 
     const payload = await response.json();
-    if (historyState.selectedMachineId) {
-      renderMachineUsageChart(payload.machineHistorySeries || {});
-    } else {
-      renderAttendanceChart(payload.attendanceSeries || {});
-      const chart = ensureChart();
-      if (chart) {
-        chart.data.datasets[0].label = "Utenti in palestra";
-        chart.options.scales.y.title.text = "Utenti presenti";
-        chart.options.plugins.tooltip.callbacks.label = (context) => {
-          const value = Number(context.parsed?.y ?? 0);
-          return `Valore: ${Number.isFinite(value) ? value : 0}`;
-        };
-        chart.update();
-      }
+    renderAttendanceChart(payload.attendanceSeries || {});
+    const chart = ensureChart();
+    if (chart) {
+      chart.data.datasets[0].label = "Utenti in palestra";
+      chart.options.scales.y.title.text = "Utenti presenti";
+      chart.options.plugins.tooltip.callbacks.label = (context) => {
+        const value = Number(context.parsed?.y ?? 0);
+        return `Valore: ${Number.isFinite(value) ? value : 0}`;
+      };
+      chart.update();
     }
     historyState.sessions = Array.isArray(payload.sessions)
       ? payload.sessions

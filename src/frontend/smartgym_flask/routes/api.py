@@ -62,6 +62,25 @@ def _as_non_negative_int(value: object) -> int:
     return max(number, 0)
 
 
+def _normalize_attendance_snapshot(payload: object, today: str) -> dict:
+    if isinstance(payload, dict):
+        return payload
+
+    if not isinstance(payload, list):
+        return {}
+
+    snapshots = [item for item in payload if isinstance(item, dict)]
+    if not snapshots:
+        return {}
+
+    for snapshot in snapshots:
+        if str(snapshot.get("date") or "").strip() == today:
+            return snapshot
+
+    snapshots.sort(key=lambda item: str(item.get("date") or ""), reverse=True)
+    return snapshots[0]
+
+
 def _parse_history_sessions(machine_series_payload: object) -> list[dict]:
     if not isinstance(machine_series_payload, dict):
         return []
@@ -125,11 +144,13 @@ def dashboard_stats():
 
     attendance_data = {}
     try:
-        att_resp = analytics_service.fetch_attendance(access_token, today)
+        att_resp = analytics_service.fetch_attendance(access_token)
         if att_resp.status_code == 200:
-            attendance_data = att_resp.json()
+            attendance_data = _normalize_attendance_snapshot(att_resp.json(), today)
     except requests.RequestException:
         pass  # We'll just return what we have
+    except ValueError:
+        pass
 
     try:
         areas_resp = get_area_service().fetch_areas(access_token)

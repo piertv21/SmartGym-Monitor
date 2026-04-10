@@ -19,7 +19,7 @@ class AreaService:
     def fetch_areas(self, access_token: str) -> requests.Response:
         headers = self._bearer_headers(access_token)
         response = requests.get(
-            f"{self.gateway_base_url}/area-service",
+            f"{self.gateway_base_url}/area-service/",
             headers=headers,
             timeout=self.timeout,
         )

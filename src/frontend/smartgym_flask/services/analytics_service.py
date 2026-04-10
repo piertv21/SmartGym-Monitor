@@ -16,9 +16,9 @@ class AnalyticsService:
     def _bearer_headers(access_token: str) -> dict[str, str]:
         return {"Authorization": f"Bearer {access_token}"}
 
-    def fetch_attendance(self, access_token: str, date: str) -> requests.Response:
+    def fetch_attendance(self, access_token: str) -> requests.Response:
         return requests.get(
-            f"{self.gateway_base_url}/analytics-service/attendance/{date}",
+            f"{self.gateway_base_url}/analytics-service/attendance",
             headers=self._bearer_headers(access_token),
             timeout=self.timeout,
         )
