@@ -171,7 +171,7 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
     }
 
     @Override
-    public CompletableFuture<MachineUsageSeriesResponse> getMachineUsageSeries(String from, String to, String granularity, String areaId) {
+    public CompletableFuture<MachineUsageSeriesResponse> getMachineUsageSeries(String from, String to, String granularity, String areaId, String machineId) {
         LocalDate fromDate = parseLocalDate(from, "from");
         LocalDate toDate = parseLocalDate(to, "to");
         if (fromDate.isAfter(toDate)) {
@@ -179,7 +179,8 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
         }
 
         String normalizedGranularity = normalizeGranularity(granularity);
-        String normalizedAreaId = normalizeOptionalArea(areaId);
+        String normalizedAreaId = normalizeOptionalFilter(areaId);
+        String normalizedMachineId = normalizeOptionalFilter(machineId);
 
         String fromInclusive = fromDate.atStartOfDay().toString();
         String toExclusive = toDate.plusDays(1).atStartOfDay().toString();
@@ -202,6 +203,9 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
                 if (normalizedAreaId != null && !normalizedAreaId.equals(machineAreaId)) {
                     continue;
                 }
+                if (normalizedMachineId != null && !normalizedMachineId.equals(session.getMachineId())) {
+                    continue;
+                }
 
                 String period = toPeriodKey(session.getStartTime().toLocalDate(), normalizedGranularity);
                 List<MachineUsageSeriesResponse.SessionItem> periodSessions = buckets.get(period);
@@ -218,7 +222,7 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
 
             return new MachineUsageSeriesResponse(
                     new MachineUsageSeriesResponse.Meta(normalizedGranularity),
-                    new MachineUsageSeriesResponse.Filters(fromDate.toString(), toDate.toString(), normalizedAreaId),
+                    new MachineUsageSeriesResponse.Filters(fromDate.toString(), toDate.toString(), normalizedAreaId, normalizedMachineId),
                     series
             );
         });
@@ -353,11 +357,11 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
         return normalized;
     }
 
-    private String normalizeOptionalArea(String areaId) {
-        if (areaId == null) {
+    private String normalizeOptionalFilter(String value) {
+        if (value == null) {
             return null;
         }
-        String normalized = areaId.trim();
+        String normalized = value.trim();
         return normalized.isEmpty() ? null : normalized;
     }
 

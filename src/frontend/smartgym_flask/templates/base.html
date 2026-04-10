@@ -61,7 +61,11 @@
             href="{{ url_for('dashboard.live_monitor') }}"
             >Live Monitor</a
           >
-          <a class="nav-link text-body" href="#">History</a>
+          <a
+            class="nav-link text-body {{ 'fw-bold' if request.endpoint == 'dashboard.history' else '' }}"
+            href="{{ url_for('dashboard.history') }}"
+            >History</a
+          >
         </div>
 
         <div class="d-flex align-items-center gap-2 ms-auto">

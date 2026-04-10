@@ -44,3 +44,15 @@ def live_monitor():
         return redirect(url_for("auth.login"))
 
     return render_template("live_monitor.html")
+
+
+@dashboard_bp.get("/history")
+def history():
+    username = session.get("user")
+    access_token = session.get("access_token")
+    if not username:
+        return redirect(url_for("auth.login"))
+    if not access_token:
+        return redirect(url_for("auth.login"))
+
+    return render_template("history.html")

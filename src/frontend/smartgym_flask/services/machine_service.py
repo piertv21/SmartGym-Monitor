@@ -33,3 +33,29 @@ class MachineService:
             },
             timeout=self.timeout,
         )
+
+    def fetch_machine_history_series(
+        self,
+        access_token: str,
+        from_date: str,
+        to_date: str,
+        granularity: str,
+        area_id: str | None,
+        machine_id: str | None,
+    ) -> requests.Response:
+        params = {
+            "from": from_date,
+            "to": to_date,
+            "granularity": granularity,
+        }
+        if area_id:
+            params["areaId"] = area_id
+        if machine_id:
+            params["machineId"] = machine_id
+
+        return requests.get(
+            f"{self.gateway_base_url}/machine-service/machines/history/series",
+            headers=self._bearer_headers(access_token),
+            params=params,
+            timeout=self.timeout,
+        )

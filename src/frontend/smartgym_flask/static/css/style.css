@@ -261,3 +261,32 @@ footer {
   min-width: 9.4rem;
   font-weight: 600;
 }
+
+/* ── History ─────────────────────────────────────────────── */
+.history-chart-container {
+  position: relative;
+  min-height: 320px;
+}
+
+[data-bs-theme="dark"] .history-chart-container {
+  background-color: rgba(13, 20, 43, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+[data-bs-theme="light"] .history-chart-container {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+button[data-history-range].active {
+  font-weight: 700;
+}
+
+.history-date-input-disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}

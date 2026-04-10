@@ -1,5 +1,5 @@
 import requests
-from flask import Blueprint, jsonify, session
+from flask import Blueprint, jsonify, request, session
 from datetime import datetime
 
 from smartgym_flask.extensions import (
@@ -60,6 +60,35 @@ def _as_non_negative_int(value: object) -> int:
     except (TypeError, ValueError):
         return 0
     return max(number, 0)
+
+
+def _parse_history_sessions(machine_series_payload: object) -> list[dict]:
+    if not isinstance(machine_series_payload, dict):
+        return []
+
+    series = machine_series_payload.get("series")
+    if not isinstance(series, list):
+        return []
+
+    sessions: list[dict] = []
+    for point in series:
+        if not isinstance(point, dict):
+            continue
+        period = point.get("period")
+        point_sessions = point.get("sessions")
+        if not isinstance(point_sessions, list):
+            continue
+
+        for item in point_sessions:
+            if not isinstance(item, dict):
+                continue
+            session_item = dict(item)
+            if period is not None:
+                session_item["period"] = period
+            sessions.append(session_item)
+
+    sessions.sort(key=lambda row: str(row.get("startTime") or ""), reverse=True)
+    return sessions
 
 
 @api_bp.get("/statuses")
@@ -231,7 +260,6 @@ def toggle_maintenance():
     if not access_token:
         return jsonify({"error": "Unauthorized"}), 401
 
-    from flask import request
     data = request.get_json()
     machine_id = data.get("machineId")
     active = data.get("active")
@@ -255,3 +283,112 @@ def toggle_maintenance():
         return jsonify({"error": error_message}), response.status_code
 
     return jsonify(response.json())
+
+
+@api_bp.get("/history/filters")
+def history_filters():
+    access_token = session.get("access_token")
+    if not access_token:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        machines_response = get_machine_service().fetch_machines(access_token)
+        areas_response = get_area_service().fetch_areas(access_token)
+    except requests.RequestException as ex:
+        return jsonify({"error": f"Gateway unreachable: {ex}"}), 503
+
+    if machines_response.status_code >= 400:
+        return jsonify({"error": "Unable to fetch machines"}), machines_response.status_code
+    if areas_response.status_code >= 400:
+        return jsonify({"error": "Unable to fetch areas"}), areas_response.status_code
+
+    try:
+        machines = _normalize_list_payload(machines_response.json())
+        areas = _normalize_list_payload(areas_response.json())
+    except ValueError:
+        return jsonify({"error": "Invalid response from upstream services"}), 502
+
+    normalized_areas = sorted(
+        [
+            {
+                "id": str(area.get("id") or "").strip(),
+                "name": str(area.get("name") or area.get("areaType") or area.get("id") or "").strip(),
+            }
+            for area in areas
+            if isinstance(area, dict) and str(area.get("id") or "").strip()
+        ],
+        key=lambda area: area["name"].lower(),
+    )
+
+    normalized_machines = sorted(
+        [
+            {
+                "machineId": str(machine.get("machineId") or machine.get("id") or "").strip(),
+                "areaId": str(machine.get("areaId") or "").strip(),
+            }
+            for machine in machines
+            if isinstance(machine, dict) and str(machine.get("machineId") or machine.get("id") or "").strip()
+        ],
+        key=lambda machine: machine["machineId"].lower(),
+    )
+
+    return jsonify({"areas": normalized_areas, "machines": normalized_machines})
+
+
+@api_bp.get("/history")
+def history_data():
+    access_token = session.get("access_token")
+    if not access_token:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    from_date = (request.args.get("from") or "").strip()
+    to_date = (request.args.get("to") or "").strip()
+    if not from_date or not to_date:
+        return jsonify({"error": "from and to are required (yyyy-MM-dd)"}), 400
+
+    granularity = (request.args.get("granularity") or "daily").strip() or "daily"
+    area_id = (request.args.get("areaId") or "").strip() or None
+    machine_id = (request.args.get("machineId") or "").strip() or None
+
+    analytics_service = get_analytics_service()
+    machine_service = get_machine_service()
+
+    try:
+        attendance_response = analytics_service.fetch_attendance_series(
+            access_token,
+            from_date,
+            to_date,
+            granularity,
+            area_id,
+        )
+        machine_history_response = machine_service.fetch_machine_history_series(
+            access_token,
+            from_date,
+            to_date,
+            granularity,
+            area_id,
+            machine_id,
+        )
+    except requests.RequestException as ex:
+        return jsonify({"error": f"Gateway unreachable: {ex}"}), 503
+
+    if attendance_response.status_code >= 400:
+        return jsonify({"error": "Unable to fetch attendance series"}), attendance_response.status_code
+    if machine_history_response.status_code >= 400:
+        return jsonify({"error": "Unable to fetch machine history series"}), machine_history_response.status_code
+
+    try:
+        attendance_payload = attendance_response.json()
+        machine_history_payload = machine_history_response.json()
+    except ValueError:
+        return jsonify({"error": "Invalid response from upstream services"}), 502
+
+    sessions = _parse_history_sessions(machine_history_payload)
+    return jsonify(
+        {
+            "attendanceSeries": attendance_payload,
+            "machineHistorySeries": machine_history_payload,
+            "sessions": sessions,
+            "totalSessions": len(sessions),
+        }
+    )
