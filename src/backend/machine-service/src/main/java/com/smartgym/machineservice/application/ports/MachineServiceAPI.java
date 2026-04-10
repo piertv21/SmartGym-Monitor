@@ -4,6 +4,7 @@ import com.smartgym.machineservice.model.ConfigureMachineMessage;
 import com.smartgym.machineservice.model.EndMachineSessionMessage;
 import com.smartgym.machineservice.model.Machine;
 import com.smartgym.machineservice.model.MachineSession;
+import com.smartgym.machineservice.model.MachineUsageSeriesResponse;
 import com.smartgym.machineservice.model.SetMachineMaintenanceMessage;
 import com.smartgym.machineservice.model.StartMachineSessionMessage;
 
@@ -33,5 +34,7 @@ public interface MachineServiceAPI {
 	CompletableFuture<Machine> getMachineStatus(String machineId);
 
 	CompletableFuture<List<MachineSession>> getMachineHistory(String machineId);
+
+	CompletableFuture<MachineUsageSeriesResponse> getMachineUsageSeries(String from, String to, String granularity, String areaId);
 
 }

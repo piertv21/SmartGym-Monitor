@@ -25,4 +25,6 @@ public interface MachineRepository {
 
 	CompletableFuture<List<MachineSession>> findMachineHistoryByMachineId(String machineId);
 
+	CompletableFuture<List<MachineSession>> findMachineSessionsByStartTimeRange(String fromInclusive, String toExclusive);
+
 }

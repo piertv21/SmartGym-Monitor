@@ -6,6 +6,7 @@ import com.smartgym.machineservice.model.ConfigureMachineMessage;
 import com.smartgym.machineservice.model.EndMachineSessionMessage;
 import com.smartgym.machineservice.model.Machine;
 import com.smartgym.machineservice.model.MachineSession;
+import com.smartgym.machineservice.model.MachineUsageSeriesResponse;
 import com.smartgym.machineservice.model.OccupancyStatus;
 import com.smartgym.machineservice.model.SetMachineMaintenanceMessage;
 import com.smartgym.machineservice.model.StartMachineSessionMessage;
@@ -170,6 +171,77 @@ public class JUnitMachineServiceTest {
         assertEquals("session-old", history.get(1).getSessionId());
     }
 
+    @Test
+    void getMachineUsageSeriesReturnsSessionsWithRequestedFields() {
+        InMemoryMachineRepository repository = new InMemoryMachineRepository();
+        repository.saveMachine(new Machine("m-01", "area-cardio")).join();
+        repository.saveMachine(new Machine("m-02", "area-strength")).join();
+
+        repository.saveMachineSession(new MachineSession(
+                "session-01",
+                "m-01",
+                "badge-01",
+                LocalDateTime.of(2026, 3, 27, 10, 0),
+                LocalDateTime.of(2026, 3, 27, 10, 25, 30)
+        )).join();
+        repository.saveMachineSession(new MachineSession(
+                "session-02",
+                "m-02",
+                "badge-02",
+                LocalDateTime.of(2026, 3, 28, 11, 0),
+                LocalDateTime.of(2026, 3, 28, 11, 40)
+        )).join();
+
+        MachineServiceAPIImpl service = new MachineServiceAPIImpl(repository);
+
+        MachineUsageSeriesResponse response = service
+                .getMachineUsageSeries("2026-03-27", "2026-03-28", "daily", null)
+                .join();
+
+        assertEquals("daily", response.getMeta().getGranularity());
+        assertEquals(2, response.getSeries().size());
+        assertEquals("2026-03-27", response.getSeries().get(0).getPeriod());
+        assertEquals(1, response.getSeries().get(0).getSessions().size());
+
+        MachineUsageSeriesResponse.SessionItem item = response.getSeries().get(0).getSessions().get(0);
+        assertEquals("m-01", item.getMachineId());
+        assertEquals("area-cardio", item.getAreaId());
+        assertEquals("badge-01", item.getBadgeId());
+        assertEquals(1530, item.getDurationSeconds());
+    }
+
+    @Test
+    void getMachineUsageSeriesFiltersByArea() {
+        InMemoryMachineRepository repository = new InMemoryMachineRepository();
+        repository.saveMachine(new Machine("m-01", "area-cardio")).join();
+        repository.saveMachine(new Machine("m-02", "area-strength")).join();
+
+        repository.saveMachineSession(new MachineSession(
+                "session-01",
+                "m-01",
+                "badge-01",
+                LocalDateTime.of(2026, 3, 27, 10, 0),
+                LocalDateTime.of(2026, 3, 27, 10, 30)
+        )).join();
+        repository.saveMachineSession(new MachineSession(
+                "session-02",
+                "m-02",
+                "badge-02",
+                LocalDateTime.of(2026, 3, 27, 11, 0),
+                LocalDateTime.of(2026, 3, 27, 11, 15)
+        )).join();
+
+        MachineServiceAPIImpl service = new MachineServiceAPIImpl(repository);
+
+        MachineUsageSeriesResponse response = service
+                .getMachineUsageSeries("2026-03-27", "2026-03-27", "daily", "area-cardio")
+                .join();
+
+        assertEquals(1, response.getSeries().size());
+        assertEquals(1, response.getSeries().get(0).getSessions().size());
+        assertEquals("m-01", response.getSeries().get(0).getSessions().get(0).getMachineId());
+    }
+
     private static final class InMemoryMachineRepository implements MachineRepository {
 
         private final Map<String, Machine> machinesById = new LinkedHashMap<>();
@@ -215,6 +287,19 @@ public class JUnitMachineServiceTest {
                     .collect(Collectors.toCollection(ArrayList::new));
 
             return CompletableFuture.completedFuture(history);
+        }
+
+        @Override
+        public CompletableFuture<List<MachineSession>> findMachineSessionsByStartTimeRange(String fromInclusive, String toExclusive) {
+            LocalDateTime from = LocalDateTime.parse(fromInclusive);
+            LocalDateTime to = LocalDateTime.parse(toExclusive);
+
+            List<MachineSession> filtered = sessionsById.values().stream()
+                    .filter(s -> !s.getStartTime().isBefore(from) && s.getStartTime().isBefore(to))
+                    .sorted(Comparator.comparing(MachineSession::getStartTime))
+                    .collect(Collectors.toCollection(ArrayList::new));
+
+            return CompletableFuture.completedFuture(filtered);
         }
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -123,6 +124,18 @@ public class MachineRestControllerImpl implements MachineRestController {
     @GetMapping("/history/{machineId}")
     public CompletableFuture<ResponseEntity<?>> getMachineHistory(@PathVariable String machineId) {
         return machineService.getMachineHistory(machineId)
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @Override
+    @GetMapping("/machines/history/series")
+    public CompletableFuture<ResponseEntity<?>> getMachineUsageSeries(
+            @RequestParam String from,
+            @RequestParam String to,
+            @RequestParam(defaultValue = "daily") String granularity,
+            @RequestParam(required = false) String areaId
+    ) {
+        return machineService.getMachineUsageSeries(from, to, granularity, areaId)
                 .thenApply(ResponseEntity::ok);
     }
 }
