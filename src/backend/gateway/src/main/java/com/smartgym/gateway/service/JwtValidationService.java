@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Collection;
+import java.util.Date;
 
 @Component
 public class JwtValidationService {
@@ -62,6 +63,14 @@ public class JwtValidationService {
                 }
             } else {
                 throw new JwtException("Missing token audience");
+            }
+
+            Date expiration = claims.getExpiration();
+            if (expiration == null) {
+                throw new JwtException("Missing token expiration");
+            }
+            if (!expiration.after(new Date())) {
+                throw new JwtException("Expired token");
             }
 
             return claims.getSubject();
