@@ -55,6 +55,19 @@ body {
   background: linear-gradient(180deg, #ffffff 0%, #f1f4f9 100%) !important;
 }
 
+/* ── Page Header ─────────────────────────────────────────── */
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.page-description {
+  font-size: 0.875rem;
+  color: var(--bs-secondary-color);
+  max-width: 60ch;
+}
+
 /* ── Navbar & Footer ─────────────────────────────────────── */
 .navbar,
 footer {

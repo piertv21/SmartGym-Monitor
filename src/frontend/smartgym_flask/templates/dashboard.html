@@ -1,6 +1,13 @@
 {% extends "base.html" %} {% block content %}
-<div class="d-flex align-items-start justify-content-between mb-4">
-  <h1 class="h4 mb-0">Dashboard</h1>
+<div
+  class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3"
+>
+  <div>
+    <h1 class="page-title mb-1">Dashboard</h1>
+    <p class="page-description mb-0">
+      Panoramica KPI e stato operativo di macchine e sensori.
+    </p>
+  </div>
   <div class="text-end">
     <p id="page-last-update" class="text-secondary small mb-2">
       Ultimo aggiornamento: --:--:--
@@ -85,6 +92,9 @@
         <div class="d-flex align-items-center justify-content-between mb-1">
           <h2 class="card-title h6 mb-0">Manutenzione macchine</h2>
         </div>
+        <p class="text-secondary small mb-2">
+          Elenco macchine con stato operativo e azioni di manutenzione.
+        </p>
         <p
           id="maintenance-feedback"
           class="text-secondary small mb-2"
@@ -125,6 +135,9 @@
         <div class="d-flex align-items-center justify-content-between mb-1">
           <h2 class="card-title h6 mb-0">Stati macchinari e sensori</h2>
         </div>
+        <p class="text-secondary small mb-2">
+          Monitoraggio in tempo reale dello stato dei dispositivi registrati.
+        </p>
         <p
           id="statuses-feedback"
           class="text-secondary small mb-2"
