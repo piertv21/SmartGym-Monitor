@@ -42,6 +42,19 @@ public class AnalyticsRestControllerImpl implements AnalyticsRestController {
     }
 
     @Override
+    @GetMapping("/attendance/series")
+    public CompletableFuture<ResponseEntity<?>> getAttendanceSeries(
+            @RequestParam String from,
+            @RequestParam String to,
+            @RequestParam(defaultValue = "daily") String granularity,
+            @RequestParam(required = false) String areaId
+    ) {
+        return analyticsServiceAPI.getAttendanceSeries(from, to, granularity, areaId)
+                .thenApply(ResponseEntity::ok);
+    }
+
+
+    @Override
     @GetMapping("/machine-utilization")
     public CompletableFuture<ResponseEntity<?>> getMachineUtilization() {
         return analyticsServiceAPI.getMachineUtilization()

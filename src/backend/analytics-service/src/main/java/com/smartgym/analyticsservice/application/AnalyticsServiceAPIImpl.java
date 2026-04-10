@@ -3,6 +3,8 @@ package com.smartgym.analyticsservice.application;
 import com.smartgym.analyticsservice.application.ports.AnalyticsRepository;
 import com.smartgym.analyticsservice.application.ports.AnalyticsServiceAPI;
 import com.smartgym.analyticsservice.model.AttendanceSnapshot;
+import com.smartgym.analyticsservice.model.AttendanceSeriesPoint;
+import com.smartgym.analyticsservice.model.AttendanceSeriesResponse;
 import com.smartgym.analyticsservice.model.AreaAttendanceSnapshot;
 import com.smartgym.analyticsservice.model.AreaPeakHourStat;
 import com.smartgym.analyticsservice.model.AreaSessionDurationStat;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -81,6 +84,30 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
                         .map(entry -> toAttendanceSnapshot(entry.getKey(), entry.getValue()))
                         .sorted(Comparator.comparing(AttendanceSnapshot::getDate))
                         .toList());
+    }
+
+    @Override
+    public CompletableFuture<AttendanceSeriesResponse> getAttendanceSeries(String from, String to, String granularity, String areaId) {
+        LocalDate fromDate = parseLocalDate(from, "from");
+        LocalDate toDate = parseLocalDate(to, "to");
+        if (fromDate.isAfter(toDate)) {
+            throw new IllegalStateException("from cannot be after to");
+        }
+
+        String normalizedGranularity = normalizeGranularity(granularity);
+        String normalizedAreaId = normalizeOptional(areaId);
+        String scope = normalizedAreaId == null ? "global" : "area";
+        String eventType = normalizedAreaId == null ? "GYM_ACCESS" : "AREA_ACCESS";
+
+        return analyticsRepository.findEventsByTypeAndDateRange(eventType, fromDate.toString(), toDate.toString())
+                .thenApply(events -> toAttendanceSeries(
+                        scope,
+                        normalizedGranularity,
+                        fromDate,
+                        toDate,
+                        normalizedAreaId,
+                        events
+                ));
     }
 
     @Override
@@ -275,6 +302,94 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
                 entries,
                 exits
         );
+    }
+
+    private AttendanceSeriesResponse toAttendanceSeries(
+            String scope,
+            String granularity,
+            LocalDate from,
+            LocalDate to,
+            String areaId,
+            List<JsonObject> events
+    ) {
+        Map<String, int[]> buckets = initializeBuckets(from, to, granularity);
+        for (JsonObject event : events) {
+            JsonObject payload = event.getJsonObject("payload", new JsonObject());
+            if ("area".equals(scope)) {
+                String eventAreaId = normalizeString(payload.getString("areaId"));
+                if (!areaId.equals(eventAreaId)) {
+                    continue;
+                }
+            }
+
+            String eventDate = event.getString("eventDate");
+            if (isBlank(eventDate)) {
+                continue;
+            }
+
+            String period;
+            if ("monthly".equals(granularity)) {
+                if (eventDate.length() < 7) {
+                    continue;
+                }
+                period = eventDate.substring(0, 7);
+            } else {
+                period = eventDate;
+            }
+
+            int[] counter = buckets.get(period);
+            if (counter == null) {
+                continue;
+            }
+
+            String signal = "area".equals(scope)
+                    ? normalizeUpper(payload.getString("direction"))
+                    : normalizeUpper(payload.getString("accessType"));
+            if ("ENTRY".equals(signal) || "IN".equals(signal)) {
+                counter[0] += 1;
+            } else if ("EXIT".equals(signal) || "OUT".equals(signal)) {
+                counter[1] += 1;
+            }
+        }
+
+        List<AttendanceSeriesPoint> series = buckets.entrySet().stream()
+                .map(entry -> {
+                    int totalEntries = entry.getValue()[0];
+                    int totalExits = entry.getValue()[1];
+                    return new AttendanceSeriesPoint(
+                            entry.getKey(),
+                            Math.max(totalEntries - totalExits, 0),
+                            totalEntries,
+                            totalExits
+                    );
+                })
+                .toList();
+
+        return new AttendanceSeriesResponse(
+                new AttendanceSeriesResponse.Meta(scope, granularity, ANALYTICS_ZONE.getId()),
+                new AttendanceSeriesResponse.Filters(from.toString(), to.toString(), areaId),
+                series
+        );
+    }
+
+    private Map<String, int[]> initializeBuckets(LocalDate from, LocalDate to, String granularity) {
+        Map<String, int[]> buckets = new LinkedHashMap<>();
+        if ("monthly".equals(granularity)) {
+            YearMonth cursor = YearMonth.from(from);
+            YearMonth end = YearMonth.from(to);
+            while (!cursor.isAfter(end)) {
+                buckets.put(cursor.toString(), new int[]{0, 0});
+                cursor = cursor.plusMonths(1);
+            }
+            return buckets;
+        }
+
+        LocalDate cursor = from;
+        while (!cursor.isAfter(to)) {
+            buckets.put(cursor.toString(), new int[]{0, 0});
+            cursor = cursor.plusDays(1);
+        }
+        return buckets;
     }
 
     private List<PeakHourStat> toPeakHours(List<JsonObject> events) {
@@ -536,6 +651,37 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
         double rawRate = (Math.max(totalUsageMinutes, 0.0) / MINUTES_PER_HOUR) * 100.0;
         return Math.min(rawRate, 100.0);
     }
+
+    private LocalDate parseLocalDate(String date, String fieldName) {
+        if (isBlank(date)) {
+            throw new IllegalArgumentException(fieldName + " cannot be null or empty");
+        }
+        try {
+            return LocalDate.parse(date.trim());
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(fieldName + " must be in format yyyy-MM-dd", ex);
+        }
+    }
+
+    private String normalizeGranularity(String granularity) {
+        if (isBlank(granularity)) {
+            return "daily";
+        }
+        String normalized = granularity.trim().toLowerCase();
+        if (!"daily".equals(normalized) && !"monthly".equals(normalized)) {
+            throw new IllegalArgumentException("granularity must be daily or monthly");
+        }
+        return normalized;
+    }
+
+    private String normalizeOptional(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
 
     private String normalizeDate(String date) {
         if (isBlank(date)) {

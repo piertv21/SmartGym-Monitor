@@ -1,6 +1,7 @@
 package com.smartgym.analyticsservice.application.ports;
 
 import com.smartgym.analyticsservice.model.AttendanceSnapshot;
+import com.smartgym.analyticsservice.model.AttendanceSeriesResponse;
 import com.smartgym.analyticsservice.model.AreaAttendanceSnapshot;
 import com.smartgym.analyticsservice.model.AreaPeakHourStat;
 import com.smartgym.analyticsservice.model.AreaSessionDurationStat;
@@ -21,6 +22,9 @@ public interface AnalyticsServiceAPI {
     CompletableFuture<Optional<AttendanceSnapshot>> getAttendanceStats(String date);
 
     CompletableFuture<List<AttendanceSnapshot>> getAllAttendanceStats();
+
+    CompletableFuture<AttendanceSeriesResponse> getAttendanceSeries(String from, String to, String granularity, String areaId);
+
 
     CompletableFuture<List<MachineUtilization>> getMachineUtilization();
 

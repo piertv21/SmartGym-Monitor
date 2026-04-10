@@ -13,6 +13,9 @@ public interface AnalyticsRestController {
 
     CompletableFuture<ResponseEntity<?>> getAllAttendanceStats();
 
+    CompletableFuture<ResponseEntity<?>> getAttendanceSeries(String from, String to, String granularity, String areaId);
+
+
     CompletableFuture<ResponseEntity<?>> getMachineUtilization();
 
     CompletableFuture<ResponseEntity<?>> getMachineUtilizationByDate(String date);
