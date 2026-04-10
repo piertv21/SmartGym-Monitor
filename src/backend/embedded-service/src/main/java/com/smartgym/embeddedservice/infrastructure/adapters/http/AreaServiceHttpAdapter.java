@@ -32,8 +32,8 @@ public class AreaServiceHttpAdapter implements AreaServicePort {
         String normalizedBaseUrl = areaServiceBaseUrl.endsWith("/")
                 ? areaServiceBaseUrl.substring(0, areaServiceBaseUrl.length() - 1)
                 : areaServiceBaseUrl;
-        this.areaAccessEndpoint = URI.create(normalizedBaseUrl + "/area-service/access");
-        this.areaExitEndpoint = URI.create(normalizedBaseUrl + "/area-service/exit");
+        this.areaAccessEndpoint = URI.create(normalizedBaseUrl + "/access");
+        this.areaExitEndpoint = URI.create(normalizedBaseUrl + "/exit");
         logger.info("🔧 AreaServiceHttpAdapter initialized with base URL: {}", normalizedBaseUrl);
         logger.info("   - Area Access Endpoint: {}", this.areaAccessEndpoint);
         logger.info("   - Area Exit Endpoint: {}", this.areaExitEndpoint);

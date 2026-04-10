@@ -83,11 +83,11 @@ It processes access events, exit events, area queries, and capacity updates.
 
 Main endpoints:
 
-- `POST /area-service/access`
-- `POST /area-service/exit`
-- `GET /area-service/{areaId}`
-- `GET /area-service`
-- `PUT /area-service/capacity`
+- `POST /access`
+- `POST /exit`
+- `GET /{areaId}`
+- `GET /`
+- `PUT /capacity`
 
 ### 4.2.6 `machine-service`
 

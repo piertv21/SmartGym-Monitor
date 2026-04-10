@@ -163,6 +163,7 @@ class IntegrationAnalyticsServiceTest {
         assertTrue(machineByMonth.body().contains(machineId));
     }
 
+
     private boolean isServiceHealthy() {
         try {
             HttpResponse<String> response = sendGet("/actuator/health");

@@ -102,6 +102,22 @@ def dashboard_stats():
     except requests.RequestException:
         pass  # We'll just return what we have
 
+    try:
+        areas_resp = get_area_service().fetch_areas(access_token)
+        if areas_resp.status_code == 200:
+            areas_payload = areas_resp.json()
+            areas = _normalize_list_payload(areas_payload)
+            total_current_count = sum(
+                _as_non_negative_int(area.get("currentCount"))
+                for area in areas
+                if isinstance(area, dict)
+            )
+            if not isinstance(attendance_data, dict):
+                attendance_data = {}
+            attendance_data["gymCount"] = total_current_count
+    except (requests.RequestException, ValueError):
+        pass
+
     session_data = {}
     try:
         sess_resp = analytics_service.fetch_gym_session_duration(access_token, today)
@@ -139,38 +155,25 @@ def live_monitor_data():
     if not access_token:
         return jsonify({"error": "Unauthorized"}), 401
 
-    date = datetime.now().strftime("%Y-%m-%d")
-
     try:
-        attendance_response = get_analytics_service().fetch_area_attendance(access_token, date)
         machines_response = get_machine_service().fetch_machines(access_token)
         areas_response = get_area_service().fetch_areas(access_token)
     except requests.RequestException as ex:
         return jsonify({"error": f"Gateway unreachable: {ex}"}), 503
 
-    if attendance_response.status_code >= 400:
-        return jsonify({"error": "Unable to fetch area attendance"}), attendance_response.status_code
     if machines_response.status_code >= 400:
         return jsonify({"error": "Unable to fetch machines"}), machines_response.status_code
     if areas_response.status_code >= 400:
         return jsonify({"error": "Unable to fetch areas"}), areas_response.status_code
 
     try:
-        attendance_payload = attendance_response.json()
         machines_payload = machines_response.json()
         areas_payload = areas_response.json()
     except ValueError:
         return jsonify({"error": "Invalid response from upstream services"}), 502
 
-    attendances = _normalize_list_payload(attendance_payload)
     machines = _normalize_list_payload(machines_payload)
     areas = _normalize_list_payload(areas_payload)
-
-    attendance_by_area = {
-        str(item.get("areaId")): item
-        for item in attendances
-        if isinstance(item, dict) and item.get("areaId")
-    }
     area_by_id = {
         str(item.get("id")): item
         for item in areas
@@ -191,14 +194,13 @@ def live_monitor_data():
             }
         )
 
-    all_area_ids = sorted(set(area_by_id.keys()) | set(attendance_by_area.keys()) | set(machines_by_area.keys()))
+    all_area_ids = sorted(set(area_by_id.keys()) | set(machines_by_area.keys()))
 
     live_areas = []
     for area_id in all_area_ids:
         area = area_by_id.get(area_id, {})
-        attendance = attendance_by_area.get(area_id, {})
 
-        current_users = _as_non_negative_int(attendance.get("currentCount"))
+        current_users = _as_non_negative_int(area.get("currentCount"))
         capacity = _as_non_negative_int(area.get("capacity"))
         occupancy_percent = 0
         if capacity > 0:
@@ -217,7 +219,7 @@ def live_monitor_data():
         )
 
     return jsonify({
-        "date": date,
+        "date": datetime.now().strftime("%Y-%m-%d"),
         "areas": live_areas,
         "lastUpdate": datetime.now().isoformat(),
     })

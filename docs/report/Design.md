@@ -176,13 +176,13 @@ The tracking service exposes the following controller paths:
 
 The area service exposes the following controller paths:
 
-| Endpoint                 | Type | Description                              |
-| ------------------------ | ---- | ---------------------------------------- |
-| `/area-service/access`   | POST | Registers entry to a specific area.      |
-| `/area-service/exit`     | POST | Registers exit from a specific area.     |
-| `/area-service/{areaId}` | GET  | Returns a specific area by id.           |
-| `/area-service`          | GET  | Returns all areas.                       |
-| `/area-service/capacity` | PUT  | Updates the maximum capacity of an area. |
+| Endpoint    | Type | Description                              |
+| ----------- | ---- | ---------------------------------------- |
+| `/access`   | POST | Registers entry to a specific area.      |
+| `/exit`     | POST | Registers exit from a specific area.     |
+| `/{areaId}` | GET  | Returns a specific area by id.           |
+| `/`         | GET  | Returns all areas.                       |
+| `/capacity` | PUT  | Updates the maximum capacity of an area. |
 
 ## 3.4.5 Machine Management Service
 

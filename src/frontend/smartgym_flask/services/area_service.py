@@ -18,19 +18,9 @@ class AreaService:
 
     def fetch_areas(self, access_token: str) -> requests.Response:
         headers = self._bearer_headers(access_token)
-        paths = ("/area-service", "/area-service/area-service")
-
-        first_response = requests.get(
-            f"{self.gateway_base_url}{paths[0]}",
+        response = requests.get(
+            f"{self.gateway_base_url}/area-service",
             headers=headers,
             timeout=self.timeout,
         )
-        if first_response.status_code < 400:
-            return first_response
-
-        fallback_response = requests.get(
-            f"{self.gateway_base_url}{paths[1]}",
-            headers=headers,
-            timeout=self.timeout,
-        )
-        return fallback_response
+        return response

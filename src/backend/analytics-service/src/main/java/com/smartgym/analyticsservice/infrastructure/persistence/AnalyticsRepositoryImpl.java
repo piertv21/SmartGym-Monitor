@@ -3,14 +3,16 @@ package com.smartgym.analyticsservice.infrastructure.persistence;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import com.smartgym.analyticsservice.application.ports.AnalyticsRepository;
 import io.vertx.core.json.JsonObject;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -19,6 +21,7 @@ public class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
     private static final String DATABASE = "analyticsservicedb";
     private static final String EVENTS_COLLECTION = "analyticsEvents";
+    private static final ZoneId ANALYTICS_ZONE = ZoneId.of("Europe/Rome");
 
     private final MongoCollection<Document> eventsCollection;
 
@@ -49,6 +52,22 @@ public class AnalyticsRepositoryImpl implements AnalyticsRepository {
         return CompletableFuture.supplyAsync(() -> {
             List<JsonObject> result = new ArrayList<>();
             for (Document document : eventsCollection.find(new Document("eventType", eventType).append("eventDate", date))) {
+                result.add(fromDocument(document));
+            }
+            return result;
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<JsonObject>> findEventsByTypeAndDateRange(String eventType, String from, String to) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<JsonObject> result = new ArrayList<>();
+            Bson filter = Filters.and(
+                    Filters.eq("eventType", eventType),
+                    Filters.gte("eventDate", from),
+                    Filters.lte("eventDate", to)
+            );
+            for (Document document : eventsCollection.find(filter)) {
                 result.add(fromDocument(document));
             }
             return result;
@@ -110,7 +129,7 @@ public class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
     private LocalDate parseDate(String timestamp) {
         try {
-            return Instant.parse(timestamp).atZone(ZoneOffset.UTC).toLocalDate();
+            return Instant.parse(timestamp).atZone(ANALYTICS_ZONE).toLocalDate();
         } catch (Exception ignored) {
             return LocalDate.parse(timestamp.substring(0, 10));
         }

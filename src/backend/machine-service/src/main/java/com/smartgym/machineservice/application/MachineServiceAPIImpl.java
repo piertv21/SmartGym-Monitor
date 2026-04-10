@@ -6,13 +6,20 @@ import com.smartgym.machineservice.model.ConfigureMachineMessage;
 import com.smartgym.machineservice.model.EndMachineSessionMessage;
 import com.smartgym.machineservice.model.Machine;
 import com.smartgym.machineservice.model.MachineSession;
+import com.smartgym.machineservice.model.MachineUsageSeriesResponse;
 import com.smartgym.machineservice.model.OccupancyStatus;
 import com.smartgym.machineservice.model.Sensor;
 import com.smartgym.machineservice.model.SetMachineMaintenanceMessage;
 import com.smartgym.machineservice.model.StartMachineSessionMessage;
 
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -163,9 +170,102 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
         return repository.findMachineHistoryByMachineId(machineId);
     }
 
+    @Override
+    public CompletableFuture<MachineUsageSeriesResponse> getMachineUsageSeries(String from, String to, String granularity, String areaId) {
+        LocalDate fromDate = parseLocalDate(from, "from");
+        LocalDate toDate = parseLocalDate(to, "to");
+        if (fromDate.isAfter(toDate)) {
+            throw new IllegalArgumentException("from cannot be after to");
+        }
+
+        String normalizedGranularity = normalizeGranularity(granularity);
+        String normalizedAreaId = normalizeOptionalArea(areaId);
+
+        String fromInclusive = fromDate.atStartOfDay().toString();
+        String toExclusive = toDate.plusDays(1).atStartOfDay().toString();
+
+        CompletableFuture<List<MachineSession>> sessionsFuture = repository.findMachineSessionsByStartTimeRange(fromInclusive, toExclusive);
+        CompletableFuture<List<Machine>> machinesFuture = repository.findAllMachines();
+
+        return sessionsFuture.thenCombine(machinesFuture, (sessions, machines) -> {
+            Map<String, String> areaByMachineId = machines.stream()
+                    .collect(LinkedHashMap::new, (map, machine) -> map.put(machine.getMachineId(), machine.getAreaId()), Map::putAll);
+
+            Map<String, List<MachineUsageSeriesResponse.SessionItem>> buckets = initializeBuckets(fromDate, toDate, normalizedGranularity);
+
+            for (MachineSession session : sessions) {
+                if (session.getEndTime() == null) {
+                    continue;
+                }
+
+                String machineAreaId = areaByMachineId.get(session.getMachineId());
+                if (normalizedAreaId != null && !normalizedAreaId.equals(machineAreaId)) {
+                    continue;
+                }
+
+                String period = toPeriodKey(session.getStartTime().toLocalDate(), normalizedGranularity);
+                List<MachineUsageSeriesResponse.SessionItem> periodSessions = buckets.get(period);
+                if (periodSessions == null) {
+                    continue;
+                }
+
+                periodSessions.add(toSessionItem(session, machineAreaId));
+            }
+
+            List<MachineUsageSeriesResponse.Point> series = buckets.entrySet().stream()
+                    .map(entry -> new MachineUsageSeriesResponse.Point(entry.getKey(), entry.getValue()))
+                    .toList();
+
+            return new MachineUsageSeriesResponse(
+                    new MachineUsageSeriesResponse.Meta(normalizedGranularity),
+                    new MachineUsageSeriesResponse.Filters(fromDate.toString(), toDate.toString(), normalizedAreaId),
+                    series
+            );
+        });
+    }
+
     private Machine getRequiredMachine(String machineId) {
         return repository.findMachineById(machineId).join()
                 .orElseThrow(() -> new ResourceNotFoundException("Machine not found: " + machineId));
+    }
+
+    private Map<String, List<MachineUsageSeriesResponse.SessionItem>> initializeBuckets(LocalDate from, LocalDate to, String granularity) {
+        Map<String, List<MachineUsageSeriesResponse.SessionItem>> buckets = new LinkedHashMap<>();
+        if ("monthly".equals(granularity)) {
+            YearMonth cursor = YearMonth.from(from);
+            YearMonth end = YearMonth.from(to);
+            while (!cursor.isAfter(end)) {
+                buckets.put(cursor.toString(), new ArrayList<>());
+                cursor = cursor.plusMonths(1);
+            }
+            return buckets;
+        }
+
+        LocalDate cursor = from;
+        while (!cursor.isAfter(to)) {
+            buckets.put(cursor.toString(), new ArrayList<>());
+            cursor = cursor.plusDays(1);
+        }
+        return buckets;
+    }
+
+    private String toPeriodKey(LocalDate date, String granularity) {
+        if ("monthly".equals(granularity)) {
+            return YearMonth.from(date).toString();
+        }
+        return date.toString();
+    }
+
+    private MachineUsageSeriesResponse.SessionItem toSessionItem(MachineSession session, String areaId) {
+        long durationSeconds = Duration.between(session.getStartTime(), session.getEndTime()).getSeconds();
+        return new MachineUsageSeriesResponse.SessionItem(
+                session.getMachineId(),
+                areaId,
+                session.getStartTime().toString(),
+                session.getEndTime().toString(),
+                durationSeconds,
+                session.getBadgeId()
+        );
     }
 
     private void validateConfigureMessage(ConfigureMachineMessage message) {
@@ -229,6 +329,36 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
         if (isBlank(machineId)) {
             throw new IllegalArgumentException("machineId cannot be null or empty");
         }
+    }
+
+    private LocalDate parseLocalDate(String value, String fieldName) {
+        if (isBlank(value)) {
+            throw new IllegalArgumentException(fieldName + " cannot be null or empty");
+        }
+        try {
+            return LocalDate.parse(value.trim());
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(fieldName + " must be in format yyyy-MM-dd", ex);
+        }
+    }
+
+    private String normalizeGranularity(String granularity) {
+        if (isBlank(granularity)) {
+            return "daily";
+        }
+        String normalized = granularity.trim().toLowerCase();
+        if (!"daily".equals(normalized) && !"monthly".equals(normalized)) {
+            throw new IllegalArgumentException("granularity must be daily or monthly");
+        }
+        return normalized;
+    }
+
+    private String normalizeOptionalArea(String areaId) {
+        if (areaId == null) {
+            return null;
+        }
+        String normalized = areaId.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     private boolean isBlank(String value) {
