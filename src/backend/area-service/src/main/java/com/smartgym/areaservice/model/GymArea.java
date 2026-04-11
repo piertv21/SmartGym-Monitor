@@ -1,10 +1,11 @@
 package com.smartgym.areaservice.model;
 
+import com.smartgym.areaservice.ddd.Aggregate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "gym_areas")
-public class GymArea {
+public class GymArea implements Aggregate<String> {
 
     @Id
     private String id;

@@ -1,8 +1,10 @@
 package com.smartgym.authservice.model;
 
+import com.smartgym.authservice.ddd.Aggregate;
+
 import java.util.Objects;
 
-public class AuthUser {
+public class AuthUser implements Aggregate<String> {
 
     private final String username;
     private final String password;
@@ -20,6 +22,11 @@ public class AuthUser {
 
     public String getUsername() {
         return username;
+    }
+
+    @Override
+    public String getId() {
+        return this.username;
     }
 
 

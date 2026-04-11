@@ -1,9 +1,11 @@
 package com.smartgym.trackingservice.model;
 
+import com.smartgym.trackingservice.ddd.Aggregate;
+
 import java.time.LocalDateTime;
 
 
-public class GymSession {
+public class GymSession implements Aggregate<String> {
 
     private final String gymSessionId;
     private final String badgeId;
@@ -29,6 +31,11 @@ public class GymSession {
 
     public String getGymSessionId() {
         return gymSessionId;
+    }
+
+    @Override
+    public String getId() {
+        return this.gymSessionId;
     }
 
     public String getBadgeId() {

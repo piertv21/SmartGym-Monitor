@@ -1,5 +1,6 @@
 package com.smartgym.machineservice.application.ports;
 
+import com.smartgym.machineservice.ddd.Repository;
 import com.smartgym.machineservice.model.Machine;
 import com.smartgym.machineservice.model.MachineSession;
 
@@ -11,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
  * Port per l'accesso ai dati
  *
  */
-public interface MachineRepository {
+public interface MachineRepository extends Repository {
 
 	CompletableFuture<List<Machine>> findAllMachines();
 

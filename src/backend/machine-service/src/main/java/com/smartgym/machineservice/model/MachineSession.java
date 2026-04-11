@@ -1,8 +1,10 @@
 package com.smartgym.machineservice.model;
 
+import com.smartgym.machineservice.ddd.Entity;
+
 import java.time.LocalDateTime;
 
-public class MachineSession {
+public class MachineSession implements Entity<String> {
 
     private final String sessionId;
     private final String machineId;
@@ -30,6 +32,11 @@ public class MachineSession {
 
     public String getSessionId() {
         return sessionId;
+    }
+
+    @Override
+    public String getId() {
+        return this.sessionId;
     }
 
     public String getMachineId() {

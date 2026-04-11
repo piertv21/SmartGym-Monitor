@@ -1,5 +1,6 @@
 package com.smartgym.machineservice.application.ports;
 
+import com.smartgym.machineservice.ddd.Service;
 import com.smartgym.machineservice.model.ConfigureMachineMessage;
 import com.smartgym.machineservice.model.EndMachineSessionMessage;
 import com.smartgym.machineservice.model.Machine;
@@ -15,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
  * Port per il layer applicativo del microservizio Machine.
  * Contiene la business logic per la gestione delle machine
  */
-public interface MachineServiceAPI {
+public interface MachineServiceAPI extends Service {
 
 
 	CompletableFuture<Machine> createMachine(ConfigureMachineMessage message);

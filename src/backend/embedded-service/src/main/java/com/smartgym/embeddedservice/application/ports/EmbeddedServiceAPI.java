@@ -1,5 +1,6 @@
 package com.smartgym.embeddedservice.application.ports;
 
+import com.smartgym.embeddedservice.ddd.Service;
 import com.smartgym.embeddedservice.model.AreaAccessMessage;
 import com.smartgym.embeddedservice.model.DeviceStatusMessage;
 import com.smartgym.embeddedservice.model.GymAccessMessage;
@@ -8,7 +9,7 @@ import io.vertx.core.json.JsonArray;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface EmbeddedServiceAPI {
+public interface EmbeddedServiceAPI extends Service {
 
     CompletableFuture<Void> processGymAccess(GymAccessMessage message);
 

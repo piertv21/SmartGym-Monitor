@@ -1,5 +1,6 @@
 package com.smartgym.areaservice.application.ports;
 
+import com.smartgym.areaservice.ddd.Service;
 import com.smartgym.areaservice.model.AreaAccessMessage;
 import com.smartgym.areaservice.model.GymArea;
 import com.smartgym.areaservice.model.UpdateAreaCapacityMessage;
@@ -8,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public interface AreaServiceAPI {
+public interface AreaServiceAPI extends Service {
 
     CompletableFuture<Void> processAreaAccess(AreaAccessMessage message);
 

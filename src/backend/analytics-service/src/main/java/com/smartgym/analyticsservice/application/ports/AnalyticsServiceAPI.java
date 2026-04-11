@@ -5,10 +5,12 @@ import com.smartgym.analyticsservice.model.AttendanceSeriesResponse;
 import com.smartgym.analyticsservice.model.GymSessionDurationStat;
 import io.vertx.core.json.JsonObject;
 
+import com.smartgym.analyticsservice.ddd.Service;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public interface AnalyticsServiceAPI {
+public interface AnalyticsServiceAPI extends Service {
 
     CompletableFuture<Void> ingestEvent(JsonObject event);
 
