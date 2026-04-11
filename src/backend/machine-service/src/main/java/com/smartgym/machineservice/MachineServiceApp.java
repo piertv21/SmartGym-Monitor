@@ -4,8 +4,6 @@ import com.mongodb.client.MongoClient;
 import com.smartgym.machineservice.application.MachineServiceAPIImpl;
 import com.smartgym.machineservice.application.ports.MachineRepository;
 import com.smartgym.machineservice.application.ports.MachineServiceAPI;
-import com.smartgym.machineservice.application.ports.DummyServicePort;
-import com.smartgym.machineservice.infrastructure.adapters.DummyServiceAdapter;
 import com.smartgym.machineservice.infrastructure.persistence.MachineRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,11 +46,6 @@ public class MachineServiceApp {
         return new MachineServiceAPIImpl(machineRepository);
     }
 
-    @Bean
-    public DummyServicePort dummyServicePort() {
-        logger.info("🔧 Initializing DummyServiceAdapter");
-        return new DummyServiceAdapter();
-    }
 
     public static void main(String[] args) {
         logger.info("🚀 Starting Machine Service...");

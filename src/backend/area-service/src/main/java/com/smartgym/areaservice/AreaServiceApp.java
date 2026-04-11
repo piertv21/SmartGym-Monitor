@@ -4,8 +4,6 @@ import com.mongodb.client.MongoClient;
 import com.smartgym.areaservice.application.AreaServiceAPIImpl;
 import com.smartgym.areaservice.application.ports.AreaRepository;
 import com.smartgym.areaservice.application.ports.AreaServiceAPI;
-import com.smartgym.areaservice.application.ports.DummyServiceAdapter;
-import com.smartgym.areaservice.infrastructure.adapters.DummyServiceAdapterImpl;
 import com.smartgym.areaservice.infrastructure.persistence.AreaRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,11 +46,6 @@ public class AreaServiceApp {
         return new AreaServiceAPIImpl(areaRepository);
     }
 
-    @Bean
-    public DummyServiceAdapter dummyServicePort() {
-        logger.info("Initializing DummyServiceAdapter");
-        return new DummyServiceAdapterImpl();
-    }
 
     public static void main(String[] args) {
         logger.info("Starting Area Service...");

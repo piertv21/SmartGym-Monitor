@@ -8,27 +8,16 @@ public class Machine implements Aggregate<String> {
     private final String areaId;
     private OccupancyStatus status;
     private String activeSessionId;
-    private Sensor sensor;
+    private final Sensor sensor;
 
     public Machine(String machineId, String areaId) {
         this(machineId, areaId, OccupancyStatus.FREE, null, null);
-    }
-
-    public Machine(String machineId, String areaId, Sensor sensor) {
-        this(machineId, areaId, OccupancyStatus.FREE, null, sensor);
-    }
-
-    public Machine(String machineId, String areaId, OccupancyStatus status) {
-        this(machineId, areaId, status, null, null);
     }
 
     public Machine(String machineId, String areaId, OccupancyStatus status, Sensor sensor) {
         this(machineId, areaId, status, null, sensor);
     }
 
-    public Machine(String machineId, String areaId, OccupancyStatus status, String activeSessionId) {
-        this(machineId, areaId, status, activeSessionId, null);
-    }
 
     public Machine(String machineId, String areaId, OccupancyStatus status, String activeSessionId, Sensor sensor) {
         this.machineId = requireNotBlank(machineId, "machineId");
@@ -65,9 +54,6 @@ public class Machine implements Aggregate<String> {
         return sensor;
     }
 
-    public void setSensor(Sensor sensor) {
-        this.sensor = sensor;
-    }
 
     public void startSession(String sessionId) {
         if (status != OccupancyStatus.FREE) {

@@ -5,13 +5,7 @@ import com.smartgym.analyticsservice.application.ports.AnalyticsServiceAPI;
 import com.smartgym.analyticsservice.model.AttendanceSnapshot;
 import com.smartgym.analyticsservice.model.AttendanceSeriesPoint;
 import com.smartgym.analyticsservice.model.AttendanceSeriesResponse;
-import com.smartgym.analyticsservice.model.AreaAttendanceSnapshot;
-import com.smartgym.analyticsservice.model.AreaPeakHourStat;
-import com.smartgym.analyticsservice.model.AreaSessionDurationStat;
-import com.smartgym.analyticsservice.model.MachineUtilization;
 import com.smartgym.analyticsservice.model.GymSessionDurationStat;
-import com.smartgym.analyticsservice.model.PeakHourStat;
-import com.smartgym.analyticsservice.model.UniqueUsersStat;
 import io.vertx.core.json.JsonObject;
 
 import java.time.Duration;
@@ -20,22 +14,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
 
-    private static final double MINUTES_PER_HOUR = 60.0;
     private static final ZoneId ANALYTICS_ZONE = ZoneId.of("Europe/Rome");
 
     private final AnalyticsRepository analyticsRepository;
@@ -63,18 +52,6 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
                 .put("payload", payload)
                 .put("timestamp", extractTimestamp(payload));
         return analyticsRepository.saveEvent(normalizedEvent);
-    }
-
-    @Override
-    public CompletableFuture<Optional<AttendanceSnapshot>> getAttendanceStats(String date) {
-        String normalizedDate = normalizeDate(date);
-        return analyticsRepository.findEventsByTypeAndDate("GYM_ACCESS", normalizedDate)
-                .thenApply(events -> {
-                    if (events.isEmpty()) {
-                        return Optional.empty();
-                    }
-                    return Optional.of(toAttendanceSnapshot(normalizedDate, events));
-                });
     }
 
     @Override
@@ -111,176 +88,10 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
     }
 
     @Override
-    public CompletableFuture<List<MachineUtilization>> getMachineUtilization() {
-        return analyticsRepository.findEventsByType("MACHINE_USAGE")
-                .thenApply(this::toDailyMachineUtilization);
-    }
-
-    @Override
-    public CompletableFuture<List<MachineUtilization>> getMachineUtilizationByDate(String date) {
-        String normalizedDate = normalizeDate(date);
-        return analyticsRepository.findEventsByTypeAndDate("MACHINE_USAGE", normalizedDate)
-                .thenApply(events -> toMachineUtilizationByPeriod(events, normalizedDate));
-    }
-
-    @Override
-    public CompletableFuture<List<MachineUtilization>> getMachineUtilizationByMonth(String month) {
-        String normalizedMonth = normalizeMonth(month);
-        return analyticsRepository.findEventsByTypeAndMonth("MACHINE_USAGE", normalizedMonth)
-                .thenApply(events -> toMachineUtilizationByPeriod(events, normalizedMonth));
-    }
-
-    @Override
-    public CompletableFuture<UniqueUsersStat> getUniqueUsersByDate(String date) {
-        String normalizedDate = normalizeDate(date);
-        return analyticsRepository.findEventsByTypeAndDate("GYM_ACCESS", normalizedDate)
-                .thenApply(events -> toUniqueUsersStat("day", normalizedDate, events));
-    }
-
-    @Override
-    public CompletableFuture<UniqueUsersStat> getUniqueUsersByMonth(String month) {
-        String normalizedMonth = normalizeMonth(month);
-        return analyticsRepository.findEventsByTypeAndMonth("GYM_ACCESS", normalizedMonth)
-                .thenApply(events -> toUniqueUsersStat("month", normalizedMonth, events));
-    }
-
-    @Override
     public CompletableFuture<GymSessionDurationStat> getGymSessionDurationByDate(String date) {
         String normalizedDate = normalizeDate(date);
         return analyticsRepository.findEventsByTypeAndDate("GYM_ACCESS", normalizedDate)
                 .thenApply(events -> toGymSessionDurationStat("day", normalizedDate, events));
-    }
-
-    @Override
-    public CompletableFuture<GymSessionDurationStat> getGymSessionDurationByMonth(String month) {
-        String normalizedMonth = normalizeMonth(month);
-        return analyticsRepository.findEventsByTypeAndMonth("GYM_ACCESS", normalizedMonth)
-                .thenApply(events -> toGymSessionDurationStat("month", normalizedMonth, events));
-    }
-
-    @Override
-    public CompletableFuture<AreaSessionDurationStat> getAreaSessionDurationByDate(String date, String areaId) {
-        String normalizedDate = normalizeDate(date);
-        String normalizedAreaId = normalizeNonBlank(areaId, "areaId");
-        return analyticsRepository.findEventsByTypeAndDate("AREA_ACCESS", normalizedDate)
-                .thenApply(events -> toAreaSessionDurationStat("day", normalizedDate, normalizedAreaId, events));
-    }
-
-    @Override
-    public CompletableFuture<AreaSessionDurationStat> getAreaSessionDurationByMonth(String month, String areaId) {
-        String normalizedMonth = normalizeMonth(month);
-        String normalizedAreaId = normalizeNonBlank(areaId, "areaId");
-        return analyticsRepository.findEventsByTypeAndMonth("AREA_ACCESS", normalizedMonth)
-                .thenApply(events -> toAreaSessionDurationStat("month", normalizedMonth, normalizedAreaId, events));
-    }
-
-    @Override
-    public CompletableFuture<List<PeakHourStat>> getPeakHours() {
-        return analyticsRepository.findEventsByType("GYM_ACCESS")
-                .thenApply(this::toPeakHours);
-    }
-
-    @Override
-    public CompletableFuture<List<PeakHourStat>> getPeakHoursByDate(String date) {
-        String normalizedDate = normalizeDate(date);
-        return analyticsRepository.findEventsByTypeAndDate("GYM_ACCESS", normalizedDate)
-                .thenApply(events -> toPeakHoursForDate(normalizedDate, events));
-    }
-
-    @Override
-    public CompletableFuture<List<AreaAttendanceSnapshot>> getAreaAttendance() {
-        return analyticsRepository.findEventsByType("AREA_ACCESS")
-                .thenApply(this::toAreaAttendanceSnapshots);
-    }
-
-    @Override
-    public CompletableFuture<List<AreaAttendanceSnapshot>> getAreaAttendanceByDate(String date) {
-        String normalizedDate = normalizeDate(date);
-        return analyticsRepository.findEventsByTypeAndDate("AREA_ACCESS", normalizedDate)
-                .thenApply(events -> toAreaAttendanceByDate(normalizedDate, events));
-    }
-
-    @Override
-    public CompletableFuture<Optional<AreaAttendanceSnapshot>> getAreaAttendanceByDateAndAreaId(String date, String areaId) {
-        String normalizedDate = normalizeDate(date);
-        String normalizedAreaId = normalizeNonBlank(areaId, "areaId");
-        return analyticsRepository.findEventsByTypeAndDate("AREA_ACCESS", normalizedDate)
-                .thenApply(events -> toAreaAttendanceByDate(normalizedDate, events).stream()
-                        .filter(snapshot -> normalizedAreaId.equals(snapshot.getAreaId()))
-                        .findFirst());
-    }
-
-    @Override
-    public CompletableFuture<List<AreaPeakHourStat>> getAreaPeakHours() {
-        return analyticsRepository.findEventsByType("AREA_ACCESS")
-                .thenApply(this::toAreaPeakHours);
-    }
-
-    @Override
-    public CompletableFuture<List<AreaPeakHourStat>> getAreaPeakHoursByDate(String date) {
-        String normalizedDate = normalizeDate(date);
-        return analyticsRepository.findEventsByTypeAndDate("AREA_ACCESS", normalizedDate)
-                .thenApply(events -> toAreaPeakHoursByDate(normalizedDate, events));
-    }
-
-    @Override
-    public CompletableFuture<List<AreaPeakHourStat>> getAreaPeakHoursByDateAndAreaId(String date, String areaId) {
-        String normalizedDate = normalizeDate(date);
-        String normalizedAreaId = normalizeNonBlank(areaId, "areaId");
-        return analyticsRepository.findEventsByTypeAndDate("AREA_ACCESS", normalizedDate)
-                .thenApply(events -> toAreaPeakHoursByDate(normalizedDate, events).stream()
-                        .filter(stat -> normalizedAreaId.equals(stat.getAreaId()))
-                        .toList());
-    }
-
-    private List<MachineUtilization> toDailyMachineUtilization(List<JsonObject> events) {
-        return groupByDate(events).entrySet().stream()
-                .flatMap(entry -> toMachineUtilizationByPeriod(entry.getValue(), entry.getKey()).stream())
-                .sorted(Comparator.comparing(MachineUtilization::getDate).thenComparing(MachineUtilization::getMachineId))
-                .toList();
-    }
-
-    private List<MachineUtilization> toMachineUtilizationByPeriod(List<JsonObject> events, String periodValue) {
-        Map<String, List<JsonObject>> byMachine = events.stream()
-                .filter(event -> !isBlank(event.getJsonObject("payload", new JsonObject()).getString("machineId")))
-                .collect(Collectors.groupingBy(event -> event.getJsonObject("payload").getString("machineId").trim()));
-
-        List<MachineUtilization> result = new ArrayList<>();
-        for (Map.Entry<String, List<JsonObject>> entry : byMachine.entrySet()) {
-            String machineId = entry.getKey();
-            List<JsonObject> ordered = sortByTimestamp(entry.getValue());
-
-            int starts = 0;
-            double totalMinutes = 0.0;
-            ArrayDeque<LocalDateTime> openSessions = new ArrayDeque<>();
-
-            for (JsonObject event : ordered) {
-                JsonObject payload = event.getJsonObject("payload", new JsonObject());
-                String state = normalizeUpper(payload.getString("usageState"));
-                LocalDateTime timestamp = parseTimestamp(extractTimestamp(payload));
-                if ("STARTED".equals(state)) {
-                    starts += 1;
-                    openSessions.push(timestamp);
-                } else if ("STOPPED".equals(state) && !openSessions.isEmpty()) {
-                    LocalDateTime start = openSessions.pop();
-                    if (!timestamp.isBefore(start)) {
-                        totalMinutes += Duration.between(start, timestamp).toMillis() / 60000.0;
-                    }
-                }
-            }
-
-            result.add(new MachineUtilization(
-                    "machine-" + machineId + "-" + periodValue,
-                    machineId,
-                    periodValue,
-                    starts,
-                    totalMinutes,
-                    computeHourlyUtilizationRate(totalMinutes)
-            ));
-        }
-
-        result.sort(Comparator.comparing(MachineUtilization::getMachineId));
-        return result;
     }
 
     private AttendanceSnapshot toAttendanceSnapshot(String date, List<JsonObject> events) {
@@ -392,147 +203,8 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
         return buckets;
     }
 
-    private List<PeakHourStat> toPeakHours(List<JsonObject> events) {
-        Map<String, List<JsonObject>> byDate = groupByDate(events);
-        List<PeakHourStat> result = new ArrayList<>();
-        for (Map.Entry<String, List<JsonObject>> entry : byDate.entrySet()) {
-            result.addAll(toPeakHoursForDate(entry.getKey(), entry.getValue()));
-        }
-        result.sort(Comparator.comparing(PeakHourStat::getDate).thenComparing(PeakHourStat::getHour));
-        return result;
-    }
-
-    private List<PeakHourStat> toPeakHoursForDate(String date, List<JsonObject> events) {
-        Map<Integer, Integer> byHour = new HashMap<>();
-        for (JsonObject event : events) {
-            JsonObject payload = event.getJsonObject("payload", new JsonObject());
-            if (!"ENTRY".equals(normalizeUpper(payload.getString("accessType")))) {
-                continue;
-            }
-            int hour = parseTimestamp(extractTimestamp(payload)).getHour();
-            byHour.merge(hour, 1, Integer::sum);
-        }
-
-        return byHour.entrySet().stream()
-                .map(entry -> new PeakHourStat(
-                        "peak-" + date + "-" + entry.getKey(),
-                        date,
-                        entry.getKey(),
-                        entry.getValue()
-                ))
-                .sorted(Comparator.comparing(PeakHourStat::getHour))
-                .toList();
-    }
-
-    private List<AreaAttendanceSnapshot> toAreaAttendanceSnapshots(List<JsonObject> events) {
-        Map<String, List<JsonObject>> byDate = groupByDate(events);
-        List<AreaAttendanceSnapshot> result = new ArrayList<>();
-        for (Map.Entry<String, List<JsonObject>> entry : byDate.entrySet()) {
-            result.addAll(toAreaAttendanceByDate(entry.getKey(), entry.getValue()));
-        }
-        result.sort(Comparator.comparing(AreaAttendanceSnapshot::getDate).thenComparing(AreaAttendanceSnapshot::getAreaId));
-        return result;
-    }
-
-    private List<AreaAttendanceSnapshot> toAreaAttendanceByDate(String date, List<JsonObject> events) {
-        Map<String, Integer> entries = new HashMap<>();
-        Map<String, Integer> exits = new HashMap<>();
-
-        for (JsonObject event : events) {
-            JsonObject payload = event.getJsonObject("payload", new JsonObject());
-            String areaId = normalizeString(payload.getString("areaId"));
-            if (isBlank(areaId)) {
-                continue;
-            }
-            String direction = normalizeUpper(payload.getString("direction"));
-            if ("IN".equals(direction)) {
-                entries.merge(areaId, 1, Integer::sum);
-            } else if ("OUT".equals(direction)) {
-                exits.merge(areaId, 1, Integer::sum);
-            }
-        }
-
-        Set<String> areas = new HashSet<>();
-        areas.addAll(entries.keySet());
-        areas.addAll(exits.keySet());
-
-        return areas.stream()
-                .sorted()
-                .map(areaId -> {
-                    int in = entries.getOrDefault(areaId, 0);
-                    int out = exits.getOrDefault(areaId, 0);
-                    return new AreaAttendanceSnapshot(
-                            "area-attendance-" + areaId + "-" + date,
-                            date,
-                            areaId,
-                            Math.max(in - out, 0),
-                            in,
-                            out
-                    );
-                })
-                .toList();
-    }
-
-    private List<AreaPeakHourStat> toAreaPeakHours(List<JsonObject> events) {
-        Map<String, List<JsonObject>> byDate = groupByDate(events);
-        List<AreaPeakHourStat> result = new ArrayList<>();
-        for (Map.Entry<String, List<JsonObject>> entry : byDate.entrySet()) {
-            result.addAll(toAreaPeakHoursByDate(entry.getKey(), entry.getValue()));
-        }
-        result.sort(Comparator.comparing(AreaPeakHourStat::getDate)
-                .thenComparing(AreaPeakHourStat::getAreaId)
-                .thenComparing(AreaPeakHourStat::getHour));
-        return result;
-    }
-
-    private List<AreaPeakHourStat> toAreaPeakHoursByDate(String date, List<JsonObject> events) {
-        Map<String, Integer> counter = new HashMap<>();
-        for (JsonObject event : events) {
-            JsonObject payload = event.getJsonObject("payload", new JsonObject());
-            if (!"IN".equals(normalizeUpper(payload.getString("direction")))) {
-                continue;
-            }
-            String areaId = normalizeString(payload.getString("areaId"));
-            if (isBlank(areaId)) {
-                continue;
-            }
-            int hour = parseTimestamp(extractTimestamp(payload)).getHour();
-            counter.merge(areaId + "::" + hour, 1, Integer::sum);
-        }
-
-        return counter.entrySet().stream()
-                .map(entry -> {
-                    String[] parts = entry.getKey().split("::", 2);
-                    String areaId = parts[0];
-                    int hour = Integer.parseInt(parts[1]);
-                    return new AreaPeakHourStat(
-                            "area-peak-" + areaId + "-" + date + "-" + hour,
-                            date,
-                            areaId,
-                            hour,
-                            entry.getValue()
-                    );
-                })
-                .sorted(Comparator.comparing(AreaPeakHourStat::getAreaId).thenComparing(AreaPeakHourStat::getHour))
-                .toList();
-    }
-
-    private UniqueUsersStat toUniqueUsersStat(String periodType, String periodValue, List<JsonObject> events) {
-        Set<String> users = events.stream()
-                .map(event -> normalizeString(event.getJsonObject("payload", new JsonObject()).getString("badgeId")))
-                .filter(value -> !isBlank(value))
-                .collect(Collectors.toSet());
-
-        return new UniqueUsersStat(
-                "unique-users-" + periodType + "-" + periodValue,
-                periodType,
-                periodValue,
-                users.size()
-        );
-    }
-
     private GymSessionDurationStat toGymSessionDurationStat(String periodType, String periodValue, List<JsonObject> events) {
-        List<Double> durations = computeSessionDurations(events, false, null);
+        List<Double> durations = computeSessionDurations(events);
         double avg = durations.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
         double max = durations.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
 
@@ -546,23 +218,7 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
         );
     }
 
-    private AreaSessionDurationStat toAreaSessionDurationStat(String periodType, String periodValue, String areaId, List<JsonObject> events) {
-        List<Double> durations = computeSessionDurations(events, true, areaId);
-        double avg = durations.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-        double max = durations.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
-
-        return new AreaSessionDurationStat(
-                "area-duration-" + periodType + "-" + areaId + "-" + periodValue,
-                periodType,
-                periodValue,
-                areaId,
-                avg,
-                max,
-                durations.size()
-        );
-    }
-
-    private List<Double> computeSessionDurations(List<JsonObject> events, boolean areaScoped, String areaIdFilter) {
+    private List<Double> computeSessionDurations(List<JsonObject> events) {
         List<JsonObject> ordered = sortByTimestamp(events);
         Map<String, LocalDateTime> starts = new HashMap<>();
         List<Double> durations = new ArrayList<>();
@@ -574,32 +230,13 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
                 continue;
             }
 
-            String key;
-            String startToken;
-            String endToken;
-            if (areaScoped) {
-                String areaId = normalizeString(payload.getString("areaId"));
-                if (isBlank(areaId) || !areaId.equals(areaIdFilter)) {
-                    continue;
-                }
-                key = badgeId + "::" + areaId;
-                startToken = "IN";
-                endToken = "OUT";
-            } else {
-                key = badgeId;
-                startToken = "ENTRY";
-                endToken = "EXIT";
-            }
-
-            String state = areaScoped
-                    ? normalizeUpper(payload.getString("direction"))
-                    : normalizeUpper(payload.getString("accessType"));
+            String state = normalizeUpper(payload.getString("accessType"));
             LocalDateTime timestamp = parseTimestamp(extractTimestamp(payload));
 
-            if (startToken.equals(state)) {
-                starts.put(key, timestamp);
-            } else if (endToken.equals(state)) {
-                LocalDateTime startedAt = starts.remove(key);
+            if ("ENTRY".equals(state)) {
+                starts.put(badgeId, timestamp);
+            } else if ("EXIT".equals(state)) {
+                LocalDateTime startedAt = starts.remove(badgeId);
                 if (startedAt != null && !timestamp.isBefore(startedAt)) {
                     durations.add(Duration.between(startedAt, timestamp).toMillis() / 60000.0);
                 }
@@ -647,11 +284,6 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
         extractTimestamp(payload);
     }
 
-    private double computeHourlyUtilizationRate(double totalUsageMinutes) {
-        double rawRate = (Math.max(totalUsageMinutes, 0.0) / MINUTES_PER_HOUR) * 100.0;
-        return Math.min(rawRate, 100.0);
-    }
-
     private LocalDate parseLocalDate(String date, String fieldName) {
         if (isBlank(date)) {
             throw new IllegalArgumentException(fieldName + " cannot be null or empty");
@@ -682,26 +314,11 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
         return normalized.isEmpty() ? null : normalized;
     }
 
-
     private String normalizeDate(String date) {
         if (isBlank(date)) {
             throw new IllegalArgumentException("date cannot be null or empty");
         }
         return LocalDate.parse(date.trim()).toString();
-    }
-
-    private String normalizeMonth(String month) {
-        if (isBlank(month)) {
-            throw new IllegalArgumentException("month cannot be null or empty");
-        }
-        return YearMonth.parse(month.trim()).toString();
-    }
-
-    private String normalizeNonBlank(String value, String fieldName) {
-        if (isBlank(value)) {
-            throw new IllegalArgumentException(fieldName + " cannot be null or empty");
-        }
-        return value.trim();
     }
 
     private String normalizeString(String value) {

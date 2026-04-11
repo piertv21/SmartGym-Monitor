@@ -11,7 +11,6 @@ import org.bson.Document;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -37,44 +36,6 @@ public class EmbeddedRepositoryImpl implements EmbeddedRepository {
         });
     }
 
-    @Override
-    public CompletableFuture<Optional<JsonObject>> findEventById(String eventId) {
-        return CompletableFuture.supplyAsync(() -> {
-            Document document = collection.find(new Document("eventId", eventId)).first();
-
-            if (document == null) {
-                return Optional.empty();
-            }
-
-            return Optional.of(new JsonObject(document.toJson()));
-        });
-    }
-
-    @Override
-    public CompletableFuture<JsonArray> findAllEvents() {
-        return CompletableFuture.supplyAsync(() -> {
-            List<JsonObject> result = new ArrayList<>();
-
-            for (Document document : collection.find()) {
-                result.add(new JsonObject(document.toJson()));
-            }
-
-            return new JsonArray(result);
-        });
-    }
-
-    @Override
-    public CompletableFuture<JsonArray> findAllEventsByType(String eventType) {
-        return CompletableFuture.supplyAsync(() -> {
-            List<JsonObject> result = new ArrayList<>();
-
-            for (Document document : collection.find(new Document("eventType", eventType))) {
-                result.add(new JsonObject(document.toJson()));
-            }
-
-            return new JsonArray(result);
-        });
-    }
 
     @Override
     public CompletableFuture<JsonArray> findLatestDeviceStatuses() {

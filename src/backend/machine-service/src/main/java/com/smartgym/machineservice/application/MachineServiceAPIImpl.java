@@ -32,10 +32,6 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
         this.repository = repository;
     }
 
-    @Override
-    public CompletableFuture<Machine> configureMachine(ConfigureMachineMessage message) {
-        return createMachine(message);
-    }
 
     @Override
     public CompletableFuture<Machine> createMachine(ConfigureMachineMessage message) {

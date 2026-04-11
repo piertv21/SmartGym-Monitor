@@ -4,15 +4,12 @@ import com.smartgym.machineservice.ddd.Entity;
 
 public class Sensor implements Entity<String> {
 
-    private String id;
+    private final String id;
 
     public Sensor(String id) {
         this.id = id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
 
     @Override
     public String getId() {

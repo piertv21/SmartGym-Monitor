@@ -74,16 +74,6 @@ public class AnalyticsRepositoryImpl implements AnalyticsRepository {
         });
     }
 
-    @Override
-    public CompletableFuture<List<JsonObject>> findEventsByTypeAndMonth(String eventType, String month) {
-        return CompletableFuture.supplyAsync(() -> {
-            List<JsonObject> result = new ArrayList<>();
-            for (Document document : eventsCollection.find(new Document("eventType", eventType).append("eventMonth", month))) {
-                result.add(fromDocument(document));
-            }
-            return result;
-        });
-    }
 
     private Document toDocument(JsonObject event) {
         JsonObject payload = event.getJsonObject("payload", new JsonObject());

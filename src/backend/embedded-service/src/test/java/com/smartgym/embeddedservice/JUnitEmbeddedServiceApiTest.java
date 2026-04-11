@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -482,20 +481,6 @@ public class JUnitEmbeddedServiceApiTest {
             return CompletableFuture.completedFuture(null);
         }
 
-        @Override
-        public CompletableFuture<Optional<JsonObject>> findEventById(String eventId) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-
-        @Override
-        public CompletableFuture<JsonArray> findAllEvents() {
-            return CompletableFuture.completedFuture(new JsonArray());
-        }
-
-        @Override
-        public CompletableFuture<JsonArray> findAllEventsByType(String eventType) {
-            return CompletableFuture.completedFuture(new JsonArray());
-        }
 
         @Override
         public CompletableFuture<JsonArray> findLatestDeviceStatuses() {

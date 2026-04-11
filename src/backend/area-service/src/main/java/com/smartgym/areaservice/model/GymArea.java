@@ -82,15 +82,6 @@ public class GymArea {
         this.currentCount--;
     }
 
-    public void updateCapacity(Integer newCapacity) {
-        if (newCapacity == null || newCapacity < 0) {
-            throw new IllegalArgumentException("Capacity must be greater than or equal to zero");
-        }
-        if (this.currentCount != null && newCapacity < this.currentCount) {
-            throw new IllegalArgumentException("New capacity cannot be lower than current count");
-        }
-        this.capacity = newCapacity;
-    }
 
     @Override
     public String toString() {

@@ -26,15 +26,6 @@ public class AnalyticsRestControllerImpl implements AnalyticsRestController {
     }
 
     @Override
-    @GetMapping("/attendance/{date}")
-    public CompletableFuture<ResponseEntity<?>> getAttendanceStats(@PathVariable String date) {
-        return analyticsServiceAPI.getAttendanceStats(date)
-                .thenApply(snapshotOpt -> snapshotOpt
-                        .<ResponseEntity<?>>map(ResponseEntity::ok)
-                        .orElseGet(() -> ResponseEntity.notFound().build()));
-    }
-
-    @Override
     @GetMapping("/attendance")
     public CompletableFuture<ResponseEntity<?>> getAllAttendanceStats() {
         return analyticsServiceAPI.getAllAttendanceStats()
@@ -53,137 +44,10 @@ public class AnalyticsRestControllerImpl implements AnalyticsRestController {
                 .thenApply(ResponseEntity::ok);
     }
 
-
-    @Override
-    @GetMapping("/machine-utilization")
-    public CompletableFuture<ResponseEntity<?>> getMachineUtilization() {
-        return analyticsServiceAPI.getMachineUtilization()
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/machine-utilization/{date}")
-    public CompletableFuture<ResponseEntity<?>> getMachineUtilizationByDate(@PathVariable String date) {
-        return analyticsServiceAPI.getMachineUtilizationByDate(date)
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/machine-utilization/month/{month}")
-    public CompletableFuture<ResponseEntity<?>> getMachineUtilizationByMonth(@PathVariable String month) {
-        return analyticsServiceAPI.getMachineUtilizationByMonth(month)
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/unique-users/{date}")
-    public CompletableFuture<ResponseEntity<?>> getUniqueUsersByDate(@PathVariable String date) {
-        return analyticsServiceAPI.getUniqueUsersByDate(date)
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/unique-users/month/{month}")
-    public CompletableFuture<ResponseEntity<?>> getUniqueUsersByMonth(@PathVariable String month) {
-        return analyticsServiceAPI.getUniqueUsersByMonth(month)
-                .thenApply(ResponseEntity::ok);
-    }
-
     @Override
     @GetMapping("/gym-session-duration/{date}")
     public CompletableFuture<ResponseEntity<?>> getGymSessionDurationByDate(@PathVariable String date) {
         return analyticsServiceAPI.getGymSessionDurationByDate(date)
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/gym-session-duration/month/{month}")
-    public CompletableFuture<ResponseEntity<?>> getGymSessionDurationByMonth(@PathVariable String month) {
-        return analyticsServiceAPI.getGymSessionDurationByMonth(month)
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/area-session-duration/{date}/{areaId}")
-    public CompletableFuture<ResponseEntity<?>> getAreaSessionDurationByDate(
-            @PathVariable String date,
-            @PathVariable String areaId
-    ) {
-        return analyticsServiceAPI.getAreaSessionDurationByDate(date, areaId)
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/area-session-duration/month/{month}/{areaId}")
-    public CompletableFuture<ResponseEntity<?>> getAreaSessionDurationByMonth(
-            @PathVariable String month,
-            @PathVariable String areaId
-    ) {
-        return analyticsServiceAPI.getAreaSessionDurationByMonth(month, areaId)
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/peak-hours")
-    public CompletableFuture<ResponseEntity<?>> getPeakHours() {
-        return analyticsServiceAPI.getPeakHours()
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/peak-hours/{date}")
-    public CompletableFuture<ResponseEntity<?>> getPeakHoursByDate(@PathVariable String date) {
-        return analyticsServiceAPI.getPeakHoursByDate(date)
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/area-attendance")
-    public CompletableFuture<ResponseEntity<?>> getAreaAttendance() {
-        return analyticsServiceAPI.getAreaAttendance()
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/area-attendance/{date}")
-    public CompletableFuture<ResponseEntity<?>> getAreaAttendanceByDate(@PathVariable String date) {
-        return analyticsServiceAPI.getAreaAttendanceByDate(date)
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/area-attendance/{date}/{areaId}")
-    public CompletableFuture<ResponseEntity<?>> getAreaAttendanceByDateAndAreaId(
-            @PathVariable String date,
-            @PathVariable String areaId
-    ) {
-        return analyticsServiceAPI.getAreaAttendanceByDateAndAreaId(date, areaId)
-                .thenApply(snapshotOpt -> snapshotOpt
-                        .<ResponseEntity<?>>map(ResponseEntity::ok)
-                        .orElseGet(() -> ResponseEntity.notFound().build()));
-    }
-
-    @Override
-    @GetMapping("/area-peak-hours")
-    public CompletableFuture<ResponseEntity<?>> getAreaPeakHours() {
-        return analyticsServiceAPI.getAreaPeakHours()
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/area-peak-hours/{date}")
-    public CompletableFuture<ResponseEntity<?>> getAreaPeakHoursByDate(@PathVariable String date) {
-        return analyticsServiceAPI.getAreaPeakHoursByDate(date)
-                .thenApply(ResponseEntity::ok);
-    }
-
-    @Override
-    @GetMapping("/area-peak-hours/{date}/{areaId}")
-    public CompletableFuture<ResponseEntity<?>> getAreaPeakHoursByDateAndAreaId(
-            @PathVariable String date,
-            @PathVariable String areaId
-    ) {
-        return analyticsServiceAPI.getAreaPeakHoursByDateAndAreaId(date, areaId)
                 .thenApply(ResponseEntity::ok);
     }
 }

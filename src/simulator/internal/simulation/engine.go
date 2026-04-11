@@ -540,14 +540,6 @@ func (e *Engine) updateDeviceHealth(device *Device) {
 // Lookup helpers
 // ---------------------------------------------------------------------------
 
-func (e *Engine) isDeviceOnline(id string) bool {
-	for _, d := range e.devices {
-		if d.DeviceID == id {
-			return d.Online
-		}
-	}
-	return false
-}
 
 func (e *Engine) findArea(areaID string) *Area {
 	for i := range e.areas {

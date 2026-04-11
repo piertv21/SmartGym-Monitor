@@ -13,7 +13,6 @@ import com.smartgym.embeddedservice.model.MachineUsageMessage;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -143,26 +142,6 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
         return embeddedRepository.saveEvent(event);
     }
 
-    @Override
-    public CompletableFuture<JsonArray> getAllEvents() {
-        return embeddedRepository.findAllEvents();
-    }
-
-    @Override
-    public CompletableFuture<JsonArray> getAllEventsByType(String eventType) {
-        if (isBlank(eventType)) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("eventType cannot be null or empty"));
-        }
-        return embeddedRepository.findAllEventsByType(eventType);
-    }
-
-    @Override
-    public CompletableFuture<Optional<JsonObject>> getEventById(String eventId) {
-        if (isBlank(eventId)) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("eventId cannot be null or empty"));
-        }
-        return embeddedRepository.findEventById(eventId);
-    }
 
     @Override
     public CompletableFuture<JsonArray> getAllDeviceStatuses() {

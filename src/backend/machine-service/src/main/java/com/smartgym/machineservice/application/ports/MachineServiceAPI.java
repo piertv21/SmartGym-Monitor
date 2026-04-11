@@ -17,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface MachineServiceAPI {
 
-	CompletableFuture<Machine> configureMachine(ConfigureMachineMessage message);
 
 	CompletableFuture<Machine> createMachine(ConfigureMachineMessage message);
 
