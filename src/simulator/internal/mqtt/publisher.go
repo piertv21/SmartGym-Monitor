@@ -68,4 +68,5 @@ func (p *JSONPublisher) PublishJSON(topicSuffix string, payload any) {
 	}
 
 	fmt.Printf("Publishing %s -> %s\n", topic, string(data))
+	time.Sleep(200 * time.Millisecond)
 }
