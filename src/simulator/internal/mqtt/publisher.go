@@ -19,6 +19,12 @@ type Publisher interface {
 type JSONPublisher struct {
 	client    paho.Client
 	baseTopic string
+	msgQueue  chan msgItem
+}
+
+type msgItem struct {
+	topic string
+	data  []byte
 }
 
 func NewClient(cfg config.Config) (paho.Client, string, error) {
@@ -49,7 +55,27 @@ func NewClient(cfg config.Config) (paho.Client, string, error) {
 }
 
 func NewJSONPublisher(client paho.Client, baseTopic string) *JSONPublisher {
-	return &JSONPublisher{client: client, baseTopic: baseTopic}
+	p := &JSONPublisher{
+		client:    client,
+		baseTopic: baseTopic,
+		msgQueue:  make(chan msgItem, 10000),
+	}
+	go p.worker()
+	return p
+}
+
+func (p *JSONPublisher) worker() {
+	for msg := range p.msgQueue {
+		token := p.client.Publish(msg.topic, 1, false, msg.data)
+		token.Wait()
+		if token.Error() != nil {
+			log.Printf("publish error on topic %s: %v", msg.topic, token.Error())
+			continue
+		}
+
+		fmt.Printf("Publishing %s -> %s\n", msg.topic, string(msg.data))
+		time.Sleep(50 * time.Millisecond)
+	}
 }
 
 func (p *JSONPublisher) PublishJSON(topicSuffix string, payload any) {
@@ -60,13 +86,10 @@ func (p *JSONPublisher) PublishJSON(topicSuffix string, payload any) {
 	}
 
 	topic := p.baseTopic + "/" + topicSuffix
-	token := p.client.Publish(topic, 1, false, data)
-	token.Wait()
-	if token.Error() != nil {
-		log.Printf("publish error on topic %s: %v", topic, token.Error())
-		return
-	}
 
-	fmt.Printf("Publishing %s -> %s\n", topic, string(data))
-	time.Sleep(200 * time.Millisecond)
+	select {
+	case p.msgQueue <- msgItem{topic: topic, data: data}:
+	default:
+		log.Printf("warning: mqtt publish queue is full, dropping message %s", topic)
+	}
 }

@@ -125,10 +125,18 @@ function formatTime(value) {
 function formatDuration(secondsValue) {
   const seconds = Number(secondsValue);
   if (!Number.isFinite(seconds) || seconds <= 0) {
-    return "0 min";
+    return "0 min 0 sec";
   }
-  const minutes = Math.round(seconds / 60);
-  return `${minutes} min`;
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+
+  if (mins > 0 && secs > 0) {
+    return `${mins} min ${secs} sec`;
+  } else if (mins > 0) {
+    return `${mins} min`;
+  } else {
+    return `${secs} sec`;
+  }
 }
 
 function ensureChart() {
