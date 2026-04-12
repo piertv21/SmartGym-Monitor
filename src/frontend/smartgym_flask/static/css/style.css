@@ -106,8 +106,7 @@ footer {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
-/* ── Inputs / Elementi Chiari nelle Card ─────────────────── */
-/* In dark mode vogliamo che gli input abbiano il blu "chiaro" del body. */
+/* ── Inputs ─────────────────── */
 [data-bs-theme="dark"] .form-control {
   background-color: var(--bs-body-bg) !important;
   color: #ffffff !important;

@@ -8,10 +8,6 @@ import com.smartgym.trackingservice.model.StartGymSessionMessage;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Port per il layer applicativo del microservizio Tracking.
- * Contiene la business logic per la gestione del tracking
- */
 public interface TrackingServiceAPI extends Service {
 
 	CompletableFuture<GymSession> startGymSession(StartGymSessionMessage message);

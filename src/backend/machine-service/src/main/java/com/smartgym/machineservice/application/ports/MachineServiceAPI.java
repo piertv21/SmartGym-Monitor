@@ -12,10 +12,6 @@ import com.smartgym.machineservice.model.StartMachineSessionMessage;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Port per il layer applicativo del microservizio Machine.
- * Contiene la business logic per la gestione delle machine
- */
 public interface MachineServiceAPI extends Service {
 
 

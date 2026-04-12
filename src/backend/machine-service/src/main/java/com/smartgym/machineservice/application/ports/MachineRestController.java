@@ -12,10 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Port per il layer REST del microservizio Machine.
- * Definisce gli endpoint HTTP esposti per la gestione delle machine
- */
 public interface MachineRestController {
 
 	CompletableFuture<ResponseEntity<?>> createMachine(@RequestBody ConfigureMachineMessage message);

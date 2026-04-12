@@ -16,10 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Implementazione del REST controller per Tracking Service.
- * Gestisce le richieste HTTP per la generazione e recupero dei report.
- */
 @RestController
 public class TrackingRestControllerImpl implements TrackingRestController {
 
