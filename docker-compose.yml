@@ -604,34 +604,41 @@ services:
   #####################
   # PROMETHEUS        #
   #####################
-#  prometheus:
-#    image: prom/prometheus:latest
-#    container_name: ${PROMETHEUS_INSTANCE_HOSTNAME}
-#    ports:
-#      - "${PROMETHEUS_INSTANCE_PORT}:${PROMETHEUS_INSTANCE_PORT}"
-#    networks:
-#      - ${SMARTPARKING_NETWORK}
-#    volumes:
-#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-#    depends_on:
-#      gateway:
-#        condition: service_healthy
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ${PROMETHEUS_INSTANCE_HOSTNAME}
+    ports:
+      - "${PROMETHEUS_INSTANCE_PORT}:9090"
+    networks:
+      - smartgym-net
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      gateway:
+        condition: service_healthy
+    restart: unless-stopped
 
-#####################
-# GRAFANA           #
-#####################
-#  grafana:
-#    image: grafana/grafana
-#    container_name: ${GRAFANA_INSTANCE_HOSTNAME}
-#    ports:
-#      - "${GRAFANA_INSTANCE_PORT}:${GRAFANA_INSTANCE_PORT}"
-#    environment:
-#      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
-#      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
-#    networks:
-#      - ${SMARTPARKING_NETWORK}
-#    depends_on:
-#      - prometheus
+  #####################
+  # GRAFANA           #
+  #####################
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ${GRAFANA_INSTANCE_HOSTNAME}
+    ports:
+      - "${GRAFANA_INSTANCE_PORT}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    networks:
+      - smartgym-net
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
 
 #############################
 # VOLUMES AND NETWORKS      #
@@ -645,6 +652,8 @@ volumes:
   mongo-embedded-data:
   mosquitto-data:
   mosquitto-log:
+  prometheus-data:
+  grafana-data:
 
 networks:
   smartgym-net:
