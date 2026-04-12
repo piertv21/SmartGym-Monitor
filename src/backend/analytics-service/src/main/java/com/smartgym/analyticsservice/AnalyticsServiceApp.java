@@ -12,10 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 
-/**
- * Entry point principale di Analytics Service.
- * Gestisce la generazione e persistenza di report analitici giornalieri.
- */
 @SpringBootApplication
 @EnableDiscoveryClient
 public class AnalyticsServiceApp {
