@@ -20,10 +20,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Implementazione del REST controller per Machine Service.
- * Gestisce le richieste HTTP per la generazione e recupero dei report.
- */
 @RestController
 public class MachineRestControllerImpl implements MachineRestController {
 

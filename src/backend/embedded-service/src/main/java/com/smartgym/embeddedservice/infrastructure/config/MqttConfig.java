@@ -3,7 +3,7 @@ package com.smartgym.embeddedservice.infrastructure.config;
 public class MqttConfig {
 
     private static String getEnvOrDefault(String key, String fallback) {
-        String value = System.getenv(key); //funziona solo se le variabili sono passate nel docker compose
+        String value = System.getenv(key);
         return value == null || value.isBlank() ? fallback : value;
     }
 

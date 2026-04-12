@@ -77,7 +77,6 @@ function applyRangePreset(preset) {
   } else if (preset === "month") {
     from.setDate(from.getDate() - 29);
   } else if (preset === "day") {
-    // Ultimo giorno: finestra di 24h su base daily (ieri -> oggi).
     from.setDate(from.getDate() - 1);
   }
 
