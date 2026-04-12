@@ -83,6 +83,7 @@ To enforce these conventions:
 - **Husky** is used to configure Git hooks locally.
   - A _commit-msg_ hook validates commit messages before they are accepted.
   - A _pre-commit_ hook formats code to ensure code style consistency.
+  - A _pre-push_ hook runs tests to catch issues before code is pushed.
 - A **GitHub Action** runs on each Pull Request to verify that all commits comply with the Conventional Commit standard.
 
 This prevents inconsistent commit history and improves maintainability.
