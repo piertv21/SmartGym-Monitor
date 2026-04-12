@@ -11,6 +11,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -58,6 +59,99 @@ class IntegrationMachineServiceTest {
         assertTrue(statusResponse.body().contains(machineId));
     }
 
+    @Test
+    void getAllMachinesReturnsArray() throws Exception {
+        HttpResponse<String> response = sendGet("/machines");
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().startsWith("["));
+    }
+
+    @Test
+    void startAndEndMachineSession() throws Exception {
+        String machineId = "treadmill-01"; // seeded machine
+
+        // Ensure machine is free first
+        HttpResponse<String> status = sendGet("/" + machineId);
+        assertEquals(200, status.statusCode());
+        if (status.body().contains("OCCUPIED")) {
+            sendPost("/end-session", "{\"machineId\":\"" + machineId + "\"}");
+        }
+
+        String badgeId = "it-badge-" + UUID.randomUUID();
+        String startPayload = """
+                { "machineId": "%s", "badgeId": "%s" }
+                """.formatted(machineId, badgeId);
+
+        HttpResponse<String> startResponse = sendPost("/start-session", startPayload);
+        assertEquals(200, startResponse.statusCode());
+        assertTrue(startResponse.body().contains("\"sessionId\""));
+
+        // Verify machine is occupied
+        HttpResponse<String> occupiedStatus = sendGet("/" + machineId);
+        assertEquals(200, occupiedStatus.statusCode());
+        assertTrue(occupiedStatus.body().contains("OCCUPIED"));
+
+        // End session
+        String endPayload = """
+                { "machineId": "%s" }
+                """.formatted(machineId);
+
+        HttpResponse<String> endResponse = sendPost("/end-session", endPayload);
+        assertEquals(200, endResponse.statusCode());
+
+        // Verify machine is free again
+        HttpResponse<String> freeStatus = sendGet("/" + machineId);
+        assertEquals(200, freeStatus.statusCode());
+        assertTrue(freeStatus.body().contains("FREE"));
+    }
+
+    @Test
+    void startSessionOnOccupiedMachineFails() throws Exception {
+        String machineId = "machine-conflict-" + System.currentTimeMillis();
+        String createBody = """
+                { "machineId": "%s", "areaId": "machines-area", "sensor": "sensor-%s" }
+                """.formatted(machineId, machineId);
+        sendPost("/machines", createBody);
+
+        String startPayload = """
+                { "machineId": "%s", "badgeId": "badge-first" }
+                """.formatted(machineId);
+        HttpResponse<String> firstStart = sendPost("/start-session", startPayload);
+        assertEquals(200, firstStart.statusCode());
+
+        // Second start on same machine should fail
+        String secondStartPayload = """
+                { "machineId": "%s", "badgeId": "badge-second" }
+                """.formatted(machineId);
+        HttpResponse<String> secondStart = sendPost("/start-session", secondStartPayload);
+        assertTrue(secondStart.statusCode() >= 400,
+                "Start on occupied machine should fail, got status=" + secondStart.statusCode());
+
+        // Cleanup
+        sendPost("/end-session", "{\"machineId\":\"" + machineId + "\"}");
+    }
+
+    @Test
+    void getMachineHistoryReturnsOk() throws Exception {
+        HttpResponse<String> response = sendGet("/history/treadmill-01");
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().startsWith("["));
+    }
+
+    @Test
+    void getMachineUsageSeriesReturnsOk() throws Exception {
+        HttpResponse<String> response = sendGet(
+                "/machines/history/series?from=2026-04-01&to=2026-04-12&granularity=daily");
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("\"granularity\""));
+        assertTrue(response.body().contains("\"series\""));
+    }
+
+    // ── HTTP helpers ──
+
     private boolean isServiceHealthy() {
         try {
             HttpResponse<String> response = sendGet("/actuator/health");
@@ -88,4 +182,3 @@ class IntegrationMachineServiceTest {
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
 }
-

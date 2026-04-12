@@ -39,6 +39,25 @@ class IntegrationEmbeddedServiceTest {
         assertTrue(response.body().contains("UP"));
     }
 
+    @Test
+    void getAllDeviceStatusesReturnsOk() throws Exception {
+        HttpResponse<String> response = sendGet("/statuses");
+
+        assertEquals(200, response.statusCode());
+        // Response is a JSON array (or wrapped array)
+        String body = response.body();
+        assertTrue(body.contains("[") || body.contains("list"),
+                "Expected device statuses collection in response body: " + body);
+    }
+
+    @Test
+    void prometheusEndpointReturnsMetrics() throws Exception {
+        HttpResponse<String> response = sendGet("/actuator/prometheus");
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("jvm_memory"));
+    }
+
     private boolean isServiceHealthy() {
         try {
             HttpResponse<String> response = sendGet("/actuator/health");

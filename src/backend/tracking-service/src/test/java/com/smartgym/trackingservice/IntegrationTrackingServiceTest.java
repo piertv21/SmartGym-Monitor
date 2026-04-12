@@ -72,6 +72,42 @@ class IntegrationTrackingServiceTest {
         assertEquals(initialGymCount, extractGymCount(countAfterEnd.body()));
     }
 
+    @Test
+    void getActiveSessionsReturnsArray() throws Exception {
+        HttpResponse<String> response = sendGet("/active-sessions");
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().startsWith("["));
+    }
+
+    @Test
+    void doubleStartSessionForSameBadgeFails() throws Exception {
+        String badgeId = "badge-double-" + UUID.randomUUID();
+        String payload = "{\"badgeId\":\"" + badgeId + "\"}";
+
+        HttpResponse<String> firstStart = sendPost("/start-session", payload);
+        assertEquals(200, firstStart.statusCode());
+
+        // Second start with same badge should fail
+        HttpResponse<String> secondStart = sendPost("/start-session", payload);
+        assertTrue(secondStart.statusCode() >= 400,
+                "Double start should fail, got status=" + secondStart.statusCode());
+
+        // Cleanup
+        sendPost("/end-session", payload);
+    }
+
+    @Test
+    void endSessionWithoutStartFails() throws Exception {
+        String badgeId = "badge-nostart-" + UUID.randomUUID();
+        String payload = "{\"badgeId\":\"" + badgeId + "\"}";
+
+        HttpResponse<String> endResponse = sendPost("/end-session", payload);
+
+        assertTrue(endResponse.statusCode() >= 400,
+                "End without start should fail, got status=" + endResponse.statusCode());
+    }
+
     private int extractGymCount(String jsonBody) {
         Matcher matcher = GYM_COUNT_PATTERN.matcher(jsonBody);
         assertTrue(matcher.find(), "Expected 'gymCount' in response body: " + jsonBody);
@@ -108,4 +144,3 @@ class IntegrationTrackingServiceTest {
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
 }
-

@@ -84,6 +84,48 @@ class IntegrationAnalyticsServiceTest {
         assertTrue(series.body().contains("\"granularity\":\"daily\""));
     }
 
+    @Test
+    void getGymSessionDurationForDateWithNoDataReturnsDefaults() throws Exception {
+        HttpResponse<String> response = sendGet("/gym-session-duration/2099-12-31");
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("\"sessionCount\":"));
+    }
+
+    @Test
+    void getAttendanceSeriesWithWeeklyGranularity() throws Exception {
+        HttpResponse<String> response = sendGet(
+                "/attendance/series?from=2026-04-01&to=2026-04-12&granularity=weekly");
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("\"granularity\":\"weekly\""));
+        assertTrue(response.body().contains("\"series\""));
+    }
+
+    @Test
+    void getAttendanceSeriesWithMonthlyGranularity() throws Exception {
+        HttpResponse<String> response = sendGet(
+                "/attendance/series?from=2026-01-01&to=2026-04-30&granularity=monthly");
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("\"granularity\":\"monthly\""));
+    }
+
+    @Test
+    void getAllAttendanceStatsReturnsOk() throws Exception {
+        HttpResponse<String> response = sendGet("/attendance");
+
+        assertEquals(200, response.statusCode());
+    }
+
+    @Test
+    void prometheusEndpointReturnsMetrics() throws Exception {
+        HttpResponse<String> response = sendGet("/actuator/prometheus");
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("jvm_memory"));
+    }
+
     private boolean isServiceHealthy() {
         try {
             HttpResponse<String> response = sendGet("/actuator/health");

@@ -39,6 +39,23 @@ class IntegrationServiceDiscoveryTest {
         assertTrue(response.body().contains("UP"));
     }
 
+    @Test
+    void eurekaAppsEndpointReturnsRegisteredServices() throws Exception {
+        HttpResponse<String> response = sendGetAcceptJson("/eureka/apps");
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("applications") || response.body().contains("application"),
+                "Expected Eureka applications in response body");
+    }
+
+    @Test
+    void prometheusEndpointReturnsMetrics() throws Exception {
+        HttpResponse<String> response = sendGet("/actuator/prometheus");
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("jvm_memory"));
+    }
+
     private boolean isServiceHealthy() {
         try {
             HttpResponse<String> response = sendGet("/actuator/health");
@@ -57,5 +74,15 @@ class IntegrationServiceDiscoveryTest {
 
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
-}
 
+    private HttpResponse<String> sendGetAcceptJson(String path) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + path))
+                .timeout(Duration.ofSeconds(10))
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+}
