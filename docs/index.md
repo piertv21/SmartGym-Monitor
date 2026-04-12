@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "SmartGym-Monitor"
-  text: "A tool for monitoring gym occupancy, sessions, and machine usage."
+  text: "A comprehensive tool for monitoring gyms."
   tagline: Software Process Engineering project
   actions:
     - theme: brand
