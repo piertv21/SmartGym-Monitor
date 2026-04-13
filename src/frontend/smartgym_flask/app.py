@@ -10,6 +10,7 @@ from smartgym_flask.extensions import (
     teardown_analytics_service,
     teardown_machine_service,
     teardown_status_service,
+    teardown_tracking_service,
     teardown_user_service,
 )
 from smartgym_flask.routes import api_bp, auth_bp, dashboard_bp
@@ -30,6 +31,7 @@ def create_app(config_overrides: dict | None = None) -> Flask:
     app.teardown_appcontext(teardown_analytics_service)
     app.teardown_appcontext(teardown_machine_service)
     app.teardown_appcontext(teardown_area_service)
+    app.teardown_appcontext(teardown_tracking_service)
 
     return app
 

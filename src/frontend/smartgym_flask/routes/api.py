@@ -8,6 +8,7 @@ from smartgym_flask.extensions import (
     get_area_service,
     get_machine_service,
     get_status_service,
+    get_tracking_service,
 )
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
@@ -155,18 +156,15 @@ def dashboard_stats():
         pass
 
     try:
-        areas_resp = get_area_service().fetch_areas(access_token)
-        if areas_resp.status_code == 200:
-            areas_payload = areas_resp.json()
-            areas = _normalize_list_payload(areas_payload)
-            total_current_count = sum(
-                _as_non_negative_int(area.get("currentCount"))
-                for area in areas
-                if isinstance(area, dict)
-            )
-            if not isinstance(attendance_data, dict):
-                attendance_data = {}
-            attendance_data["gymCount"] = total_current_count
+        count_resp = get_tracking_service().fetch_gym_count(access_token)
+        if count_resp.status_code == 200:
+            count_payload = count_resp.json()
+            if isinstance(count_payload, dict) and "gymCount" in count_payload:
+                if not isinstance(attendance_data, dict):
+                    attendance_data = {}
+                attendance_data["gymCount"] = _as_non_negative_int(
+                    count_payload["gymCount"]
+                )
     except (requests.RequestException, ValueError):
         pass
 

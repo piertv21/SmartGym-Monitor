@@ -5,6 +5,7 @@ from smartgym_flask.services.user_service import UserService
 from smartgym_flask.services.analytics_service import AnalyticsService
 from smartgym_flask.services.machine_service import MachineService
 from smartgym_flask.services.area_service import AreaService
+from smartgym_flask.services.tracking_service import TrackingService
 
 
 def get_user_service() -> UserService:
@@ -73,3 +74,17 @@ def get_area_service() -> AreaService:
 
 def teardown_area_service(exception=None):
     g.pop("area_service", None)
+
+
+def get_tracking_service() -> TrackingService:
+    if "tracking_service" not in g:
+        g.tracking_service = TrackingService(
+            gateway_base_url=current_app.config["GATEWAY_BASE_URL"],
+            timeout=current_app.config.get("TRACKING_TIMEOUT_SECONDS", 5),
+        )
+    return g.tracking_service
+
+
+def teardown_tracking_service(exception=None):
+    g.pop("tracking_service", None)
+

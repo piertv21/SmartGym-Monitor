@@ -192,7 +192,7 @@ def test_live_monitor_returns_aggregated_data(monkeypatch):
     assert payload["areas"][1]["occupancyPercent"] == 50.0
 
 
-def test_dashboard_stats_uses_areas_current_count_for_gym_count(monkeypatch):
+def test_dashboard_stats_uses_tracking_service_for_gym_count(monkeypatch):
     app = create_app({"TESTING": True, "SECRET_KEY": "test"})
     client = app.test_client()
 
@@ -210,17 +210,12 @@ def test_dashboard_stats_uses_areas_current_count_for_gym_count(monkeypatch):
         def json():
             return {"averageDurationMinutes": 44.5}
 
-    class AreasResponse:
+    class TrackingCountResponse:
         status_code = 200
 
         @staticmethod
         def json():
-            return [
-                {"id": "a1", "currentCount": 10},
-                {"id": "a2", "currentCount": "15"},
-                {"id": "a3", "currentCount": -3},
-                {"id": "a4", "currentCount": "invalid"},
-            ]
+            return {"gymCount": 25}
 
     monkeypatch.setattr(
         "smartgym_flask.routes.api.get_analytics_service",
@@ -236,9 +231,13 @@ def test_dashboard_stats_uses_areas_current_count_for_gym_count(monkeypatch):
         )(),
     )
     monkeypatch.setattr(
-        "smartgym_flask.routes.api.get_area_service",
+        "smartgym_flask.routes.api.get_tracking_service",
         lambda: type(
-            "S", (), {"fetch_areas": lambda self, access_token: AreasResponse()}
+            "S",
+            (),
+            {
+                "fetch_gym_count": lambda self, access_token: TrackingCountResponse()
+            },
         )(),
     )
 
@@ -255,7 +254,7 @@ def test_dashboard_stats_uses_areas_current_count_for_gym_count(monkeypatch):
     assert payload["session"]["averageDurationMinutes"] == 44.5
 
 
-def test_dashboard_stats_keeps_analytics_gym_count_when_areas_unreachable(monkeypatch):
+def test_dashboard_stats_keeps_analytics_gym_count_when_tracking_unreachable(monkeypatch):
     app = create_app({"TESTING": True, "SECRET_KEY": "test"})
     client = app.test_client()
 
@@ -288,12 +287,12 @@ def test_dashboard_stats_keeps_analytics_gym_count_when_areas_unreachable(monkey
     )
 
     monkeypatch.setattr(
-        "smartgym_flask.routes.api.get_area_service",
+        "smartgym_flask.routes.api.get_tracking_service",
         lambda: type(
             "S",
             (),
             {
-                "fetch_areas": lambda self, access_token: (_ for _ in ()).throw(
+                "fetch_gym_count": lambda self, access_token: (_ for _ in ()).throw(
                     requests.RequestException("boom")
                 )
             },
@@ -344,7 +343,7 @@ def test_dashboard_stats_uses_today_attendance_snapshot_when_attendance_is_a_lis
         def json():
             return {"averageDurationMinutes": 31.0}
 
-    class AreasResponse:
+    class TrackingCountResponse:
         status_code = 503
 
         @staticmethod
@@ -365,9 +364,13 @@ def test_dashboard_stats_uses_today_attendance_snapshot_when_attendance_is_a_lis
         )(),
     )
     monkeypatch.setattr(
-        "smartgym_flask.routes.api.get_area_service",
+        "smartgym_flask.routes.api.get_tracking_service",
         lambda: type(
-            "S", (), {"fetch_areas": lambda self, access_token: AreasResponse()}
+            "S",
+            (),
+            {
+                "fetch_gym_count": lambda self, access_token: TrackingCountResponse()
+            },
         )(),
     )
     monkeypatch.setattr(

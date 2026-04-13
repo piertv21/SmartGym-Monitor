@@ -10,8 +10,6 @@ class Config:
         "GATEWAY_BASE_URL",
         AUTH_SERVICE_BASE_URL.rsplit("/auth-service", maxsplit=1)[0],
     )
-    GATEWAY_CLIENT_ID = os.getenv("GATEWAY_CLIENT_ID", "smartgym-client")
-    GATEWAY_CLIENT_SECRET = os.getenv("GATEWAY_CLIENT_SECRET", "smartgym-secret")
     AUTH_TIMEOUT_SECONDS = float(os.getenv("AUTH_TIMEOUT_SECONDS", "5"))
     EMBEDDED_STATUSES_PATH = os.getenv(
         "EMBEDDED_STATUSES_PATH", "/embedded-service/statuses"

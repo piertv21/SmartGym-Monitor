@@ -15,8 +15,6 @@ services:
       - "${EUREKA_INSTANCE_PORT}:${EUREKA_INSTANCE_PORT}"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=${EUREKA_CLIENT_REGISTER_WITH_EUREKA}
-      - EUREKA_CLIENT_FETCH_REGISTRY=${EUREKA_CLIENT_FETCH_REGISTRY}
       - EUREKA_INSTANCE_HOSTNAME=${EUREKA_INSTANCE_HOSTNAME}
       - EUREKA_INSTANCE_PORT=${EUREKA_INSTANCE_PORT}
     networks:
@@ -53,8 +51,6 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       - EUREKA_INSTANCE_HOSTNAME=${API_GATEWAY_INSTANCE_HOSTNAME}
       - EUREKA_INSTANCE_PORT=${API_GATEWAY_INSTANCE_PORT}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
       - JWT_SECRET=${JWT_SECRET}
       - JWT_ISSUER=${JWT_ISSUER}
       - JWT_AUDIENCE=${JWT_AUDIENCE}
@@ -95,8 +91,6 @@ services:
     environment:
       - SPRING_DATA_MONGODB_URI=${AUTH_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
       - EUREKA_INSTANCE_HOSTNAME=${AUTH_SERVICE_INSTANCE_HOSTNAME}
       - SERVER_PORT=${AUTH_SERVICE_INSTANCE_PORT}
       - JWT_SECRET=${JWT_SECRET}
@@ -158,12 +152,8 @@ services:
       mongo-reset:
         condition: service_completed_successfully
     environment:
-      - SERVICE_NAME=analytics-service
-      - SERVICE_PORT=${ANALYTICS_SERVICE_INSTANCE_PORT}
       - SPRING_DATA_MONGODB_URI=${ANALYTICS_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
       - EUREKA_INSTANCE_HOSTNAME=${ANALYTICS_SERVICE_INSTANCE_HOSTNAME}
       - SERVER_PORT=${ANALYTICS_SERVICE_INSTANCE_PORT}
     networks:
@@ -221,12 +211,8 @@ services:
       mongo-seed:
         condition: service_completed_successfully
     environment:
-      - SERVICE_NAME=area-service
-      - SERVICE_PORT=${AREA_SERVICE_INSTANCE_PORT}
       - SPRING_DATA_MONGODB_URI=${AREA_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
       - EUREKA_INSTANCE_HOSTNAME=${AREA_SERVICE_INSTANCE_HOSTNAME}
       - SERVER_PORT=${AREA_SERVICE_INSTANCE_PORT}
     networks:
@@ -307,12 +293,8 @@ services:
       mongo-seed:
         condition: service_completed_successfully
     environment:
-      - SERVICE_NAME=machine-service
-      - SERVICE_PORT=${MACHINE_SERVICE_INSTANCE_PORT}
       - SPRING_DATA_MONGODB_URI=${MACHINE_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
       - EUREKA_INSTANCE_HOSTNAME=${MACHINE_SERVICE_INSTANCE_HOSTNAME}
       - SERVER_PORT=${MACHINE_SERVICE_INSTANCE_PORT}
     networks:
@@ -370,12 +352,8 @@ services:
       mongo-reset:
         condition: service_completed_successfully
     environment:
-      - SERVICE_NAME=tracking-service
-      - SERVICE_PORT=${TRACKING_SERVICE_INSTANCE_PORT}
       - SPRING_DATA_MONGODB_URI=${TRACKING_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
       - EUREKA_INSTANCE_HOSTNAME=${TRACKING_SERVICE_INSTANCE_HOSTNAME}
       - SERVER_PORT=${TRACKING_SERVICE_INSTANCE_PORT}
     networks:
@@ -432,9 +410,15 @@ services:
         condition: service_healthy
       mongo-reset:
         condition: service_completed_successfully
+      area-service:
+        condition: service_healthy
+      analytics-service:
+        condition: service_healthy
+      machine-service:
+        condition: service_healthy
+      tracking-service:
+        condition: service_healthy
     environment:
-      - SERVICE_NAME=embedded-service
-      - SERVICE_PORT=${EMBEDDED_SERVICE_INSTANCE_PORT}
       - SPRING_DATA_MONGODB_URI=${EMBEDDED_MONGODB_URI}
       - MQTT_BROKER_HOST=${MQTT_BROKER_HOST}
       - MQTT_BROKER_PORT=${MQTT_BROKER_PORT}
@@ -447,8 +431,6 @@ services:
       - MACHINE_SERVICE_BASE_URL=http://machine-service:${MACHINE_SERVICE_INSTANCE_PORT}
       - TRACKING_SERVICE_BASE_URL=http://tracking-service:${TRACKING_SERVICE_INSTANCE_PORT}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
       - EUREKA_INSTANCE_HOSTNAME=${EMBEDDED_SERVICE_INSTANCE_HOSTNAME}
       - SERVER_PORT=${EMBEDDED_SERVICE_INSTANCE_PORT}
     networks:
@@ -532,8 +514,6 @@ services:
     environment:
       - AUTH_SERVICE_BASE_URL=${AUTH_SERVICE_BASE_URL}
       - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
-      - GATEWAY_CLIENT_ID=${GATEWAY_CLIENT_ID}
-      - GATEWAY_CLIENT_SECRET=${GATEWAY_CLIENT_SECRET}
     networks:
       - smartgym-net
     healthcheck:
@@ -590,6 +570,8 @@ services:
         condition: service_healthy
       mosquitto:
         condition: service_started
+      embedded-service:
+        condition: service_healthy
     networks:
       - smartgym-net
     environment:
