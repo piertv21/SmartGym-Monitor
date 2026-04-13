@@ -2,12 +2,11 @@ package com.smartgym.analyticsservice.application;
 
 import com.smartgym.analyticsservice.application.ports.AnalyticsRepository;
 import com.smartgym.analyticsservice.application.ports.AnalyticsServiceAPI;
-import com.smartgym.analyticsservice.model.AttendanceSnapshot;
 import com.smartgym.analyticsservice.model.AttendanceSeriesPoint;
 import com.smartgym.analyticsservice.model.AttendanceSeriesResponse;
+import com.smartgym.analyticsservice.model.AttendanceSnapshot;
 import com.smartgym.analyticsservice.model.GymSessionDurationStat;
 import io.vertx.core.json.JsonObject;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -36,35 +35,45 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
     @Override
     public CompletableFuture<Void> ingestEvent(JsonObject event) {
         if (event == null) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("event cannot be null"));
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("event cannot be null"));
         }
 
         String eventType = event.getString("eventType");
         JsonObject payload = event.getJsonObject("payload");
 
         if (isBlank(eventType) || payload == null) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("eventType and payload are required"));
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("eventType and payload are required"));
         }
 
         validatePayload(eventType, payload);
-        JsonObject normalizedEvent = new JsonObject()
-                .put("eventType", eventType.trim().toUpperCase())
-                .put("payload", payload)
-                .put("timestamp", extractTimestamp(payload));
+        JsonObject normalizedEvent =
+                new JsonObject()
+                        .put("eventType", eventType.trim().toUpperCase())
+                        .put("payload", payload)
+                        .put("timestamp", extractTimestamp(payload));
         return analyticsRepository.saveEvent(normalizedEvent);
     }
 
     @Override
     public CompletableFuture<List<AttendanceSnapshot>> getAllAttendanceStats() {
-        return analyticsRepository.findEventsByType("GYM_ACCESS")
-                .thenApply(events -> groupByDate(events).entrySet().stream()
-                        .map(entry -> toAttendanceSnapshot(entry.getKey(), entry.getValue()))
-                        .sorted(Comparator.comparing(AttendanceSnapshot::getDate))
-                        .toList());
+        return analyticsRepository
+                .findEventsByType("GYM_ACCESS")
+                .thenApply(
+                        events ->
+                                groupByDate(events).entrySet().stream()
+                                        .map(
+                                                entry ->
+                                                        toAttendanceSnapshot(
+                                                                entry.getKey(), entry.getValue()))
+                                        .sorted(Comparator.comparing(AttendanceSnapshot::getDate))
+                                        .toList());
     }
 
     @Override
-    public CompletableFuture<AttendanceSeriesResponse> getAttendanceSeries(String from, String to, String granularity, String areaId) {
+    public CompletableFuture<AttendanceSeriesResponse> getAttendanceSeries(
+            String from, String to, String granularity, String areaId) {
         LocalDate fromDate = parseLocalDate(from, "from");
         LocalDate toDate = parseLocalDate(to, "to");
         if (fromDate.isAfter(toDate)) {
@@ -76,21 +85,24 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
         String scope = normalizedAreaId == null ? "global" : "area";
         String eventType = normalizedAreaId == null ? "GYM_ACCESS" : "AREA_ACCESS";
 
-        return analyticsRepository.findEventsByTypeAndDateRange(eventType, fromDate.toString(), toDate.toString())
-                .thenApply(events -> toAttendanceSeries(
-                        scope,
-                        normalizedGranularity,
-                        fromDate,
-                        toDate,
-                        normalizedAreaId,
-                        events
-                ));
+        return analyticsRepository
+                .findEventsByTypeAndDateRange(eventType, fromDate.toString(), toDate.toString())
+                .thenApply(
+                        events ->
+                                toAttendanceSeries(
+                                        scope,
+                                        normalizedGranularity,
+                                        fromDate,
+                                        toDate,
+                                        normalizedAreaId,
+                                        events));
     }
 
     @Override
     public CompletableFuture<GymSessionDurationStat> getGymSessionDurationByDate(String date) {
         String normalizedDate = normalizeDate(date);
-        return analyticsRepository.findEventsByTypeAndDate("GYM_ACCESS", normalizedDate)
+        return analyticsRepository
+                .findEventsByTypeAndDate("GYM_ACCESS", normalizedDate)
                 .thenApply(events -> toGymSessionDurationStat("day", normalizedDate, events));
     }
 
@@ -98,7 +110,10 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
         int entries = 0;
         int exits = 0;
         for (JsonObject event : events) {
-            String accessType = normalizeUpper(event.getJsonObject("payload", new JsonObject()).getString("accessType"));
+            String accessType =
+                    normalizeUpper(
+                            event.getJsonObject("payload", new JsonObject())
+                                    .getString("accessType"));
             if ("ENTRY".equals(accessType)) {
                 entries += 1;
             } else if ("EXIT".equals(accessType)) {
@@ -107,12 +122,7 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
         }
 
         return new AttendanceSnapshot(
-                "attendance-" + date,
-                date,
-                Math.max(entries - exits, 0),
-                entries,
-                exits
-        );
+                "attendance-" + date, date, Math.max(entries - exits, 0), entries, exits);
     }
 
     private AttendanceSeriesResponse toAttendanceSeries(
@@ -121,8 +131,7 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
             LocalDate from,
             LocalDate to,
             String areaId,
-            List<JsonObject> events
-    ) {
+            List<JsonObject> events) {
         Map<String, int[]> buckets = initializeBuckets(from, to, granularity);
         for (JsonObject event : events) {
             JsonObject payload = event.getJsonObject("payload", new JsonObject());
@@ -153,9 +162,10 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
                 continue;
             }
 
-            String signal = "area".equals(scope)
-                    ? normalizeUpper(payload.getString("direction"))
-                    : normalizeUpper(payload.getString("accessType"));
+            String signal =
+                    "area".equals(scope)
+                            ? normalizeUpper(payload.getString("direction"))
+                            : normalizeUpper(payload.getString("accessType"));
             if ("ENTRY".equals(signal) || "IN".equals(signal)) {
                 counter[0] += 1;
             } else if ("EXIT".equals(signal) || "OUT".equals(signal)) {
@@ -163,24 +173,21 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
             }
         }
 
-        List<AttendanceSeriesPoint> series = buckets.entrySet().stream()
-                .map(entry -> {
-                    int totalEntries = entry.getValue()[0];
-                    int totalExits = entry.getValue()[1];
-                    return new AttendanceSeriesPoint(
-                            entry.getKey(),
-                            totalEntries,
-                            totalEntries,
-                            totalExits
-                    );
-                })
-                .toList();
+        List<AttendanceSeriesPoint> series =
+                buckets.entrySet().stream()
+                        .map(
+                                entry -> {
+                                    int totalEntries = entry.getValue()[0];
+                                    int totalExits = entry.getValue()[1];
+                                    return new AttendanceSeriesPoint(
+                                            entry.getKey(), totalEntries, totalEntries, totalExits);
+                                })
+                        .toList();
 
         return new AttendanceSeriesResponse(
                 new AttendanceSeriesResponse.Meta(scope, granularity, ANALYTICS_ZONE.getId()),
                 new AttendanceSeriesResponse.Filters(from.toString(), to.toString(), areaId),
-                series
-        );
+                series);
     }
 
     private Map<String, int[]> initializeBuckets(LocalDate from, LocalDate to, String granularity) {
@@ -189,7 +196,7 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
             YearMonth cursor = YearMonth.from(from);
             YearMonth end = YearMonth.from(to);
             while (!cursor.isAfter(end)) {
-                buckets.put(cursor.toString(), new int[]{0, 0});
+                buckets.put(cursor.toString(), new int[] {0, 0});
                 cursor = cursor.plusMonths(1);
             }
             return buckets;
@@ -197,13 +204,14 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
 
         LocalDate cursor = from;
         while (!cursor.isAfter(to)) {
-            buckets.put(cursor.toString(), new int[]{0, 0});
+            buckets.put(cursor.toString(), new int[] {0, 0});
             cursor = cursor.plusDays(1);
         }
         return buckets;
     }
 
-    private GymSessionDurationStat toGymSessionDurationStat(String periodType, String periodValue, List<JsonObject> events) {
+    private GymSessionDurationStat toGymSessionDurationStat(
+            String periodType, String periodValue, List<JsonObject> events) {
         List<Double> durations = computeSessionDurations(events);
         double avg = durations.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
         double max = durations.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
@@ -214,8 +222,7 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
                 periodValue,
                 avg,
                 max,
-                durations.size()
-        );
+                durations.size());
     }
 
     private List<Double> computeSessionDurations(List<JsonObject> events) {
@@ -246,7 +253,8 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
     }
 
     private Map<String, List<JsonObject>> groupByDate(List<JsonObject> events) {
-        return events.stream().collect(Collectors.groupingBy(event -> event.getString("eventDate")));
+        return events.stream()
+                .collect(Collectors.groupingBy(event -> event.getString("eventDate")));
     }
 
     private List<JsonObject> sortByTimestamp(List<JsonObject> events) {
@@ -261,21 +269,25 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
             case "GYM_ACCESS" -> {
                 String accessType = normalizeUpper(payload.getString("accessType"));
                 if (!"ENTRY".equals(accessType) && !"EXIT".equals(accessType)) {
-                    throw new IllegalArgumentException("Gym access payload requires accessType ENTRY or EXIT");
+                    throw new IllegalArgumentException(
+                            "Gym access payload requires accessType ENTRY or EXIT");
                 }
             }
             case "MACHINE_USAGE" -> {
                 String machineId = normalizeString(payload.getString("machineId"));
                 String usageState = normalizeUpper(payload.getString("usageState"));
-                if (isBlank(machineId) || (!"STARTED".equals(usageState) && !"STOPPED".equals(usageState))) {
-                    throw new IllegalArgumentException("Machine usage payload requires machineId and usageState STARTED or STOPPED");
+                if (isBlank(machineId)
+                        || (!"STARTED".equals(usageState) && !"STOPPED".equals(usageState))) {
+                    throw new IllegalArgumentException(
+                            "Machine usage payload requires machineId and usageState STARTED or STOPPED");
                 }
             }
             case "AREA_ACCESS" -> {
                 String areaId = normalizeString(payload.getString("areaId"));
                 String direction = normalizeUpper(payload.getString("direction"));
                 if (isBlank(areaId) || (!"IN".equals(direction) && !"OUT".equals(direction))) {
-                    throw new IllegalArgumentException("Area access payload requires areaId and direction IN or OUT");
+                    throw new IllegalArgumentException(
+                            "Area access payload requires areaId and direction IN or OUT");
                 }
             }
             default -> throw new IllegalArgumentException("Unsupported eventType: " + eventType);
@@ -332,7 +344,6 @@ public class AnalyticsServiceAPIImpl implements AnalyticsServiceAPI {
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
     }
-
 
     private LocalDateTime parseTimestamp(String timestamp) {
         try {

@@ -1,5 +1,7 @@
 package com.smartgym.e2e.steps;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -13,12 +15,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
-import org.bson.Document;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.bson.Document;
 
 public class AdminFlowSteps {
     private final Vertx vertx = Vertx.vertx();
@@ -45,9 +44,8 @@ public class AdminFlowSteps {
 
     @When("The admin sends valid credentials to login")
     public void theAdminSendsValidCredentialsToLogin() {
-        JsonObject credentials = new JsonObject()
-                .put("username", ADMIN_USERNAME)
-                .put("password", ADMIN_PASSWORD);
+        JsonObject credentials =
+                new JsonObject().put("username", ADMIN_USERNAME).put("password", ADMIN_PASSWORD);
 
         lastResponse = postJsonAndWait(gatewayUrl + "/auth-service/login", credentials, null);
     }
@@ -72,14 +70,14 @@ public class AdminFlowSteps {
         long loginCountAfter = countAuthLogsByAction(ADMIN_USERNAME, "LOGIN");
         assertTrue(
                 loginCountAfter >= loginCountBeforeScenario + 1,
-                "Login event was not tracked in MongoDB logs"
-        );
+                "Login event was not tracked in MongoDB logs");
     }
 
     @When("The admin sends a logout request with the access token")
     public void theAdminSendsALogoutRequestWithTheAccessToken() {
         assertNotNull(accessToken, "Access token is required before logout");
-        lastResponse = postJsonAndWait(gatewayUrl + "/auth-service/logout", new JsonObject(), accessToken);
+        lastResponse =
+                postJsonAndWait(gatewayUrl + "/auth-service/logout", new JsonObject(), accessToken);
     }
 
     @Then("The logout is accepted")
@@ -97,8 +95,7 @@ public class AdminFlowSteps {
         long logoutCountAfter = countAuthLogsByAction(ADMIN_USERNAME, "LOGOUT");
         assertTrue(
                 logoutCountAfter >= logoutCountBeforeScenario + 1,
-                "Logout event was not tracked in MongoDB logs"
-        );
+                "Logout event was not tracked in MongoDB logs");
     }
 
     private long countAuthLogsByAction(String username, String action) {
@@ -106,11 +103,7 @@ public class AdminFlowSteps {
             MongoDatabase database = mongoClient.getDatabase("authservicedb");
             MongoCollection<Document> logs = database.getCollection("logs");
             return logs.countDocuments(
-                    Filters.and(
-                            Filters.eq("username", username),
-                            Filters.eq("action", action)
-                    )
-            );
+                    Filters.and(Filters.eq("username", username), Filters.eq("action", action)));
         } catch (Exception e) {
             fail("Unable to query auth tracking logs: " + e.getMessage());
             return -1;
@@ -129,23 +122,26 @@ public class AdminFlowSteps {
         return wrapped != null ? wrapped : responseBody;
     }
 
-    private HttpResponse<?> postJsonAndWait(String url, JsonObject body, String bearerToken, int retriesLeft) {
+    private HttpResponse<?> postJsonAndWait(
+            String url, JsonObject body, String bearerToken, int retriesLeft) {
         CompletableFuture<HttpResponse<?>> future = new CompletableFuture<>();
 
-        var request = client.postAbs(url)
-                .putHeader("Content-Type", "application/json; charset=UTF-8");
+        var request =
+                client.postAbs(url).putHeader("Content-Type", "application/json; charset=UTF-8");
 
         if (bearerToken != null) {
             request.putHeader("Authorization", "Bearer " + bearerToken);
         }
 
-        request.sendJsonObject(body, ar -> {
-            if (ar.succeeded()) {
-                future.complete(ar.result());
-            } else {
-                future.completeExceptionally(ar.cause());
-            }
-        });
+        request.sendJsonObject(
+                body,
+                ar -> {
+                    if (ar.succeeded()) {
+                        future.complete(ar.result());
+                    } else {
+                        future.completeExceptionally(ar.cause());
+                    }
+                });
 
         try {
             HttpResponse<?> response = future.get(10, TimeUnit.SECONDS);
@@ -165,6 +161,3 @@ public class AdminFlowSteps {
         vertx.close();
     }
 }
-
-
-

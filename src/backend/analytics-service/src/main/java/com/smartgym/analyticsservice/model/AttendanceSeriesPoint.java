@@ -1,7 +1,6 @@
 package com.smartgym.analyticsservice.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -19,10 +18,10 @@ public class AttendanceSeriesPoint {
     @JsonProperty("totalExits")
     private Integer totalExits;
 
-    public AttendanceSeriesPoint() {
-    }
+    public AttendanceSeriesPoint() {}
 
-    public AttendanceSeriesPoint(String period, Integer currentCount, Integer totalEntries, Integer totalExits) {
+    public AttendanceSeriesPoint(
+            String period, Integer currentCount, Integer totalEntries, Integer totalExits) {
         this.period = period;
         this.currentCount = currentCount;
         this.totalEntries = totalEntries;
@@ -61,4 +60,3 @@ public class AttendanceSeriesPoint {
         this.totalExits = totalExits;
     }
 }
-

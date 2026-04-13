@@ -5,4 +5,3 @@ public enum OccupancyStatus {
     OCCUPIED,
     MAINTENANCE
 }
-

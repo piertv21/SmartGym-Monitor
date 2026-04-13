@@ -1,12 +1,11 @@
 package com.smartgym.gateway;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Test;
+
 /**
- * Unit tests for Gateway auth logic.
- * The gateway delegates JWT validation to JwtValidationService;
+ * Unit tests for Gateway auth logic. The gateway delegates JWT validation to JwtValidationService;
  * integration-level auth flow tests are in IntegrationGatewayTest.
  */
 class JUnitGatewayAuthTest {

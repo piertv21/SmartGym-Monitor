@@ -6,7 +6,6 @@ import com.smartgym.embeddedservice.model.DeviceStatusMessage;
 import com.smartgym.embeddedservice.model.GymAccessMessage;
 import com.smartgym.embeddedservice.model.MachineUsageMessage;
 import io.vertx.core.json.JsonArray;
-
 import java.util.concurrent.CompletableFuture;
 
 public interface EmbeddedServiceAPI extends Service {
@@ -20,7 +19,6 @@ public interface EmbeddedServiceAPI extends Service {
     CompletableFuture<Void> processMachineUsage(MachineUsageMessage message);
 
     CompletableFuture<Void> processDeviceStatus(DeviceStatusMessage message);
-
 
     CompletableFuture<JsonArray> getAllDeviceStatuses();
 }

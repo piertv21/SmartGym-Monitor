@@ -1,9 +1,9 @@
 package com.smartgym.embeddedservice.application;
 
+import com.smartgym.embeddedservice.application.ports.AnalyticsServicePort;
+import com.smartgym.embeddedservice.application.ports.AreaServicePort;
 import com.smartgym.embeddedservice.application.ports.EmbeddedRepository;
 import com.smartgym.embeddedservice.application.ports.EmbeddedServiceAPI;
-import com.smartgym.embeddedservice.application.ports.AreaServicePort;
-import com.smartgym.embeddedservice.application.ports.AnalyticsServicePort;
 import com.smartgym.embeddedservice.application.ports.MachineServicePort;
 import com.smartgym.embeddedservice.application.ports.TrackingServicePort;
 import com.smartgym.embeddedservice.model.AreaAccessMessage;
@@ -12,11 +12,10 @@ import com.smartgym.embeddedservice.model.GymAccessMessage;
 import com.smartgym.embeddedservice.model.MachineUsageMessage;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.Locale;
 
 public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
 
@@ -40,8 +39,7 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
             AreaServicePort areaServicePort,
             AnalyticsServicePort analyticsServicePort,
             MachineServicePort machineServicePort,
-            TrackingServicePort trackingServicePort
-    ) {
+            TrackingServicePort trackingServicePort) {
         this.embeddedRepository = embeddedRepository;
         this.areaServicePort = areaServicePort;
         this.analyticsServicePort = analyticsServicePort;
@@ -52,11 +50,13 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
     @Override
     public CompletableFuture<Void> processGymAccess(GymAccessMessage message) {
         if (message == null || isBlank(message.getDeviceId()) || isBlank(message.getBadgeId())) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Invalid gym access message"));
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Invalid gym access message"));
         }
 
         if (isBlank(message.getAccessType())) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("accessType cannot be null or empty"));
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("accessType cannot be null or empty"));
         }
 
         String accessType = message.getAccessType().trim().toUpperCase(Locale.ROOT);
@@ -67,7 +67,8 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
             trackingCall = trackingServicePort.endGymSession(message);
         } else {
             return CompletableFuture.failedFuture(
-                    new IllegalArgumentException("Unsupported accessType: " + message.getAccessType()));
+                    new IllegalArgumentException(
+                            "Unsupported accessType: " + message.getAccessType()));
         }
 
         JsonObject event = buildGymAccessEvent(message);
@@ -81,7 +82,8 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
                 || isBlank(message.getBadgeId())
                 || isBlank(message.getAreaId())
                 || isBlank(message.getDirection())) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Invalid area access message"));
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Invalid area access message"));
         }
 
         JsonObject event = buildAreaAccessEvent(message);
@@ -95,7 +97,8 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
                 || isBlank(message.getBadgeId())
                 || isBlank(message.getAreaId())
                 || isBlank(message.getDirection())) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Invalid area exit message"));
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Invalid area exit message"));
         }
 
         JsonObject event = buildAreaAccessEvent(message);
@@ -108,7 +111,8 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
                 || isBlank(message.getDeviceId())
                 || isBlank(message.getMachineId())
                 || isBlank(message.getUsageState())) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Invalid machine usage message"));
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Invalid machine usage message"));
         }
 
         String usageState = message.getUsageState().trim().toUpperCase(Locale.ROOT);
@@ -116,14 +120,16 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
         if ("STARTED".equals(usageState)) {
             if (isBlank(message.getBadgeId())) {
                 return CompletableFuture.failedFuture(
-                        new IllegalArgumentException("badgeId is required when usageState is STARTED"));
+                        new IllegalArgumentException(
+                                "badgeId is required when usageState is STARTED"));
             }
             machineCall = machineServicePort.startSession(message);
         } else if ("STOPPED".equals(usageState)) {
             machineCall = machineServicePort.endSession(message);
         } else {
             return CompletableFuture.failedFuture(
-                    new IllegalArgumentException("Unsupported usageState: " + message.getUsageState()));
+                    new IllegalArgumentException(
+                            "Unsupported usageState: " + message.getUsageState()));
         }
 
         JsonObject event = buildMachineUsageEvent(message);
@@ -132,16 +138,14 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
 
     @Override
     public CompletableFuture<Void> processDeviceStatus(DeviceStatusMessage message) {
-        if (message == null
-                || isBlank(message.getDeviceId())
-                || isBlank(message.getDeviceType())) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Invalid device status message"));
+        if (message == null || isBlank(message.getDeviceId()) || isBlank(message.getDeviceType())) {
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Invalid device status message"));
         }
 
         JsonObject event = buildDeviceStatusEvent(message);
         return embeddedRepository.saveEvent(event);
     }
-
 
     @Override
     public CompletableFuture<JsonArray> getAllDeviceStatuses() {
@@ -189,27 +193,34 @@ public class EmbeddedServiceApiImpl implements EmbeddedServiceAPI {
     }
 
     private CompletableFuture<Void> forwardToAnalyticsAndSave(JsonObject event) {
-        return analyticsServicePort.ingestEvent(event)
+        return analyticsServicePort
+                .ingestEvent(event)
                 .thenCompose(ignored -> embeddedRepository.saveEvent(event));
     }
 
-    private CompletableFuture<Void> executeWithGuaranteedAnalytics(CompletableFuture<Void> domainCall, JsonObject event) {
+    private CompletableFuture<Void> executeWithGuaranteedAnalytics(
+            CompletableFuture<Void> domainCall, JsonObject event) {
         return domainCall
                 .handle((ignored, domainError) -> domainError)
-                .thenCompose(domainError -> forwardToAnalyticsAndSave(event)
-                        .handle((ignored, analyticsError) -> {
-                            if (domainError != null) {
-                                Throwable domainCause = unwrap(domainError);
-                                if (analyticsError != null) {
-                                    domainCause.addSuppressed(unwrap(analyticsError));
-                                }
-                                throw new CompletionException(domainCause);
-                            }
-                            if (analyticsError != null) {
-                                throw new CompletionException(unwrap(analyticsError));
-                            }
-                            return null;
-                        }));
+                .thenCompose(
+                        domainError ->
+                                forwardToAnalyticsAndSave(event)
+                                        .handle(
+                                                (ignored, analyticsError) -> {
+                                                    if (domainError != null) {
+                                                        Throwable domainCause = unwrap(domainError);
+                                                        if (analyticsError != null) {
+                                                            domainCause.addSuppressed(
+                                                                    unwrap(analyticsError));
+                                                        }
+                                                        throw new CompletionException(domainCause);
+                                                    }
+                                                    if (analyticsError != null) {
+                                                        throw new CompletionException(
+                                                                unwrap(analyticsError));
+                                                    }
+                                                    return null;
+                                                }));
     }
 
     private Throwable unwrap(Throwable throwable) {

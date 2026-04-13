@@ -1,9 +1,7 @@
 package com.smartgym.analyticsservice.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -18,10 +16,10 @@ public class AttendanceSeriesResponse {
     @JsonProperty("series")
     private List<AttendanceSeriesPoint> series;
 
-    public AttendanceSeriesResponse() {
-    }
+    public AttendanceSeriesResponse() {}
 
-    public AttendanceSeriesResponse(Meta meta, Filters filters, List<AttendanceSeriesPoint> series) {
+    public AttendanceSeriesResponse(
+            Meta meta, Filters filters, List<AttendanceSeriesPoint> series) {
         this.meta = meta;
         this.filters = filters;
         this.series = series;
@@ -63,8 +61,7 @@ public class AttendanceSeriesResponse {
         @JsonProperty("timezone")
         private String timezone;
 
-        public Meta() {
-        }
+        public Meta() {}
 
         public Meta(String scope, String granularity, String timezone) {
             this.scope = scope;
@@ -109,8 +106,7 @@ public class AttendanceSeriesResponse {
         @JsonProperty("areaId")
         private String areaId;
 
-        public Filters() {
-        }
+        public Filters() {}
 
         public Filters(String from, String to, String areaId) {
             this.from = from;
@@ -143,4 +139,3 @@ public class AttendanceSeriesResponse {
         }
     }
 }
-

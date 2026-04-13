@@ -7,15 +7,14 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.smartgym.trackingservice.application.ports.TrackingRepository;
 import com.smartgym.trackingservice.model.GymSession;
-import org.bson.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TrackingRepositoryImpl implements TrackingRepository {
 
@@ -33,48 +32,57 @@ public class TrackingRepositoryImpl implements TrackingRepository {
 
     @Override
     public CompletableFuture<Void> saveGymSession(GymSession session) {
-        return CompletableFuture.runAsync(() -> {
-            Document filter = new Document("gymSessionId", session.getGymSessionId());
-            Document document = toSessionDocument(session);
+        return CompletableFuture.runAsync(
+                () -> {
+                    Document filter = new Document("gymSessionId", session.getGymSessionId());
+                    Document document = toSessionDocument(session);
 
-            Document existing = gymSessionsCollection.find(filter).first();
-            if (existing == null) {
-                gymSessionsCollection.insertOne(document);
-            } else {
-                gymSessionsCollection.replaceOne(filter, document);
-            }
-        });
+                    Document existing = gymSessionsCollection.find(filter).first();
+                    if (existing == null) {
+                        gymSessionsCollection.insertOne(document);
+                    } else {
+                        gymSessionsCollection.replaceOne(filter, document);
+                    }
+                });
     }
 
     @Override
     public CompletableFuture<Optional<GymSession>> findActiveSessionByBadgeId(String badgeId) {
-        return CompletableFuture.supplyAsync(() -> {
-            Document document = gymSessionsCollection
-                    .find(Filters.and(Filters.eq("badgeId", badgeId), Filters.eq("endTime", null)))
-                    .first();
-            if (document == null) {
-                return Optional.empty();
-            }
-            return Optional.of(fromSessionDocument(document));
-        });
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    Document document =
+                            gymSessionsCollection
+                                    .find(
+                                            Filters.and(
+                                                    Filters.eq("badgeId", badgeId),
+                                                    Filters.eq("endTime", null)))
+                                    .first();
+                    if (document == null) {
+                        return Optional.empty();
+                    }
+                    return Optional.of(fromSessionDocument(document));
+                });
     }
 
     @Override
     public CompletableFuture<List<GymSession>> findActiveSessions() {
-        return CompletableFuture.supplyAsync(() -> {
-            List<GymSession> result = new ArrayList<>();
-            for (Document document : gymSessionsCollection
-                    .find(Filters.eq("endTime", null))
-                    .sort(Sorts.descending("startTime"))) {
-                result.add(fromSessionDocument(document));
-            }
-            return result;
-        });
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    List<GymSession> result = new ArrayList<>();
+                    for (Document document :
+                            gymSessionsCollection
+                                    .find(Filters.eq("endTime", null))
+                                    .sort(Sorts.descending("startTime"))) {
+                        result.add(fromSessionDocument(document));
+                    }
+                    return result;
+                });
     }
 
     @Override
     public CompletableFuture<Long> countActiveSessions() {
-        return CompletableFuture.supplyAsync(() -> gymSessionsCollection.countDocuments(Filters.eq("endTime", null)));
+        return CompletableFuture.supplyAsync(
+                () -> gymSessionsCollection.countDocuments(Filters.eq("endTime", null)));
     }
 
     private Document toSessionDocument(GymSession session) {
@@ -82,7 +90,9 @@ public class TrackingRepositoryImpl implements TrackingRepository {
                 .append("gymSessionId", session.getGymSessionId())
                 .append("badgeId", session.getBadgeId())
                 .append("startTime", session.getStartTime().toString())
-                .append("endTime", session.getEndTime() == null ? null : session.getEndTime().toString());
+                .append(
+                        "endTime",
+                        session.getEndTime() == null ? null : session.getEndTime().toString());
     }
 
     private GymSession fromSessionDocument(Document document) {
@@ -91,7 +101,6 @@ public class TrackingRepositoryImpl implements TrackingRepository {
                 document.getString("gymSessionId"),
                 document.getString("badgeId"),
                 LocalDateTime.parse(document.getString("startTime")),
-                endTime == null ? null : LocalDateTime.parse(endTime)
-        );
+                endTime == null ? null : LocalDateTime.parse(endTime));
     }
 }

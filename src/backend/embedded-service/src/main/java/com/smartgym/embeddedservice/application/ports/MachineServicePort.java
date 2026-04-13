@@ -1,7 +1,6 @@
 package com.smartgym.embeddedservice.application.ports;
 
 import com.smartgym.embeddedservice.model.MachineUsageMessage;
-
 import java.util.concurrent.CompletableFuture;
 
 public interface MachineServicePort {

@@ -10,7 +10,11 @@ def test_login_page_is_reachable(monkeypatch):
 
         @staticmethod
         def json():
-            return {"accessToken": "jwt-token-123", "tokenType": "Bearer", "expiresIn": 86400}
+            return {
+                "accessToken": "jwt-token-123",
+                "tokenType": "Bearer",
+                "expiresIn": 86400,
+            }
 
     monkeypatch.setattr(
         "smartgym_flask.routes.auth.get_user_service",
@@ -43,7 +47,11 @@ def test_login_success_redirects_to_dashboard(monkeypatch):
 
         @staticmethod
         def json():
-            return {"accessToken": "jwt-token-123", "tokenType": "Bearer", "expiresIn": 86400}
+            return {
+                "accessToken": "jwt-token-123",
+                "tokenType": "Bearer",
+                "expiresIn": 86400,
+            }
 
     monkeypatch.setattr(
         "smartgym_flask.routes.auth.get_user_service",
@@ -100,5 +108,3 @@ def test_main_pages_have_consistent_title_and_description(monkeypatch):
         assert response.status_code == 200
         assert 'class="page-title' in html
         assert 'class="page-description' in html
-
-

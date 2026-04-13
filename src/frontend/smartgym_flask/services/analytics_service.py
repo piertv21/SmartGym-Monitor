@@ -23,13 +23,14 @@ class AnalyticsService:
             timeout=self.timeout,
         )
 
-    def fetch_gym_session_duration(self, access_token: str, date: str) -> requests.Response:
+    def fetch_gym_session_duration(
+        self, access_token: str, date: str
+    ) -> requests.Response:
         return requests.get(
             f"{self.gateway_base_url}/analytics-service/gym-session-duration/{date}",
             headers=self._bearer_headers(access_token),
             timeout=self.timeout,
         )
-
 
     def fetch_attendance_series(
         self,

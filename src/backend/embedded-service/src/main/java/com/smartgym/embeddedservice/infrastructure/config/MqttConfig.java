@@ -7,10 +7,10 @@ public class MqttConfig {
         return value == null || value.isBlank() ? fallback : value;
     }
 
-    public static final String BROKER_HOST =
-            getEnvOrDefault("MQTT_BROKER_HOST", "mosquitto");
+    public static final String BROKER_HOST = getEnvOrDefault("MQTT_BROKER_HOST", "mosquitto");
 
-    public static final int BROKER_PORT = Integer.parseInt(getEnvOrDefault("MQTT_BROKER_PORT", "1883"));
+    public static final int BROKER_PORT =
+            Integer.parseInt(getEnvOrDefault("MQTT_BROKER_PORT", "1883"));
 
     public static final String BROKER_PROTOCOL = getEnvOrDefault("MQTT_BROKER_PROTOCOL", "tcp");
 

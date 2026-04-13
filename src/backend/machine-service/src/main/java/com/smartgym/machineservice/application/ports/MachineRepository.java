@@ -3,25 +3,24 @@ package com.smartgym.machineservice.application.ports;
 import com.smartgym.machineservice.ddd.Repository;
 import com.smartgym.machineservice.model.Machine;
 import com.smartgym.machineservice.model.MachineSession;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface MachineRepository extends Repository {
 
-	CompletableFuture<List<Machine>> findAllMachines();
+    CompletableFuture<List<Machine>> findAllMachines();
 
-	CompletableFuture<Void> saveMachine(Machine machine);
+    CompletableFuture<Void> saveMachine(Machine machine);
 
-	CompletableFuture<Optional<Machine>> findMachineById(String machineId);
+    CompletableFuture<Optional<Machine>> findMachineById(String machineId);
 
-	CompletableFuture<Void> saveMachineSession(MachineSession session);
+    CompletableFuture<Void> saveMachineSession(MachineSession session);
 
-	CompletableFuture<Optional<MachineSession>> findActiveSessionByMachineId(String machineId);
+    CompletableFuture<Optional<MachineSession>> findActiveSessionByMachineId(String machineId);
 
-	CompletableFuture<List<MachineSession>> findMachineHistoryByMachineId(String machineId);
+    CompletableFuture<List<MachineSession>> findMachineHistoryByMachineId(String machineId);
 
-	CompletableFuture<List<MachineSession>> findMachineSessionsByStartTimeRange(String fromInclusive, String toExclusive);
-
+    CompletableFuture<List<MachineSession>> findMachineSessionsByStartTimeRange(
+            String fromInclusive, String toExclusive);
 }

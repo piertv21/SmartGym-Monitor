@@ -15,24 +15,37 @@ public class DeviceStatusVerticle extends AbstractVerticle {
 
     @Override
     public void start() {
-        vertx.eventBus().<String>consumer(EventBusAddresses.DEVICE_STATUS, msg -> {
-            try {
-                JsonObject json = new JsonObject(msg.body());
-                DeviceStatusMessage deviceStatusMessage = json.mapTo(DeviceStatusMessage.class);
+        vertx.eventBus()
+                .<String>consumer(
+                        EventBusAddresses.DEVICE_STATUS,
+                        msg -> {
+                            try {
+                                JsonObject json = new JsonObject(msg.body());
+                                DeviceStatusMessage deviceStatusMessage =
+                                        json.mapTo(DeviceStatusMessage.class);
 
-                System.out.println("[DeviceStatusVerticle] Device status event received: " + deviceStatusMessage);
+                                System.out.println(
+                                        "[DeviceStatusVerticle] Device status event received: "
+                                                + deviceStatusMessage);
 
-                embeddedService.processDeviceStatus(deviceStatusMessage)
-                        .thenAccept(result ->
-                                System.out.println("[DeviceStatusVerticle] Device status event processed successfully"))
-                        .exceptionally(ex -> {
-                            System.err.println("❌ Failed to process device status event: " + ex.getMessage());
-                            return null;
+                                embeddedService
+                                        .processDeviceStatus(deviceStatusMessage)
+                                        .thenAccept(
+                                                result ->
+                                                        System.out.println(
+                                                                "[DeviceStatusVerticle] Device status event processed successfully"))
+                                        .exceptionally(
+                                                ex -> {
+                                                    System.err.println(
+                                                            "❌ Failed to process device status event: "
+                                                                    + ex.getMessage());
+                                                    return null;
+                                                });
+
+                            } catch (Exception e) {
+                                System.err.println(
+                                        "❌ Invalid device status event payload: " + e.getMessage());
+                            }
                         });
-
-            } catch (Exception e) {
-                System.err.println("❌ Invalid device status event payload: " + e.getMessage());
-            }
-        });
     }
 }

@@ -2,7 +2,6 @@ package com.smartgym.machineservice.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -10,8 +9,10 @@ public class MachineUsageSeriesResponse {
 
     @JsonProperty("meta")
     private final Meta meta;
+
     @JsonProperty("filters")
     private final Filters filters;
+
     @JsonProperty("series")
     private final List<Point> series;
 
@@ -51,10 +52,13 @@ public class MachineUsageSeriesResponse {
     public static class Filters {
         @JsonProperty("from")
         private final String from;
+
         @JsonProperty("to")
         private final String to;
+
         @JsonProperty("areaId")
         private final String areaId;
+
         @JsonProperty("machineId")
         private final String machineId;
 
@@ -86,6 +90,7 @@ public class MachineUsageSeriesResponse {
     public static class Point {
         @JsonProperty("period")
         private final String period;
+
         @JsonProperty("sessions")
         private final List<SessionItem> sessions;
 
@@ -107,18 +112,29 @@ public class MachineUsageSeriesResponse {
     public static class SessionItem {
         @JsonProperty("machineId")
         private final String machineId;
+
         @JsonProperty("areaId")
         private final String areaId;
+
         @JsonProperty("startTime")
         private final String startTime;
+
         @JsonProperty("endTime")
         private final String endTime;
+
         @JsonProperty("durationSeconds")
         private final long durationSeconds;
+
         @JsonProperty("badgeId")
         private final String badgeId;
 
-        public SessionItem(String machineId, String areaId, String startTime, String endTime, long durationSeconds, String badgeId) {
+        public SessionItem(
+                String machineId,
+                String areaId,
+                String startTime,
+                String endTime,
+                long durationSeconds,
+                String badgeId) {
             this.machineId = machineId;
             this.areaId = areaId;
             this.startTime = startTime;

@@ -23,14 +23,13 @@ class MachineService:
             timeout=self.timeout,
         )
 
-    def set_maintenance(self, access_token: str, machine_id: str, active: bool) -> requests.Response:
+    def set_maintenance(
+        self, access_token: str, machine_id: str, active: bool
+    ) -> requests.Response:
         return requests.post(
             f"{self.gateway_base_url}/machine-service/set-maintenance",
             headers=self._bearer_headers(access_token),
-            json={
-                "machineId": machine_id,
-                "active": active
-            },
+            json={"machineId": machine_id, "active": active},
             timeout=self.timeout,
         )
 

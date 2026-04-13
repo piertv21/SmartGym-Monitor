@@ -58,7 +58,9 @@ def test_api_statuses_returns_normalized_data(monkeypatch):
 
     monkeypatch.setattr(
         "smartgym_flask.routes.api.get_status_service",
-        lambda: type("S", (), {"fetch_statuses": lambda self, access_token: DummyResponse()})(),
+        lambda: type(
+            "S", (), {"fetch_statuses": lambda self, access_token: DummyResponse()}
+        )(),
     )
 
     with client.session_transaction() as session:
@@ -86,16 +88,29 @@ def test_toggle_maintenance_returns_backend_conflict_message(monkeypatch):
 
     monkeypatch.setattr(
         "smartgym_flask.routes.api.get_machine_service",
-        lambda: type("S", (), {"set_maintenance": lambda self, access_token, machine_id, active: DummyResponse()})(),
+        lambda: type(
+            "S",
+            (),
+            {
+                "set_maintenance": lambda self,
+                access_token,
+                machine_id,
+                active: DummyResponse()
+            },
+        )(),
     )
 
     with client.session_transaction() as session:
         session["access_token"] = "jwt-token-123"
 
-    response = client.post("/api/maintenance/toggle", json={"machineId": "machine-1", "active": True})
+    response = client.post(
+        "/api/maintenance/toggle", json={"machineId": "machine-1", "active": True}
+    )
 
     assert response.status_code == 409
-    assert response.get_json() == {"error": "cannot set maintenance while occupied: machine-1"}
+    assert response.get_json() == {
+        "error": "cannot set maintenance while occupied: machine-1"
+    }
 
 
 def test_live_monitor_requires_login_session():
@@ -119,7 +134,11 @@ def test_live_monitor_returns_aggregated_data(monkeypatch):
         def json():
             return [
                 {"machineId": "bench-1", "areaId": "area-weight", "status": "FREE"},
-                {"machineId": "treadmill-1", "areaId": "area-cardio", "status": "OCCUPIED"},
+                {
+                    "machineId": "treadmill-1",
+                    "areaId": "area-cardio",
+                    "status": "OCCUPIED",
+                },
             ]
 
     class AreasResponse:
@@ -128,17 +147,33 @@ def test_live_monitor_returns_aggregated_data(monkeypatch):
         @staticmethod
         def json():
             return [
-                {"id": "area-weight", "name": "Weight", "capacity": 20, "currentCount": 10, "areaType": "WEIGHT"},
-                {"id": "area-cardio", "name": "Cardio", "capacity": 8, "currentCount": 4, "areaType": "CARDIO"},
+                {
+                    "id": "area-weight",
+                    "name": "Weight",
+                    "capacity": 20,
+                    "currentCount": 10,
+                    "areaType": "WEIGHT",
+                },
+                {
+                    "id": "area-cardio",
+                    "name": "Cardio",
+                    "capacity": 8,
+                    "currentCount": 4,
+                    "areaType": "CARDIO",
+                },
             ]
 
     monkeypatch.setattr(
         "smartgym_flask.routes.api.get_machine_service",
-        lambda: type("S", (), {"fetch_machines": lambda self, access_token: MachinesResponse()})(),
+        lambda: type(
+            "S", (), {"fetch_machines": lambda self, access_token: MachinesResponse()}
+        )(),
     )
     monkeypatch.setattr(
         "smartgym_flask.routes.api.get_area_service",
-        lambda: type("S", (), {"fetch_areas": lambda self, access_token: AreasResponse()})(),
+        lambda: type(
+            "S", (), {"fetch_areas": lambda self, access_token: AreasResponse()}
+        )(),
     )
 
     with client.session_transaction() as session:
@@ -194,13 +229,17 @@ def test_dashboard_stats_uses_areas_current_count_for_gym_count(monkeypatch):
             (),
             {
                 "fetch_attendance": lambda self, access_token: AttendanceResponse(),
-                "fetch_gym_session_duration": lambda self, access_token, date: SessionResponse(),
+                "fetch_gym_session_duration": lambda self,
+                access_token,
+                date: SessionResponse(),
             },
         )(),
     )
     monkeypatch.setattr(
         "smartgym_flask.routes.api.get_area_service",
-        lambda: type("S", (), {"fetch_areas": lambda self, access_token: AreasResponse()})(),
+        lambda: type(
+            "S", (), {"fetch_areas": lambda self, access_token: AreasResponse()}
+        )(),
     )
 
     with client.session_transaction() as session:
@@ -241,7 +280,9 @@ def test_dashboard_stats_keeps_analytics_gym_count_when_areas_unreachable(monkey
             (),
             {
                 "fetch_attendance": lambda self, access_token: AttendanceResponse(),
-                "fetch_gym_session_duration": lambda self, access_token, date: SessionResponse(),
+                "fetch_gym_session_duration": lambda self,
+                access_token,
+                date: SessionResponse(),
             },
         )(),
     )
@@ -251,7 +292,11 @@ def test_dashboard_stats_keeps_analytics_gym_count_when_areas_unreachable(monkey
         lambda: type(
             "S",
             (),
-            {"fetch_areas": lambda self, access_token: (_ for _ in ()).throw(requests.RequestException("boom"))},
+            {
+                "fetch_areas": lambda self, access_token: (_ for _ in ()).throw(
+                    requests.RequestException("boom")
+                )
+            },
         )(),
     )
 
@@ -266,7 +311,9 @@ def test_dashboard_stats_keeps_analytics_gym_count_when_areas_unreachable(monkey
     assert payload["attendance"]["totalEntries"] == 20
 
 
-def test_dashboard_stats_uses_today_attendance_snapshot_when_attendance_is_a_list(monkeypatch):
+def test_dashboard_stats_uses_today_attendance_snapshot_when_attendance_is_a_list(
+    monkeypatch,
+):
     app = create_app({"TESTING": True, "SECRET_KEY": "test"})
     client = app.test_client()
 
@@ -276,8 +323,18 @@ def test_dashboard_stats_uses_today_attendance_snapshot_when_attendance_is_a_lis
         @staticmethod
         def json():
             return [
-                {"date": "2026-04-09", "gymCount": 4, "totalEntries": 11, "totalExits": 6},
-                {"date": "2026-04-10", "gymCount": 8, "totalEntries": 21, "totalExits": 13},
+                {
+                    "date": "2026-04-09",
+                    "gymCount": 4,
+                    "totalEntries": 11,
+                    "totalExits": 6,
+                },
+                {
+                    "date": "2026-04-10",
+                    "gymCount": 8,
+                    "totalEntries": 21,
+                    "totalExits": 13,
+                },
             ]
 
     class SessionResponse:
@@ -301,20 +358,28 @@ def test_dashboard_stats_uses_today_attendance_snapshot_when_attendance_is_a_lis
             (),
             {
                 "fetch_attendance": lambda self, access_token: AttendanceResponse(),
-                "fetch_gym_session_duration": lambda self, access_token, date: SessionResponse(),
+                "fetch_gym_session_duration": lambda self,
+                access_token,
+                date: SessionResponse(),
             },
         )(),
     )
     monkeypatch.setattr(
         "smartgym_flask.routes.api.get_area_service",
-        lambda: type("S", (), {"fetch_areas": lambda self, access_token: AreasResponse()})(),
+        lambda: type(
+            "S", (), {"fetch_areas": lambda self, access_token: AreasResponse()}
+        )(),
     )
     monkeypatch.setattr(
         "smartgym_flask.routes.api.datetime",
         type(
             "FakeDatetime",
             (),
-            {"now": staticmethod(lambda *args, **kwargs: real_datetime(2026, 4, 10, 8, 0, 0))},
+            {
+                "now": staticmethod(
+                    lambda *args, **kwargs: real_datetime(2026, 4, 10, 8, 0, 0)
+                )
+            },
         ),
     )
 
@@ -367,11 +432,15 @@ def test_history_filters_returns_areas_and_machines(monkeypatch):
 
     monkeypatch.setattr(
         "smartgym_flask.routes.api.get_machine_service",
-        lambda: type("S", (), {"fetch_machines": lambda self, access_token: MachinesResponse()})(),
+        lambda: type(
+            "S", (), {"fetch_machines": lambda self, access_token: MachinesResponse()}
+        )(),
     )
     monkeypatch.setattr(
         "smartgym_flask.routes.api.get_area_service",
-        lambda: type("S", (), {"fetch_areas": lambda self, access_token: AreasResponse()})(),
+        lambda: type(
+            "S", (), {"fetch_areas": lambda self, access_token: AreasResponse()}
+        )(),
     )
 
     with client.session_transaction() as session:
@@ -396,7 +465,12 @@ def test_history_returns_attendance_and_flattened_sessions(monkeypatch):
         def json():
             return {
                 "series": [
-                    {"period": "2026-04-10", "currentCount": 12, "totalEntries": 30, "totalExits": 18}
+                    {
+                        "period": "2026-04-10",
+                        "currentCount": 12,
+                        "totalEntries": 30,
+                        "totalExits": 18,
+                    }
                 ]
             }
 
@@ -429,7 +503,12 @@ def test_history_returns_attendance_and_flattened_sessions(monkeypatch):
             "S",
             (),
             {
-                "fetch_attendance_series": lambda self, access_token, from_date, to_date, granularity, area_id: AttendanceSeriesResponse(),
+                "fetch_attendance_series": lambda self,
+                access_token,
+                from_date,
+                to_date,
+                granularity,
+                area_id: AttendanceSeriesResponse(),
             },
         )(),
     )
@@ -439,7 +518,13 @@ def test_history_returns_attendance_and_flattened_sessions(monkeypatch):
             "S",
             (),
             {
-                "fetch_machine_history_series": lambda self, access_token, from_date, to_date, granularity, area_id, machine_id: MachineHistoryResponse(),
+                "fetch_machine_history_series": lambda self,
+                access_token,
+                from_date,
+                to_date,
+                granularity,
+                area_id,
+                machine_id: MachineHistoryResponse(),
             },
         )(),
     )
@@ -447,7 +532,9 @@ def test_history_returns_attendance_and_flattened_sessions(monkeypatch):
     with client.session_transaction() as session:
         session["access_token"] = "jwt-token-123"
 
-    response = client.get("/api/history?from=2026-04-10&to=2026-04-10&granularity=daily&areaId=a1&machineId=m-01")
+    response = client.get(
+        "/api/history?from=2026-04-10&to=2026-04-10&granularity=daily&areaId=a1&machineId=m-01"
+    )
     payload = response.get_json()
 
     assert response.status_code == 200
@@ -455,4 +542,3 @@ def test_history_returns_attendance_and_flattened_sessions(monkeypatch):
     assert payload["totalSessions"] == 1
     assert payload["sessions"][0]["machineId"] == "m-01"
     assert payload["sessions"][0]["period"] == "2026-04-10"
-

@@ -12,8 +12,7 @@ public class UpdateAreaCapacityMessage {
     @JsonProperty("capacity")
     private Integer capacity;
 
-    public UpdateAreaCapacityMessage() {
-    }
+    public UpdateAreaCapacityMessage() {}
 
     public UpdateAreaCapacityMessage(String areaId, Integer capacity) {
         this.areaId = areaId;
@@ -38,10 +37,13 @@ public class UpdateAreaCapacityMessage {
 
     @Override
     public String toString() {
-        return "UpdateAreaCapacityMessage{" +
-                "areaId='" + areaId + '\'' +
-                ", capacity=" + capacity +
-                '}';
+        return "UpdateAreaCapacityMessage{"
+                + "areaId='"
+                + areaId
+                + '\''
+                + ", capacity="
+                + capacity
+                + '}';
     }
 
     @Override

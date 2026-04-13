@@ -178,10 +178,7 @@ def dashboard_stats():
     except requests.RequestException:
         pass
 
-    return jsonify({
-        "attendance": attendance_data,
-        "session": session_data
-    })
+    return jsonify({"attendance": attendance_data, "session": session_data})
 
 
 @api_bp.get("/machines")
@@ -214,7 +211,9 @@ def live_monitor_data():
         return jsonify({"error": f"Gateway unreachable: {ex}"}), 503
 
     if machines_response.status_code >= 400:
-        return jsonify({"error": "Unable to fetch machines"}), machines_response.status_code
+        return jsonify(
+            {"error": "Unable to fetch machines"}
+        ), machines_response.status_code
     if areas_response.status_code >= 400:
         return jsonify({"error": "Unable to fetch areas"}), areas_response.status_code
 
@@ -266,15 +265,20 @@ def live_monitor_data():
                 "currentUsers": current_users,
                 "capacity": capacity,
                 "occupancyPercent": occupancy_percent,
-                "machines": sorted(machines_by_area.get(area_id, []), key=lambda machine: str(machine.get("machineId", ""))),
+                "machines": sorted(
+                    machines_by_area.get(area_id, []),
+                    key=lambda machine: str(machine.get("machineId", "")),
+                ),
             }
         )
 
-    return jsonify({
-        "date": datetime.now().strftime("%Y-%m-%d"),
-        "areas": live_areas,
-        "lastUpdate": datetime.now().isoformat(),
-    })
+    return jsonify(
+        {
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "areas": live_areas,
+            "lastUpdate": datetime.now().isoformat(),
+        }
+    )
 
 
 @api_bp.post("/maintenance/toggle")
@@ -291,7 +295,9 @@ def toggle_maintenance():
         return jsonify({"error": "machineId is required"}), 400
 
     try:
-        response = get_machine_service().set_maintenance(access_token, machine_id, active)
+        response = get_machine_service().set_maintenance(
+            access_token, machine_id, active
+        )
     except requests.RequestException as ex:
         return jsonify({"error": f"Gateway unreachable: {ex}"}), 503
 
@@ -300,7 +306,9 @@ def toggle_maintenance():
         try:
             payload = response.json()
             if isinstance(payload, dict):
-                error_message = payload.get("error") or payload.get("message") or error_message
+                error_message = (
+                    payload.get("error") or payload.get("message") or error_message
+                )
         except ValueError:
             pass
         return jsonify({"error": error_message}), response.status_code
@@ -321,7 +329,9 @@ def history_filters():
         return jsonify({"error": f"Gateway unreachable: {ex}"}), 503
 
     if machines_response.status_code >= 400:
-        return jsonify({"error": "Unable to fetch machines"}), machines_response.status_code
+        return jsonify(
+            {"error": "Unable to fetch machines"}
+        ), machines_response.status_code
     if areas_response.status_code >= 400:
         return jsonify({"error": "Unable to fetch areas"}), areas_response.status_code
 
@@ -335,7 +345,9 @@ def history_filters():
         [
             {
                 "id": str(area.get("id") or "").strip(),
-                "name": str(area.get("name") or area.get("areaType") or area.get("id") or "").strip(),
+                "name": str(
+                    area.get("name") or area.get("areaType") or area.get("id") or ""
+                ).strip(),
             }
             for area in areas
             if isinstance(area, dict) and str(area.get("id") or "").strip()
@@ -346,11 +358,14 @@ def history_filters():
     normalized_machines = sorted(
         [
             {
-                "machineId": str(machine.get("machineId") or machine.get("id") or "").strip(),
+                "machineId": str(
+                    machine.get("machineId") or machine.get("id") or ""
+                ).strip(),
                 "areaId": str(machine.get("areaId") or "").strip(),
             }
             for machine in machines
-            if isinstance(machine, dict) and str(machine.get("machineId") or machine.get("id") or "").strip()
+            if isinstance(machine, dict)
+            and str(machine.get("machineId") or machine.get("id") or "").strip()
         ],
         key=lambda machine: machine["machineId"].lower(),
     )
@@ -396,9 +411,13 @@ def history_data():
         return jsonify({"error": f"Gateway unreachable: {ex}"}), 503
 
     if attendance_response.status_code >= 400:
-        return jsonify({"error": "Unable to fetch attendance series"}), attendance_response.status_code
+        return jsonify(
+            {"error": "Unable to fetch attendance series"}
+        ), attendance_response.status_code
     if machine_history_response.status_code >= 400:
-        return jsonify({"error": "Unable to fetch machine history series"}), machine_history_response.status_code
+        return jsonify(
+            {"error": "Unable to fetch machine history series"}
+        ), machine_history_response.status_code
 
     try:
         attendance_payload = attendance_response.json()

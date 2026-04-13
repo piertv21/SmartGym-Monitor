@@ -6,12 +6,11 @@ import com.mongodb.client.MongoDatabase;
 import com.smartgym.areaservice.application.ports.AreaRepository;
 import com.smartgym.areaservice.model.AreaType;
 import com.smartgym.areaservice.model.GymArea;
-import org.bson.Document;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import org.bson.Document;
 
 public class AreaRepositoryImpl implements AreaRepository {
 
@@ -28,42 +27,45 @@ public class AreaRepositoryImpl implements AreaRepository {
 
     @Override
     public CompletableFuture<Void> saveArea(GymArea area) {
-        return CompletableFuture.runAsync(() -> {
-            Document existing = collection.find(new Document("id", area.getId())).first();
-            Document document = toDocument(area);
+        return CompletableFuture.runAsync(
+                () -> {
+                    Document existing = collection.find(new Document("id", area.getId())).first();
+                    Document document = toDocument(area);
 
-            if (existing == null) {
-                collection.insertOne(document);
-            } else {
-                collection.replaceOne(new Document("id", area.getId()), document);
-            }
-        });
+                    if (existing == null) {
+                        collection.insertOne(document);
+                    } else {
+                        collection.replaceOne(new Document("id", area.getId()), document);
+                    }
+                });
     }
 
     @Override
     public CompletableFuture<Optional<GymArea>> findAreaById(String areaId) {
-        return CompletableFuture.supplyAsync(() -> {
-            Document document = collection.find(new Document("id", areaId)).first();
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    Document document = collection.find(new Document("id", areaId)).first();
 
-            if (document == null) {
-                return Optional.empty();
-            }
+                    if (document == null) {
+                        return Optional.empty();
+                    }
 
-            return Optional.of(fromDocument(document));
-        });
+                    return Optional.of(fromDocument(document));
+                });
     }
 
     @Override
     public CompletableFuture<List<GymArea>> findAllAreas() {
-        return CompletableFuture.supplyAsync(() -> {
-            List<GymArea> result = new ArrayList<>();
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    List<GymArea> result = new ArrayList<>();
 
-            for (Document document : collection.find()) {
-                result.add(fromDocument(document));
-            }
+                    for (Document document : collection.find()) {
+                        result.add(fromDocument(document));
+                    }
 
-            return result;
-        });
+                    return result;
+                });
     }
 
     private Document toDocument(GymArea area) {
@@ -81,7 +83,6 @@ public class AreaRepositoryImpl implements AreaRepository {
                 document.getString("name"),
                 AreaType.valueOf(document.getString("areaType")),
                 document.getInteger("capacity"),
-                document.getInteger("currentCount")
-        );
+                document.getInteger("currentCount"));
     }
 }

@@ -1,9 +1,7 @@
 package com.smartgym.analyticsservice.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -24,10 +22,10 @@ public class AttendanceSnapshot {
     @JsonProperty("totalExits")
     private Integer totalExits;
 
-    public AttendanceSnapshot() {
-    }
+    public AttendanceSnapshot() {}
 
-    public AttendanceSnapshot(String id, String date, Integer gymCount, Integer totalEntries, Integer totalExits) {
+    public AttendanceSnapshot(
+            String id, String date, Integer gymCount, Integer totalEntries, Integer totalExits) {
         this.id = id;
         this.date = date;
         this.gymCount = gymCount;
@@ -77,20 +75,31 @@ public class AttendanceSnapshot {
 
     @Override
     public String toString() {
-        return "AttendanceSnapshot{" +
-                "id='" + id + '\'' +
-                ", date='" + date + '\'' +
-                ", gymCount=" + gymCount +
-                ", totalEntries=" + totalEntries +
-                ", totalExits=" + totalExits +
-                '}';
+        return "AttendanceSnapshot{"
+                + "id='"
+                + id
+                + '\''
+                + ", date='"
+                + date
+                + '\''
+                + ", gymCount="
+                + gymCount
+                + ", totalEntries="
+                + totalEntries
+                + ", totalExits="
+                + totalExits
+                + '}';
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         AttendanceSnapshot that = (AttendanceSnapshot) o;
-        return Objects.equals(id, that.id) && Objects.equals(date, that.date) && Objects.equals(gymCount, that.gymCount) && Objects.equals(totalEntries, that.totalEntries) && Objects.equals(totalExits, that.totalExits);
+        return Objects.equals(id, that.id)
+                && Objects.equals(date, that.date)
+                && Objects.equals(gymCount, that.gymCount)
+                && Objects.equals(totalEntries, that.totalEntries)
+                && Objects.equals(totalExits, that.totalExits);
     }
 
     @Override

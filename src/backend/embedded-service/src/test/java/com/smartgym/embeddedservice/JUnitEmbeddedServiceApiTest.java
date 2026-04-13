@@ -1,5 +1,10 @@
 package com.smartgym.embeddedservice;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.smartgym.embeddedservice.application.EmbeddedServiceApiImpl;
 import com.smartgym.embeddedservice.application.ports.AnalyticsServicePort;
 import com.smartgym.embeddedservice.application.ports.AreaServicePort;
@@ -12,17 +17,11 @@ import com.smartgym.embeddedservice.model.GymAccessMessage;
 import com.smartgym.embeddedservice.model.MachineUsageMessage;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 public class JUnitEmbeddedServiceApiTest {
 
@@ -30,29 +29,29 @@ public class JUnitEmbeddedServiceApiTest {
     void processAreaAccessCallsAreaServiceThenSavesEvent() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
-        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
-        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
-        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort =
+                new RecordingAnalyticsServicePort(callOrder, false);
+        RecordingMachineServicePort machineServicePort =
+                new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort =
+                new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
-        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
-                repository,
-                areaServicePort,
-                analyticsServicePort,
-                machineServicePort,
-                trackingServicePort
-        );
+        EmbeddedServiceApiImpl service =
+                new EmbeddedServiceApiImpl(
+                        repository,
+                        areaServicePort,
+                        analyticsServicePort,
+                        machineServicePort,
+                        trackingServicePort);
 
-        AreaAccessMessage message = new AreaAccessMessage(
-                "reader-01",
-                "2026-03-28T09:00:00Z",
-                "badge-001",
-                "cardio-area",
-                "IN"
-        );
+        AreaAccessMessage message =
+                new AreaAccessMessage(
+                        "reader-01", "2026-03-28T09:00:00Z", "badge-001", "cardio-area", "IN");
 
         service.processAreaAccess(message).join();
 
-        assertEquals(List.of("area-service", "analytics-service", "embedded-repository"), callOrder);
+        assertEquals(
+                List.of("area-service", "analytics-service", "embedded-repository"), callOrder);
         assertEquals(1, repository.savedEvents.size());
     }
 
@@ -60,29 +59,30 @@ public class JUnitEmbeddedServiceApiTest {
     void processAreaExitCallsAreaServiceThenSavesEvent() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
-        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
-        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
-        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort =
+                new RecordingAnalyticsServicePort(callOrder, false);
+        RecordingMachineServicePort machineServicePort =
+                new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort =
+                new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
-        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
-                repository,
-                areaServicePort,
-                analyticsServicePort,
-                machineServicePort,
-                trackingServicePort
-        );
+        EmbeddedServiceApiImpl service =
+                new EmbeddedServiceApiImpl(
+                        repository,
+                        areaServicePort,
+                        analyticsServicePort,
+                        machineServicePort,
+                        trackingServicePort);
 
-        AreaAccessMessage message = new AreaAccessMessage(
-                "reader-01",
-                "2026-03-28T09:00:00Z",
-                "badge-001",
-                "cardio-area",
-                "OUT"
-        );
+        AreaAccessMessage message =
+                new AreaAccessMessage(
+                        "reader-01", "2026-03-28T09:00:00Z", "badge-001", "cardio-area", "OUT");
 
         service.processAreaExit(message).join();
 
-        assertEquals(List.of("area-service-exit", "analytics-service", "embedded-repository"), callOrder);
+        assertEquals(
+                List.of("area-service-exit", "analytics-service", "embedded-repository"),
+                callOrder);
         assertEquals(1, repository.savedEvents.size());
     }
 
@@ -90,30 +90,28 @@ public class JUnitEmbeddedServiceApiTest {
     void processAreaAccessFailsValidationAndDoesNotCallDependencies() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
-        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
-        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
-        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort =
+                new RecordingAnalyticsServicePort(callOrder, false);
+        RecordingMachineServicePort machineServicePort =
+                new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort =
+                new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
-        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
-                repository,
-                areaServicePort,
-                analyticsServicePort,
-                machineServicePort,
-                trackingServicePort
-        );
+        EmbeddedServiceApiImpl service =
+                new EmbeddedServiceApiImpl(
+                        repository,
+                        areaServicePort,
+                        analyticsServicePort,
+                        machineServicePort,
+                        trackingServicePort);
 
-        AreaAccessMessage invalidMessage = new AreaAccessMessage(
-                "reader-01",
-                "2026-03-28T09:00:00Z",
-                "badge-001",
-                " ",
-                "IN"
-        );
+        AreaAccessMessage invalidMessage =
+                new AreaAccessMessage("reader-01", "2026-03-28T09:00:00Z", "badge-001", " ", "IN");
 
-        CompletionException ex = assertThrows(
-                CompletionException.class,
-                () -> service.processAreaAccess(invalidMessage).join()
-        );
+        CompletionException ex =
+                assertThrows(
+                        CompletionException.class,
+                        () -> service.processAreaAccess(invalidMessage).join());
 
         assertNotNull(ex.getCause());
         assertEquals("Invalid area access message", ex.getCause().getMessage());
@@ -124,28 +122,28 @@ public class JUnitEmbeddedServiceApiTest {
     void processAreaAccessStillForwardsToAnalyticsWhenAreaServiceFails() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, true);
-        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
-        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
-        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort =
+                new RecordingAnalyticsServicePort(callOrder, false);
+        RecordingMachineServicePort machineServicePort =
+                new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort =
+                new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
-        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
-                repository,
-                areaServicePort,
-                analyticsServicePort,
-                machineServicePort,
-                trackingServicePort
-        );
+        EmbeddedServiceApiImpl service =
+                new EmbeddedServiceApiImpl(
+                        repository,
+                        areaServicePort,
+                        analyticsServicePort,
+                        machineServicePort,
+                        trackingServicePort);
 
-        AreaAccessMessage message = new AreaAccessMessage(
-                "reader-01",
-                "2026-03-28T09:00:00Z",
-                "badge-001",
-                "cardio-area",
-                "IN"
-        );
+        AreaAccessMessage message =
+                new AreaAccessMessage(
+                        "reader-01", "2026-03-28T09:00:00Z", "badge-001", "cardio-area", "IN");
 
         assertThrows(CompletionException.class, () -> service.processAreaAccess(message).join());
-        assertEquals(List.of("area-service", "analytics-service", "embedded-repository"), callOrder);
+        assertEquals(
+                List.of("area-service", "analytics-service", "embedded-repository"), callOrder);
         assertEquals(1, repository.savedEvents.size());
     }
 
@@ -153,24 +151,23 @@ public class JUnitEmbeddedServiceApiTest {
     void processGymAccessDoesNotSaveEventWhenAnalyticsFails() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
-        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, true);
-        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
-        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort =
+                new RecordingAnalyticsServicePort(callOrder, true);
+        RecordingMachineServicePort machineServicePort =
+                new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort =
+                new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
-        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
-                repository,
-                areaServicePort,
-                analyticsServicePort,
-                machineServicePort,
-                trackingServicePort
-        );
+        EmbeddedServiceApiImpl service =
+                new EmbeddedServiceApiImpl(
+                        repository,
+                        areaServicePort,
+                        analyticsServicePort,
+                        machineServicePort,
+                        trackingServicePort);
 
-        GymAccessMessage message = new GymAccessMessage(
-                "turnstile-01",
-                "2026-03-28T09:00:00Z",
-                "badge-001",
-                "ENTRY"
-        );
+        GymAccessMessage message =
+                new GymAccessMessage("turnstile-01", "2026-03-28T09:00:00Z", "badge-001", "ENTRY");
 
         assertThrows(CompletionException.class, () -> service.processGymAccess(message).join());
         assertEquals(List.of("tracking-service-start", "analytics-service"), callOrder);
@@ -181,29 +178,34 @@ public class JUnitEmbeddedServiceApiTest {
     void processMachineUsageStartedCallsMachineServiceThenSavesEvent() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
-        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
-        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
-        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort =
+                new RecordingAnalyticsServicePort(callOrder, false);
+        RecordingMachineServicePort machineServicePort =
+                new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort =
+                new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
-        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
-                repository,
-                areaServicePort,
-                analyticsServicePort,
-                machineServicePort,
-                trackingServicePort
-        );
+        EmbeddedServiceApiImpl service =
+                new EmbeddedServiceApiImpl(
+                        repository,
+                        areaServicePort,
+                        analyticsServicePort,
+                        machineServicePort,
+                        trackingServicePort);
 
-        MachineUsageMessage message = new MachineUsageMessage(
-                "machine-reader-01",
-                "2026-03-28T10:00:00Z",
-                "machine-01",
-                "badge-001",
-                "STARTED"
-        );
+        MachineUsageMessage message =
+                new MachineUsageMessage(
+                        "machine-reader-01",
+                        "2026-03-28T10:00:00Z",
+                        "machine-01",
+                        "badge-001",
+                        "STARTED");
 
         service.processMachineUsage(message).join();
 
-        assertEquals(List.of("machine-service-start", "analytics-service", "embedded-repository"), callOrder);
+        assertEquals(
+                List.of("machine-service-start", "analytics-service", "embedded-repository"),
+                callOrder);
         assertEquals(1, repository.savedEvents.size());
     }
 
@@ -211,29 +213,30 @@ public class JUnitEmbeddedServiceApiTest {
     void processMachineUsageStoppedCallsMachineServiceThenSavesEvent() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
-        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
-        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
-        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort =
+                new RecordingAnalyticsServicePort(callOrder, false);
+        RecordingMachineServicePort machineServicePort =
+                new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort =
+                new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
-        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
-                repository,
-                areaServicePort,
-                analyticsServicePort,
-                machineServicePort,
-                trackingServicePort
-        );
+        EmbeddedServiceApiImpl service =
+                new EmbeddedServiceApiImpl(
+                        repository,
+                        areaServicePort,
+                        analyticsServicePort,
+                        machineServicePort,
+                        trackingServicePort);
 
-        MachineUsageMessage message = new MachineUsageMessage(
-                "machine-reader-01",
-                "2026-03-28T10:00:00Z",
-                "machine-01",
-                null,
-                "STOPPED"
-        );
+        MachineUsageMessage message =
+                new MachineUsageMessage(
+                        "machine-reader-01", "2026-03-28T10:00:00Z", "machine-01", null, "STOPPED");
 
         service.processMachineUsage(message).join();
 
-        assertEquals(List.of("machine-service-end", "analytics-service", "embedded-repository"), callOrder);
+        assertEquals(
+                List.of("machine-service-end", "analytics-service", "embedded-repository"),
+                callOrder);
         assertEquals(1, repository.savedEvents.size());
     }
 
@@ -241,30 +244,29 @@ public class JUnitEmbeddedServiceApiTest {
     void processMachineUsageFailsValidationWhenStartedWithoutBadge() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
-        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
-        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
-        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort =
+                new RecordingAnalyticsServicePort(callOrder, false);
+        RecordingMachineServicePort machineServicePort =
+                new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort =
+                new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
-        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
-                repository,
-                areaServicePort,
-                analyticsServicePort,
-                machineServicePort,
-                trackingServicePort
-        );
+        EmbeddedServiceApiImpl service =
+                new EmbeddedServiceApiImpl(
+                        repository,
+                        areaServicePort,
+                        analyticsServicePort,
+                        machineServicePort,
+                        trackingServicePort);
 
-        MachineUsageMessage invalidMessage = new MachineUsageMessage(
-                "machine-reader-01",
-                "2026-03-28T10:00:00Z",
-                "machine-01",
-                "  ",
-                "STARTED"
-        );
+        MachineUsageMessage invalidMessage =
+                new MachineUsageMessage(
+                        "machine-reader-01", "2026-03-28T10:00:00Z", "machine-01", "  ", "STARTED");
 
-        CompletionException ex = assertThrows(
-                CompletionException.class,
-                () -> service.processMachineUsage(invalidMessage).join()
-        );
+        CompletionException ex =
+                assertThrows(
+                        CompletionException.class,
+                        () -> service.processMachineUsage(invalidMessage).join());
 
         assertNotNull(ex.getCause());
         assertEquals("badgeId is required when usageState is STARTED", ex.getCause().getMessage());
@@ -275,28 +277,33 @@ public class JUnitEmbeddedServiceApiTest {
     void processMachineUsageStillForwardsToAnalyticsWhenMachineServiceFails() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
-        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
-        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, true);
-        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort =
+                new RecordingAnalyticsServicePort(callOrder, false);
+        RecordingMachineServicePort machineServicePort =
+                new RecordingMachineServicePort(callOrder, true);
+        RecordingTrackingServicePort trackingServicePort =
+                new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
-        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
-                repository,
-                areaServicePort,
-                analyticsServicePort,
-                machineServicePort,
-                trackingServicePort
-        );
+        EmbeddedServiceApiImpl service =
+                new EmbeddedServiceApiImpl(
+                        repository,
+                        areaServicePort,
+                        analyticsServicePort,
+                        machineServicePort,
+                        trackingServicePort);
 
-        MachineUsageMessage message = new MachineUsageMessage(
-                "machine-reader-01",
-                "2026-03-28T10:00:00Z",
-                "machine-01",
-                "badge-001",
-                "STARTED"
-        );
+        MachineUsageMessage message =
+                new MachineUsageMessage(
+                        "machine-reader-01",
+                        "2026-03-28T10:00:00Z",
+                        "machine-01",
+                        "badge-001",
+                        "STARTED");
 
         assertThrows(CompletionException.class, () -> service.processMachineUsage(message).join());
-        assertEquals(List.of("machine-service-start", "analytics-service", "embedded-repository"), callOrder);
+        assertEquals(
+                List.of("machine-service-start", "analytics-service", "embedded-repository"),
+                callOrder);
         assertEquals(1, repository.savedEvents.size());
     }
 
@@ -304,25 +311,24 @@ public class JUnitEmbeddedServiceApiTest {
     void processDeviceStatusPersistsDeviceStatusEvent() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
-        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
-        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
-        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort =
+                new RecordingAnalyticsServicePort(callOrder, false);
+        RecordingMachineServicePort machineServicePort =
+                new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort =
+                new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
-        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
-                repository,
-                areaServicePort,
-                analyticsServicePort,
-                machineServicePort,
-                trackingServicePort
-        );
+        EmbeddedServiceApiImpl service =
+                new EmbeddedServiceApiImpl(
+                        repository,
+                        areaServicePort,
+                        analyticsServicePort,
+                        machineServicePort,
+                        trackingServicePort);
 
-        DeviceStatusMessage message = new DeviceStatusMessage(
-                "sensor-01",
-                "2026-03-28T10:00:00Z",
-                "PROXIMITY_SENSOR",
-                true,
-                "OK"
-        );
+        DeviceStatusMessage message =
+                new DeviceStatusMessage(
+                        "sensor-01", "2026-03-28T10:00:00Z", "PROXIMITY_SENSOR", true, "OK");
 
         service.processDeviceStatus(message).join();
 
@@ -335,20 +341,24 @@ public class JUnitEmbeddedServiceApiTest {
     void getAllDeviceStatusesReturnsRepositorySnapshot() {
         List<String> callOrder = new ArrayList<>();
         RecordingAreaServicePort areaServicePort = new RecordingAreaServicePort(callOrder, false);
-        RecordingAnalyticsServicePort analyticsServicePort = new RecordingAnalyticsServicePort(callOrder, false);
-        RecordingMachineServicePort machineServicePort = new RecordingMachineServicePort(callOrder, false);
-        RecordingTrackingServicePort trackingServicePort = new RecordingTrackingServicePort(callOrder, false);
+        RecordingAnalyticsServicePort analyticsServicePort =
+                new RecordingAnalyticsServicePort(callOrder, false);
+        RecordingMachineServicePort machineServicePort =
+                new RecordingMachineServicePort(callOrder, false);
+        RecordingTrackingServicePort trackingServicePort =
+                new RecordingTrackingServicePort(callOrder, false);
         RecordingEmbeddedRepository repository = new RecordingEmbeddedRepository(callOrder);
-        repository.latestDeviceStatuses = new JsonArray()
-                .add(new JsonObject().put("deviceId", "sensor-01").put("online", true));
+        repository.latestDeviceStatuses =
+                new JsonArray()
+                        .add(new JsonObject().put("deviceId", "sensor-01").put("online", true));
 
-        EmbeddedServiceApiImpl service = new EmbeddedServiceApiImpl(
-                repository,
-                areaServicePort,
-                analyticsServicePort,
-                machineServicePort,
-                trackingServicePort
-        );
+        EmbeddedServiceApiImpl service =
+                new EmbeddedServiceApiImpl(
+                        repository,
+                        areaServicePort,
+                        analyticsServicePort,
+                        machineServicePort,
+                        trackingServicePort);
 
         JsonArray statuses = service.getAllDeviceStatuses().join();
 
@@ -371,7 +381,8 @@ public class JUnitEmbeddedServiceApiTest {
         public CompletableFuture<Void> processAreaAccess(AreaAccessMessage message) {
             callOrder.add("area-service");
             if (fail) {
-                return CompletableFuture.failedFuture(new IllegalStateException("area-service unavailable"));
+                return CompletableFuture.failedFuture(
+                        new IllegalStateException("area-service unavailable"));
             }
             return CompletableFuture.completedFuture(null);
         }
@@ -380,7 +391,8 @@ public class JUnitEmbeddedServiceApiTest {
         public CompletableFuture<Void> processAreaExit(AreaAccessMessage message) {
             callOrder.add("area-service-exit");
             if (fail) {
-                return CompletableFuture.failedFuture(new IllegalStateException("area-service unavailable"));
+                return CompletableFuture.failedFuture(
+                        new IllegalStateException("area-service unavailable"));
             }
             return CompletableFuture.completedFuture(null);
         }
@@ -400,7 +412,8 @@ public class JUnitEmbeddedServiceApiTest {
         public CompletableFuture<Void> ingestEvent(JsonObject event) {
             callOrder.add("analytics-service");
             if (fail) {
-                return CompletableFuture.failedFuture(new IllegalStateException("analytics-service unavailable"));
+                return CompletableFuture.failedFuture(
+                        new IllegalStateException("analytics-service unavailable"));
             }
             return CompletableFuture.completedFuture(null);
         }
@@ -420,7 +433,8 @@ public class JUnitEmbeddedServiceApiTest {
         public CompletableFuture<Void> startSession(MachineUsageMessage message) {
             callOrder.add("machine-service-start");
             if (fail) {
-                return CompletableFuture.failedFuture(new IllegalStateException("machine-service unavailable"));
+                return CompletableFuture.failedFuture(
+                        new IllegalStateException("machine-service unavailable"));
             }
             return CompletableFuture.completedFuture(null);
         }
@@ -429,7 +443,8 @@ public class JUnitEmbeddedServiceApiTest {
         public CompletableFuture<Void> endSession(MachineUsageMessage message) {
             callOrder.add("machine-service-end");
             if (fail) {
-                return CompletableFuture.failedFuture(new IllegalStateException("machine-service unavailable"));
+                return CompletableFuture.failedFuture(
+                        new IllegalStateException("machine-service unavailable"));
             }
             return CompletableFuture.completedFuture(null);
         }
@@ -449,7 +464,8 @@ public class JUnitEmbeddedServiceApiTest {
         public CompletableFuture<Void> startGymSession(GymAccessMessage message) {
             callOrder.add("tracking-service-start");
             if (fail) {
-                return CompletableFuture.failedFuture(new IllegalStateException("tracking-service unavailable"));
+                return CompletableFuture.failedFuture(
+                        new IllegalStateException("tracking-service unavailable"));
             }
             return CompletableFuture.completedFuture(null);
         }
@@ -458,7 +474,8 @@ public class JUnitEmbeddedServiceApiTest {
         public CompletableFuture<Void> endGymSession(GymAccessMessage message) {
             callOrder.add("tracking-service-end");
             if (fail) {
-                return CompletableFuture.failedFuture(new IllegalStateException("tracking-service unavailable"));
+                return CompletableFuture.failedFuture(
+                        new IllegalStateException("tracking-service unavailable"));
             }
             return CompletableFuture.completedFuture(null);
         }
@@ -480,7 +497,6 @@ public class JUnitEmbeddedServiceApiTest {
             savedEvents.add(event);
             return CompletableFuture.completedFuture(null);
         }
-
 
         @Override
         public CompletableFuture<JsonArray> findLatestDeviceStatuses() {

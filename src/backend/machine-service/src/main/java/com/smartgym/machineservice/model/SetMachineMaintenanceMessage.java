@@ -12,8 +12,7 @@ public class SetMachineMaintenanceMessage {
     @JsonProperty("active")
     private Boolean active;
 
-    public SetMachineMaintenanceMessage() {
-    }
+    public SetMachineMaintenanceMessage() {}
 
     public SetMachineMaintenanceMessage(String machineId) {
         this(machineId, true);
@@ -42,9 +41,12 @@ public class SetMachineMaintenanceMessage {
 
     @Override
     public String toString() {
-        return "SetMachineMaintenanceMessage{" +
-                "machineId='" + machineId + '\'' +
-                ", active=" + active +
-                '}';
+        return "SetMachineMaintenanceMessage{"
+                + "machineId='"
+                + machineId
+                + '\''
+                + ", active="
+                + active
+                + '}';
     }
 }

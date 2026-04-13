@@ -9,8 +9,7 @@ public class StartGymSessionMessage {
     @JsonProperty("badgeId")
     private String badgeId;
 
-    public StartGymSessionMessage() {
-    }
+    public StartGymSessionMessage() {}
 
     public StartGymSessionMessage(String badgeId) {
         this.badgeId = badgeId;
@@ -26,9 +25,7 @@ public class StartGymSessionMessage {
 
     @Override
     public String toString() {
-        return "StartGymSessionMessage{" +
-                "badgeId='" + badgeId + '\'' +
-                '}';
+        return "StartGymSessionMessage{" + "badgeId='" + badgeId + '\'' + '}';
     }
 
     @Override

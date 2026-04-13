@@ -11,7 +11,6 @@ import com.smartgym.machineservice.model.OccupancyStatus;
 import com.smartgym.machineservice.model.Sensor;
 import com.smartgym.machineservice.model.SetMachineMaintenanceMessage;
 import com.smartgym.machineservice.model.StartMachineSessionMessage;
-
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,99 +31,122 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
         this.repository = repository;
     }
 
-
     @Override
     public CompletableFuture<Machine> createMachine(ConfigureMachineMessage message) {
-        return CompletableFuture.supplyAsync(() -> {
-            validateConfigureMessage(message);
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    validateConfigureMessage(message);
 
-            repository.findMachineById(message.getMachineId()).join()
-                    .ifPresent(existing -> {
-                        throw new IllegalStateException("Machine already exists: " + existing.getMachineId());
-                    });
+                    repository
+                            .findMachineById(message.getMachineId())
+                            .join()
+                            .ifPresent(
+                                    existing -> {
+                                        throw new IllegalStateException(
+                                                "Machine already exists: "
+                                                        + existing.getMachineId());
+                                    });
 
-            Machine machine = new Machine(
-                    message.getMachineId(),
-                    message.getAreaId(),
-                    OccupancyStatus.FREE,
-                    new Sensor(message.getSensor().trim())
-            );
+                    Machine machine =
+                            new Machine(
+                                    message.getMachineId(),
+                                    message.getAreaId(),
+                                    OccupancyStatus.FREE,
+                                    new Sensor(message.getSensor().trim()));
 
-            repository.saveMachine(machine).join();
-            return machine;
-        });
+                    repository.saveMachine(machine).join();
+                    return machine;
+                });
     }
 
     @Override
-    public CompletableFuture<Machine> updateMachine(String machineId, ConfigureMachineMessage message) {
-        return CompletableFuture.supplyAsync(() -> {
-            validateMachineId(machineId);
-            validateUpdateMessage(message);
+    public CompletableFuture<Machine> updateMachine(
+            String machineId, ConfigureMachineMessage message) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    validateMachineId(machineId);
+                    validateUpdateMessage(message);
 
-            if (!isBlank(message.getMachineId()) && !machineId.equals(message.getMachineId().trim())) {
-                throw new IllegalArgumentException("machineId in path and body must match");
-            }
+                    if (!isBlank(message.getMachineId())
+                            && !machineId.equals(message.getMachineId().trim())) {
+                        throw new IllegalArgumentException("machineId in path and body must match");
+                    }
 
-            Machine existing = getRequiredMachine(machineId);
-            Machine updated = new Machine(
-                    existing.getMachineId(),
-                    message.getAreaId(),
-                    existing.getStatus(),
-                    existing.getActiveSessionId(),
-                    new Sensor(message.getSensor().trim())
-            );
+                    Machine existing = getRequiredMachine(machineId);
+                    Machine updated =
+                            new Machine(
+                                    existing.getMachineId(),
+                                    message.getAreaId(),
+                                    existing.getStatus(),
+                                    existing.getActiveSessionId(),
+                                    new Sensor(message.getSensor().trim()));
 
-            repository.saveMachine(updated).join();
-            return updated;
-        });
+                    repository.saveMachine(updated).join();
+                    return updated;
+                });
     }
 
     @Override
-    public CompletableFuture<MachineSession> startMachineSession(StartMachineSessionMessage message) {
-        return CompletableFuture.supplyAsync(() -> {
-            validateStartMessage(message);
+    public CompletableFuture<MachineSession> startMachineSession(
+            StartMachineSessionMessage message) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    validateStartMessage(message);
 
-            Machine machine = getRequiredMachine(message.getMachineId());
+                    Machine machine = getRequiredMachine(message.getMachineId());
 
-            repository.findActiveSessionByMachineId(machine.getMachineId()).join()
-                    .ifPresent(session -> {
-                        throw new IllegalStateException("Machine already has an active session: " + machine.getMachineId());
-                    });
+                    repository
+                            .findActiveSessionByMachineId(machine.getMachineId())
+                            .join()
+                            .ifPresent(
+                                    session -> {
+                                        throw new IllegalStateException(
+                                                "Machine already has an active session: "
+                                                        + machine.getMachineId());
+                                    });
 
-            String sessionId = UUID.randomUUID().toString();
-            MachineSession session = new MachineSession(
-                    sessionId,
-                    machine.getMachineId(),
-                    message.getBadgeId(),
-                    LocalDateTime.now()
-            );
+                    String sessionId = UUID.randomUUID().toString();
+                    MachineSession session =
+                            new MachineSession(
+                                    sessionId,
+                                    machine.getMachineId(),
+                                    message.getBadgeId(),
+                                    LocalDateTime.now());
 
-            machine.startSession(session.getSessionId());
+                    machine.startSession(session.getSessionId());
 
-            repository.saveMachineSession(session).join();
-            repository.saveMachine(machine).join();
+                    repository.saveMachineSession(session).join();
+                    repository.saveMachine(machine).join();
 
-            return session;
-        });
+                    return session;
+                });
     }
 
     @Override
     public CompletableFuture<MachineSession> endMachineSession(EndMachineSessionMessage message) {
-        return CompletableFuture.supplyAsync(() -> {
-            validateEndMessage(message);
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    validateEndMessage(message);
 
-            Machine machine = getRequiredMachine(message.getMachineId());
-            MachineSession session = repository.findActiveSessionByMachineId(machine.getMachineId()).join()
-                    .orElseThrow(() -> new IllegalStateException("Machine has no active session: " + machine.getMachineId()));
+                    Machine machine = getRequiredMachine(message.getMachineId());
+                    MachineSession session =
+                            repository
+                                    .findActiveSessionByMachineId(machine.getMachineId())
+                                    .join()
+                                    .orElseThrow(
+                                            () ->
+                                                    new IllegalStateException(
+                                                            "Machine has no active session: "
+                                                                    + machine.getMachineId()));
 
-            session.end(LocalDateTime.now());
-            machine.endSession(session.getSessionId());
+                    session.end(LocalDateTime.now());
+                    machine.endSession(session.getSessionId());
 
-            repository.saveMachineSession(session).join();
-            repository.saveMachine(machine).join();
+                    repository.saveMachineSession(session).join();
+                    repository.saveMachine(machine).join();
 
-            return session;
-        });
+                    return session;
+                });
     }
 
     @Override
@@ -134,29 +156,36 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
 
     @Override
     public CompletableFuture<Machine> setMachineMaintenance(SetMachineMaintenanceMessage message) {
-        return CompletableFuture.supplyAsync(() -> {
-            validateMaintenanceMessage(message);
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    validateMaintenanceMessage(message);
 
-            Machine machine = getRequiredMachine(message.getMachineId());
-            boolean active = message.getActive() != null ? message.getActive() : true;
-            
-            if (active) {
-                machine.setMaintenance();
-            } else {
-                machine.setAvailable();
-            }
-            
-            repository.saveMachine(machine).join();
-            return machine;
-        });
+                    Machine machine = getRequiredMachine(message.getMachineId());
+                    boolean active = message.getActive() != null ? message.getActive() : true;
+
+                    if (active) {
+                        machine.setMaintenance();
+                    } else {
+                        machine.setAvailable();
+                    }
+
+                    repository.saveMachine(machine).join();
+                    return machine;
+                });
     }
 
     @Override
     public CompletableFuture<Machine> getMachineStatus(String machineId) {
         validateMachineId(machineId);
 
-        return repository.findMachineById(machineId)
-                .thenApply(machineOpt -> machineOpt.orElseThrow(() -> new ResourceNotFoundException("Machine not found: " + machineId)));
+        return repository
+                .findMachineById(machineId)
+                .thenApply(
+                        machineOpt ->
+                                machineOpt.orElseThrow(
+                                        () ->
+                                                new ResourceNotFoundException(
+                                                        "Machine not found: " + machineId)));
     }
 
     @Override
@@ -167,7 +196,8 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
     }
 
     @Override
-    public CompletableFuture<MachineUsageSeriesResponse> getMachineUsageSeries(String from, String to, String granularity, String areaId, String machineId) {
+    public CompletableFuture<MachineUsageSeriesResponse> getMachineUsageSeries(
+            String from, String to, String granularity, String areaId, String machineId) {
         LocalDate fromDate = parseLocalDate(from, "from");
         LocalDate toDate = parseLocalDate(to, "to");
         if (fromDate.isAfter(toDate)) {
@@ -181,55 +211,82 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
         String fromInclusive = fromDate.atStartOfDay().toString();
         String toExclusive = toDate.plusDays(1).atStartOfDay().toString();
 
-        CompletableFuture<List<MachineSession>> sessionsFuture = repository.findMachineSessionsByStartTimeRange(fromInclusive, toExclusive);
+        CompletableFuture<List<MachineSession>> sessionsFuture =
+                repository.findMachineSessionsByStartTimeRange(fromInclusive, toExclusive);
         CompletableFuture<List<Machine>> machinesFuture = repository.findAllMachines();
 
-        return sessionsFuture.thenCombine(machinesFuture, (sessions, machines) -> {
-            Map<String, String> areaByMachineId = machines.stream()
-                    .collect(LinkedHashMap::new, (map, machine) -> map.put(machine.getMachineId(), machine.getAreaId()), Map::putAll);
+        return sessionsFuture.thenCombine(
+                machinesFuture,
+                (sessions, machines) -> {
+                    Map<String, String> areaByMachineId =
+                            machines.stream()
+                                    .collect(
+                                            LinkedHashMap::new,
+                                            (map, machine) ->
+                                                    map.put(
+                                                            machine.getMachineId(),
+                                                            machine.getAreaId()),
+                                            Map::putAll);
 
-            Map<String, List<MachineUsageSeriesResponse.SessionItem>> buckets = initializeBuckets(fromDate, toDate, normalizedGranularity);
+                    Map<String, List<MachineUsageSeriesResponse.SessionItem>> buckets =
+                            initializeBuckets(fromDate, toDate, normalizedGranularity);
 
-            for (MachineSession session : sessions) {
-                if (session.getEndTime() == null) {
-                    continue;
-                }
+                    for (MachineSession session : sessions) {
+                        if (session.getEndTime() == null) {
+                            continue;
+                        }
 
-                String machineAreaId = areaByMachineId.get(session.getMachineId());
-                if (normalizedAreaId != null && !normalizedAreaId.equals(machineAreaId)) {
-                    continue;
-                }
-                if (normalizedMachineId != null && !normalizedMachineId.equals(session.getMachineId())) {
-                    continue;
-                }
+                        String machineAreaId = areaByMachineId.get(session.getMachineId());
+                        if (normalizedAreaId != null && !normalizedAreaId.equals(machineAreaId)) {
+                            continue;
+                        }
+                        if (normalizedMachineId != null
+                                && !normalizedMachineId.equals(session.getMachineId())) {
+                            continue;
+                        }
 
-                String period = toPeriodKey(session.getStartTime().toLocalDate(), normalizedGranularity);
-                List<MachineUsageSeriesResponse.SessionItem> periodSessions = buckets.get(period);
-                if (periodSessions == null) {
-                    continue;
-                }
+                        String period =
+                                toPeriodKey(
+                                        session.getStartTime().toLocalDate(),
+                                        normalizedGranularity);
+                        List<MachineUsageSeriesResponse.SessionItem> periodSessions =
+                                buckets.get(period);
+                        if (periodSessions == null) {
+                            continue;
+                        }
 
-                periodSessions.add(toSessionItem(session, machineAreaId));
-            }
+                        periodSessions.add(toSessionItem(session, machineAreaId));
+                    }
 
-            List<MachineUsageSeriesResponse.Point> series = buckets.entrySet().stream()
-                    .map(entry -> new MachineUsageSeriesResponse.Point(entry.getKey(), entry.getValue()))
-                    .toList();
+                    List<MachineUsageSeriesResponse.Point> series =
+                            buckets.entrySet().stream()
+                                    .map(
+                                            entry ->
+                                                    new MachineUsageSeriesResponse.Point(
+                                                            entry.getKey(), entry.getValue()))
+                                    .toList();
 
-            return new MachineUsageSeriesResponse(
-                    new MachineUsageSeriesResponse.Meta(normalizedGranularity),
-                    new MachineUsageSeriesResponse.Filters(fromDate.toString(), toDate.toString(), normalizedAreaId, normalizedMachineId),
-                    series
-            );
-        });
+                    return new MachineUsageSeriesResponse(
+                            new MachineUsageSeriesResponse.Meta(normalizedGranularity),
+                            new MachineUsageSeriesResponse.Filters(
+                                    fromDate.toString(),
+                                    toDate.toString(),
+                                    normalizedAreaId,
+                                    normalizedMachineId),
+                            series);
+                });
     }
 
     private Machine getRequiredMachine(String machineId) {
-        return repository.findMachineById(machineId).join()
-                .orElseThrow(() -> new ResourceNotFoundException("Machine not found: " + machineId));
+        return repository
+                .findMachineById(machineId)
+                .join()
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Machine not found: " + machineId));
     }
 
-    private Map<String, List<MachineUsageSeriesResponse.SessionItem>> initializeBuckets(LocalDate from, LocalDate to, String granularity) {
+    private Map<String, List<MachineUsageSeriesResponse.SessionItem>> initializeBuckets(
+            LocalDate from, LocalDate to, String granularity) {
         Map<String, List<MachineUsageSeriesResponse.SessionItem>> buckets = new LinkedHashMap<>();
         if ("monthly".equals(granularity)) {
             YearMonth cursor = YearMonth.from(from);
@@ -256,16 +313,17 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
         return date.toString();
     }
 
-    private MachineUsageSeriesResponse.SessionItem toSessionItem(MachineSession session, String areaId) {
-        long durationSeconds = Duration.between(session.getStartTime(), session.getEndTime()).getSeconds();
+    private MachineUsageSeriesResponse.SessionItem toSessionItem(
+            MachineSession session, String areaId) {
+        long durationSeconds =
+                Duration.between(session.getStartTime(), session.getEndTime()).getSeconds();
         return new MachineUsageSeriesResponse.SessionItem(
                 session.getMachineId(),
                 areaId,
                 session.getStartTime().toString(),
                 session.getEndTime().toString(),
                 durationSeconds,
-                session.getBadgeId()
-        );
+                session.getBadgeId());
     }
 
     private void validateConfigureMessage(ConfigureMachineMessage message) {
@@ -364,5 +422,4 @@ public class MachineServiceAPIImpl implements MachineServiceAPI {
     private boolean isBlank(String value) {
         return Objects.isNull(value) || value.trim().isEmpty();
     }
-
 }

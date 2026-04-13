@@ -9,8 +9,7 @@ public class EndMachineSessionMessage {
     @JsonProperty("machineId")
     private String machineId;
 
-    public EndMachineSessionMessage() {
-    }
+    public EndMachineSessionMessage() {}
 
     public EndMachineSessionMessage(String machineId) {
         this.machineId = machineId;
@@ -26,8 +25,6 @@ public class EndMachineSessionMessage {
 
     @Override
     public String toString() {
-        return "EndMachineSessionMessage{" +
-                "machineId='" + machineId + '\'' +
-                '}';
+        return "EndMachineSessionMessage{" + "machineId='" + machineId + '\'' + '}';
     }
 }

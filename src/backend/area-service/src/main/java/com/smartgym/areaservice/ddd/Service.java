@@ -1,5 +1,3 @@
 package com.smartgym.areaservice.ddd;
 
-public interface Service {
-
-}
+public interface Service {}

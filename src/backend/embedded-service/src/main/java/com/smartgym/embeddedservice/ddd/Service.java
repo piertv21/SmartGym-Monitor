@@ -1,5 +1,3 @@
 package com.smartgym.embeddedservice.ddd;
 
-public interface Service {
-
-}
+public interface Service {}

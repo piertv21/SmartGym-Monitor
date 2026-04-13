@@ -1,10 +1,7 @@
 package com.smartgym.authservice;
 
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
@@ -13,23 +10,25 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 @Tag("integration")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class IntegrationAuthServiceTest {
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
-    private final String baseUrl = System.getenv().getOrDefault("AUTH_SERVICE_IT_BASE_URL", "http://localhost:8081");
+    private final String baseUrl =
+            System.getenv().getOrDefault("AUTH_SERVICE_IT_BASE_URL", "http://localhost:8081");
 
     @BeforeAll
     void checkPreconditions() {
         Assumptions.assumeTrue(
                 Boolean.parseBoolean(System.getenv().getOrDefault("SMARTGYM_IT_ENABLED", "true")),
-                "Set SMARTGYM_IT_ENABLED=true and start docker compose before running integration tests"
-        );
+                "Set SMARTGYM_IT_ENABLED=true and start docker compose before running integration tests");
         Assumptions.assumeTrue(isServiceHealthy(), "Auth service is not reachable on " + baseUrl);
     }
 
@@ -51,7 +50,8 @@ class IntegrationAuthServiceTest {
 
     @Test
     void loginWithValidCredentialsReturnsToken() throws Exception {
-        String payload = """
+        String payload =
+                """
                 { "username": "ADMIN", "password": "ADMIN" }
                 """;
 
@@ -65,7 +65,8 @@ class IntegrationAuthServiceTest {
 
     @Test
     void loginWithWrongPasswordReturns401() throws Exception {
-        String payload = """
+        String payload =
+                """
                 { "username": "ADMIN", "password": "WRONG_PASSWORD" }
                 """;
 
@@ -86,9 +87,11 @@ class IntegrationAuthServiceTest {
         String username = "it-user-" + UUID.randomUUID();
         String password = "test-password-123";
 
-        String registerPayload = """
+        String registerPayload =
+                """
                 { "username": "%s", "password": "%s" }
-                """.formatted(username, password);
+                """
+                        .formatted(username, password);
 
         HttpResponse<String> registerResponse = sendPost("/register", registerPayload);
         assertEquals(201, registerResponse.statusCode());
@@ -99,9 +102,11 @@ class IntegrationAuthServiceTest {
         assertTrue(verifyResponse.body().contains("\"exists\":true"));
 
         // Login with new user
-        String loginPayload = """
+        String loginPayload =
+                """
                 { "username": "%s", "password": "%s" }
-                """.formatted(username, password);
+                """
+                        .formatted(username, password);
 
         HttpResponse<String> loginResponse = sendPost("/login", loginPayload);
         assertEquals(200, loginResponse.statusCode());
@@ -111,9 +116,11 @@ class IntegrationAuthServiceTest {
     @Test
     void registerDuplicateUserReturns409() throws Exception {
         String username = "it-dup-" + UUID.randomUUID();
-        String payload = """
+        String payload =
+                """
                 { "username": "%s", "password": "pass123" }
-                """.formatted(username);
+                """
+                        .formatted(username);
 
         HttpResponse<String> first = sendPost("/register", payload);
         assertEquals(201, first.statusCode());
@@ -124,7 +131,8 @@ class IntegrationAuthServiceTest {
 
     @Test
     void registerWithBlankCredentialsReturns400() throws Exception {
-        String payload = """
+        String payload =
+                """
                 { "username": "", "password": "" }
                 """;
 
@@ -145,22 +153,25 @@ class IntegrationAuthServiceTest {
     }
 
     private HttpResponse<String> sendGet(String path) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + path))
-                .timeout(Duration.ofSeconds(10))
-                .GET()
-                .build();
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(URI.create(baseUrl + path))
+                        .timeout(Duration.ofSeconds(10))
+                        .GET()
+                        .build();
 
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
-    private HttpResponse<String> sendPost(String path, String jsonBody) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + path))
-                .timeout(Duration.ofSeconds(10))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                .build();
+    private HttpResponse<String> sendPost(String path, String jsonBody)
+            throws IOException, InterruptedException {
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(URI.create(baseUrl + path))
+                        .timeout(Duration.ofSeconds(10))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                        .build();
 
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }

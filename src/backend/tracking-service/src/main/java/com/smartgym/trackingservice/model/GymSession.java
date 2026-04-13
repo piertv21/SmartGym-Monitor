@@ -1,9 +1,7 @@
 package com.smartgym.trackingservice.model;
 
 import com.smartgym.trackingservice.ddd.Aggregate;
-
 import java.time.LocalDateTime;
-
 
 public class GymSession implements Aggregate<String> {
 
@@ -16,7 +14,8 @@ public class GymSession implements Aggregate<String> {
         this(gymSessionId, badgeId, startTime, null);
     }
 
-    public GymSession(String gymSessionId, String badgeId, LocalDateTime startTime, LocalDateTime endTime) {
+    public GymSession(
+            String gymSessionId, String badgeId, LocalDateTime startTime, LocalDateTime endTime) {
         this.gymSessionId = requireNotBlank(gymSessionId, "gymSessionId");
         this.badgeId = requireNotBlank(badgeId, "badgeId");
         if (startTime == null) {
@@ -73,12 +72,17 @@ public class GymSession implements Aggregate<String> {
 
     @Override
     public String toString() {
-        return "GymSession{" +
-                "gymSessionId='" + gymSessionId + '\'' +
-                ", badgeId='" + badgeId + '\'' +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                '}';
+        return "GymSession{"
+                + "gymSessionId='"
+                + gymSessionId
+                + '\''
+                + ", badgeId='"
+                + badgeId
+                + '\''
+                + ", startTime="
+                + startTime
+                + ", endTime="
+                + endTime
+                + '}';
     }
 }
-

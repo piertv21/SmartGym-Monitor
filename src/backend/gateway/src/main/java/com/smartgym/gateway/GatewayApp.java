@@ -12,4 +12,3 @@ public class GatewayApp {
         SpringApplication.run(GatewayApp.class, args);
     }
 }
-

@@ -6,19 +6,17 @@ import com.smartgym.machineservice.model.ConfigureMachineMessage;
 import com.smartgym.machineservice.model.EndMachineSessionMessage;
 import com.smartgym.machineservice.model.SetMachineMaintenanceMessage;
 import com.smartgym.machineservice.model.StartMachineSessionMessage;
-
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
-
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 public class MachineRestControllerImpl implements MachineRestController {
@@ -31,96 +29,103 @@ public class MachineRestControllerImpl implements MachineRestController {
 
     @Override
     @PostMapping("/machines")
-    public CompletableFuture<ResponseEntity<?>> createMachine(@RequestBody ConfigureMachineMessage message) {
-        return machineService.createMachine(message)
-                .thenApply(machine -> ResponseEntity.status(HttpStatus.CREATED).body(
-                        Map.of(
-                                "message", "Machine created successfully",
-                                "machineId", machine.getMachineId(),
-                                "areaId", machine.getAreaId(),
-                                "status", machine.getStatus().name(),
-                                "sensor", machine.getSensor().getId()
-                        )
-                ));
+    public CompletableFuture<ResponseEntity<?>> createMachine(
+            @RequestBody ConfigureMachineMessage message) {
+        return machineService
+                .createMachine(message)
+                .thenApply(
+                        machine ->
+                                ResponseEntity.status(HttpStatus.CREATED)
+                                        .body(
+                                                Map.of(
+                                                        "message", "Machine created successfully",
+                                                        "machineId", machine.getMachineId(),
+                                                        "areaId", machine.getAreaId(),
+                                                        "status", machine.getStatus().name(),
+                                                        "sensor", machine.getSensor().getId())));
     }
 
     @Override
     @PutMapping("/machines/{machineId}")
-    public CompletableFuture<ResponseEntity<?>> updateMachine(@PathVariable String machineId,
-                                                               @RequestBody ConfigureMachineMessage message) {
-        return machineService.updateMachine(machineId, message)
-                .thenApply(machine -> ResponseEntity.ok(
-                        Map.of(
-                                "message", "Machine updated successfully",
-                                "machineId", machine.getMachineId(),
-                                "areaId", machine.getAreaId(),
-                                "status", machine.getStatus().name(),
-                                "sensor", machine.getSensor().getId()
-                        )
-                ));
+    public CompletableFuture<ResponseEntity<?>> updateMachine(
+            @PathVariable String machineId, @RequestBody ConfigureMachineMessage message) {
+        return machineService
+                .updateMachine(machineId, message)
+                .thenApply(
+                        machine ->
+                                ResponseEntity.ok(
+                                        Map.of(
+                                                "message", "Machine updated successfully",
+                                                "machineId", machine.getMachineId(),
+                                                "areaId", machine.getAreaId(),
+                                                "status", machine.getStatus().name(),
+                                                "sensor", machine.getSensor().getId())));
     }
 
     @Override
     @PostMapping("/start-session")
-    public CompletableFuture<ResponseEntity<?>> startMachineSession(@RequestBody StartMachineSessionMessage message) {
-        return machineService.startMachineSession(message)
-                .thenApply(session -> ResponseEntity.ok(
-                        Map.of(
-                                "message", "Machine session started",
-                                "sessionId", session.getSessionId(),
-                                "machineId", session.getMachineId(),
-                                "badgeId", session.getBadgeId(),
-                                "startTime", session.getStartTime().toString()
-                        )
-                ));
+    public CompletableFuture<ResponseEntity<?>> startMachineSession(
+            @RequestBody StartMachineSessionMessage message) {
+        return machineService
+                .startMachineSession(message)
+                .thenApply(
+                        session ->
+                                ResponseEntity.ok(
+                                        Map.of(
+                                                "message", "Machine session started",
+                                                "sessionId", session.getSessionId(),
+                                                "machineId", session.getMachineId(),
+                                                "badgeId", session.getBadgeId(),
+                                                "startTime", session.getStartTime().toString())));
     }
 
     @Override
     @PostMapping("/end-session")
-    public CompletableFuture<ResponseEntity<?>> endMachineSession(@RequestBody EndMachineSessionMessage message) {
-        return machineService.endMachineSession(message)
-                .thenApply(session -> ResponseEntity.ok(
-                        Map.of(
-                                "message", "Machine session ended",
-                                "sessionId", session.getSessionId(),
-                                "machineId", session.getMachineId(),
-                                "endTime", String.valueOf(session.getEndTime())
-                        )
-                ));
+    public CompletableFuture<ResponseEntity<?>> endMachineSession(
+            @RequestBody EndMachineSessionMessage message) {
+        return machineService
+                .endMachineSession(message)
+                .thenApply(
+                        session ->
+                                ResponseEntity.ok(
+                                        Map.of(
+                                                "message", "Machine session ended",
+                                                "sessionId", session.getSessionId(),
+                                                "machineId", session.getMachineId(),
+                                                "endTime", String.valueOf(session.getEndTime()))));
     }
 
     @Override
     @PostMapping("/set-maintenance")
-    public CompletableFuture<ResponseEntity<?>> setMachineMaintenance(@RequestBody SetMachineMaintenanceMessage message) {
-        return machineService.setMachineMaintenance(message)
-                .thenApply(machine -> ResponseEntity.ok(
-                        Map.of(
-                                "message", "Machine set to maintenance",
-                                "machineId", machine.getMachineId(),
-                                "status", machine.getStatus().name()
-                        )
-                ));
+    public CompletableFuture<ResponseEntity<?>> setMachineMaintenance(
+            @RequestBody SetMachineMaintenanceMessage message) {
+        return machineService
+                .setMachineMaintenance(message)
+                .thenApply(
+                        machine ->
+                                ResponseEntity.ok(
+                                        Map.of(
+                                                "message", "Machine set to maintenance",
+                                                "machineId", machine.getMachineId(),
+                                                "status", machine.getStatus().name())));
     }
 
     @Override
     @GetMapping("/machines")
     public CompletableFuture<ResponseEntity<?>> getAllMachines() {
-        return machineService.getAllMachines()
-                .thenApply(ResponseEntity::ok);
+        return machineService.getAllMachines().thenApply(ResponseEntity::ok);
     }
 
     @Override
     @GetMapping("/{machineId}")
     public CompletableFuture<ResponseEntity<?>> getMachineStatus(@PathVariable String machineId) {
-        return machineService.getMachineStatus(machineId)
-                .thenApply(ResponseEntity::ok);
+        return machineService.getMachineStatus(machineId).thenApply(ResponseEntity::ok);
     }
 
     @Override
     @GetMapping("/history/{machineId}")
     public CompletableFuture<ResponseEntity<?>> getMachineHistory(@PathVariable String machineId) {
-        return machineService.getMachineHistory(machineId)
-                .thenApply(ResponseEntity::ok);
+        return machineService.getMachineHistory(machineId).thenApply(ResponseEntity::ok);
     }
 
     @Override
@@ -130,9 +135,9 @@ public class MachineRestControllerImpl implements MachineRestController {
             @RequestParam String to,
             @RequestParam(defaultValue = "daily") String granularity,
             @RequestParam(required = false) String areaId,
-            @RequestParam(required = false) String machineId
-    ) {
-        return machineService.getMachineUsageSeries(from, to, granularity, areaId, machineId)
+            @RequestParam(required = false) String machineId) {
+        return machineService
+                .getMachineUsageSeries(from, to, granularity, areaId, machineId)
                 .thenApply(ResponseEntity::ok);
     }
 }

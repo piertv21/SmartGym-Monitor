@@ -7,4 +7,3 @@ public enum AreaType {
     CLASS,
     MACHINE
 }
-

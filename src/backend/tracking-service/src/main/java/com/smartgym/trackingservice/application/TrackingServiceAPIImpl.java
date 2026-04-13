@@ -1,18 +1,17 @@
 package com.smartgym.trackingservice.application;
 
+import com.smartgym.trackingservice.application.ports.TrackingRepository;
+import com.smartgym.trackingservice.application.ports.TrackingServiceAPI;
 import com.smartgym.trackingservice.model.EndGymSessionMessage;
 import com.smartgym.trackingservice.model.GymSession;
 import com.smartgym.trackingservice.model.StartGymSessionMessage;
-import com.smartgym.trackingservice.application.ports.TrackingRepository;
-import com.smartgym.trackingservice.application.ports.TrackingServiceAPI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TrackingServiceAPIImpl implements TrackingServiceAPI {
 
@@ -26,42 +25,60 @@ public class TrackingServiceAPIImpl implements TrackingServiceAPI {
 
     @Override
     public CompletableFuture<GymSession> startGymSession(StartGymSessionMessage message) {
-        return CompletableFuture.supplyAsync(() -> {
-            validateStartMessage(message);
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    validateStartMessage(message);
 
-            repository.findActiveSessionByBadgeId(message.getBadgeId().trim()).join()
-                    .ifPresent(existing -> {
-                        throw new IllegalStateException("Badge already has an active session: " + existing.getBadgeId());
-                    });
+                    repository
+                            .findActiveSessionByBadgeId(message.getBadgeId().trim())
+                            .join()
+                            .ifPresent(
+                                    existing -> {
+                                        throw new IllegalStateException(
+                                                "Badge already has an active session: "
+                                                        + existing.getBadgeId());
+                                    });
 
-            GymSession session = new GymSession(
-                    UUID.randomUUID().toString(),
-                    message.getBadgeId().trim(),
-                    LocalDateTime.now()
-            );
+                    GymSession session =
+                            new GymSession(
+                                    UUID.randomUUID().toString(),
+                                    message.getBadgeId().trim(),
+                                    LocalDateTime.now());
 
-            repository.saveGymSession(session).join();
-            logger.info("GymSession started: sessionId={}, badgeId={}", session.getGymSessionId(), session.getBadgeId());
-            return session;
-        });
+                    repository.saveGymSession(session).join();
+                    logger.info(
+                            "GymSession started: sessionId={}, badgeId={}",
+                            session.getGymSessionId(),
+                            session.getBadgeId());
+                    return session;
+                });
     }
 
     @Override
     public CompletableFuture<GymSession> endGymSession(EndGymSessionMessage message) {
-        return CompletableFuture.supplyAsync(() -> {
-            validateEndMessage(message);
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    validateEndMessage(message);
 
-            GymSession activeSession = repository.findActiveSessionByBadgeId(message.getBadgeId().trim()).join()
-                    .orElseThrow(() -> new IllegalStateException(
-                            "Badge has no active session: " + message.getBadgeId().trim()));
+                    GymSession activeSession =
+                            repository
+                                    .findActiveSessionByBadgeId(message.getBadgeId().trim())
+                                    .join()
+                                    .orElseThrow(
+                                            () ->
+                                                    new IllegalStateException(
+                                                            "Badge has no active session: "
+                                                                    + message.getBadgeId().trim()));
 
-            activeSession.end(LocalDateTime.now());
-            repository.saveGymSession(activeSession).join();
+                    activeSession.end(LocalDateTime.now());
+                    repository.saveGymSession(activeSession).join();
 
-            logger.info("GymSession ended: sessionId={}, badgeId={}",
-                    activeSession.getGymSessionId(), activeSession.getBadgeId());
-            return activeSession;
-        });
+                    logger.info(
+                            "GymSession ended: sessionId={}, badgeId={}",
+                            activeSession.getGymSessionId(),
+                            activeSession.getBadgeId());
+                    return activeSession;
+                });
     }
 
     @Override

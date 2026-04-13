@@ -14,24 +14,22 @@ import com.smartgym.embeddedservice.infrastructure.adapters.http.AreaServiceHttp
 import com.smartgym.embeddedservice.infrastructure.adapters.http.MachineServiceHttpAdapter;
 import com.smartgym.embeddedservice.infrastructure.adapters.http.TrackingServiceHttpAdapter;
 import com.smartgym.embeddedservice.infrastructure.persistence.EmbeddedRepositoryImpl;
-
 import io.vertx.core.Vertx;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @SpringBootApplication
 public class EmbeddedServiceApp {
 
     private static final Logger logger = LoggerFactory.getLogger(EmbeddedServiceApp.class);
 
-    @Autowired
-    private MongoClient mongoClient;
+    @Autowired private MongoClient mongoClient;
 
     @Value("${spring.application.name}")
     private String appName;
@@ -50,7 +48,8 @@ public class EmbeddedServiceApp {
 
     public static void main(String[] args) {
         SpringApplication.run(EmbeddedServiceApp.class, args);
-        logger.info("✅ Embedded Service started successfully with Spring MongoDB + Vert.x MQTT integration");
+        logger.info(
+                "✅ Embedded Service started successfully with Spring MongoDB + Vert.x MQTT integration");
     }
 
     @PostConstruct
@@ -70,22 +69,26 @@ public class EmbeddedServiceApp {
     }
 
     @Bean
-    public AreaServicePort areaServicePort(@Value("${area-service.base-url}") String areaServiceBaseUrl) {
+    public AreaServicePort areaServicePort(
+            @Value("${area-service.base-url}") String areaServiceBaseUrl) {
         return new AreaServiceHttpAdapter(areaServiceBaseUrl);
     }
 
     @Bean
-    public AnalyticsServicePort analyticsServicePort(@Value("${analytics-service.base-url}") String analyticsServiceBaseUrl) {
+    public AnalyticsServicePort analyticsServicePort(
+            @Value("${analytics-service.base-url}") String analyticsServiceBaseUrl) {
         return new AnalyticsServiceHttpAdapter(analyticsServiceBaseUrl);
     }
 
     @Bean
-    public MachineServicePort machineServicePort(@Value("${machine-service.base-url}") String machineServiceBaseUrl) {
+    public MachineServicePort machineServicePort(
+            @Value("${machine-service.base-url}") String machineServiceBaseUrl) {
         return new MachineServiceHttpAdapter(machineServiceBaseUrl);
     }
 
     @Bean
-    public TrackingServicePort trackingServicePort(@Value("${tracking-service.base-url}") String trackingServiceBaseUrl) {
+    public TrackingServicePort trackingServicePort(
+            @Value("${tracking-service.base-url}") String trackingServiceBaseUrl) {
         return new TrackingServiceHttpAdapter(trackingServiceBaseUrl);
     }
 
@@ -95,9 +98,13 @@ public class EmbeddedServiceApp {
             AreaServicePort areaServicePort,
             AnalyticsServicePort analyticsServicePort,
             MachineServicePort machineServicePort,
-            TrackingServicePort trackingServicePort
-    ) {
-        return new EmbeddedServiceApiImpl(repository, areaServicePort, analyticsServicePort, machineServicePort, trackingServicePort);
+            TrackingServicePort trackingServicePort) {
+        return new EmbeddedServiceApiImpl(
+                repository,
+                areaServicePort,
+                analyticsServicePort,
+                machineServicePort,
+                trackingServicePort);
     }
 
     @Bean

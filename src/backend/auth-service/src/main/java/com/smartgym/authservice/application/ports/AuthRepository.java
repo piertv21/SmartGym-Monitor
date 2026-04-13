@@ -7,8 +7,12 @@ import java.util.concurrent.CompletableFuture;
 
 public interface AuthRepository extends Repository {
     CompletableFuture<Optional<AuthUser>> findUserByUsername(String username);
+
     CompletableFuture<Boolean> saveUser(AuthUser user);
+
     CompletableFuture<Void> saveLoginLog(String username, String timestamp);
+
     CompletableFuture<Void> saveLogoutLog(String username, String timestamp);
+
     CompletableFuture<Void> ensureDefaultAdmin();
 }

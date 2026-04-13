@@ -1,9 +1,7 @@
 package com.smartgym.analyticsservice.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -27,15 +25,15 @@ public class GymSessionDurationStat {
     @JsonProperty("sessionCount")
     private Integer sessionCount;
 
-    public GymSessionDurationStat() {
-    }
+    public GymSessionDurationStat() {}
 
-    public GymSessionDurationStat(String id,
-                                  String periodType,
-                                  String periodValue,
-                                  Double averageDurationMinutes,
-                                  Double maxDurationMinutes,
-                                  Integer sessionCount) {
+    public GymSessionDurationStat(
+            String id,
+            String periodType,
+            String periodValue,
+            Double averageDurationMinutes,
+            Double maxDurationMinutes,
+            Integer sessionCount) {
         this.id = id;
         this.periodType = periodType;
         this.periodValue = periodValue;
@@ -106,7 +104,12 @@ public class GymSessionDurationStat {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, periodType, periodValue, averageDurationMinutes, maxDurationMinutes, sessionCount);
+        return Objects.hash(
+                id,
+                periodType,
+                periodValue,
+                averageDurationMinutes,
+                maxDurationMinutes,
+                sessionCount);
     }
 }
-

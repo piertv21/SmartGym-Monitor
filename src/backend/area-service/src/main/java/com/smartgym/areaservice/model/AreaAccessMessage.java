@@ -21,10 +21,10 @@ public class AreaAccessMessage {
     @JsonProperty("direction") // "IN" or "OUT"
     private String direction;
 
-    public AreaAccessMessage() {
-    }
+    public AreaAccessMessage() {}
 
-    public AreaAccessMessage(String deviceId, String timeStamp, String badgeId, String areaId, String direction) {
+    public AreaAccessMessage(
+            String deviceId, String timeStamp, String badgeId, String areaId, String direction) {
         this.deviceId = deviceId;
         this.timeStamp = timeStamp;
         this.badgeId = badgeId;
@@ -82,13 +82,23 @@ public class AreaAccessMessage {
 
     @Override
     public String toString() {
-        return "AreaAccessMessage{" +
-                "deviceId='" + deviceId + '\'' +
-                ", timeStamp='" + timeStamp + '\'' +
-                ", badgeId='" + badgeId + '\'' +
-                ", areaId='" + areaId + '\'' +
-                ", direction='" + direction + '\'' +
-                '}';
+        return "AreaAccessMessage{"
+                + "deviceId='"
+                + deviceId
+                + '\''
+                + ", timeStamp='"
+                + timeStamp
+                + '\''
+                + ", badgeId='"
+                + badgeId
+                + '\''
+                + ", areaId='"
+                + areaId
+                + '\''
+                + ", direction='"
+                + direction
+                + '\''
+                + '}';
     }
 
     @Override
@@ -97,7 +107,11 @@ public class AreaAccessMessage {
         if (!super.equals(object)) return false;
 
         AreaAccessMessage that = (AreaAccessMessage) object;
-        return deviceId.equals(that.deviceId) && timeStamp.equals(that.timeStamp) && badgeId.equals(that.badgeId) && areaId.equals(that.areaId) && direction.equals(that.direction);
+        return deviceId.equals(that.deviceId)
+                && timeStamp.equals(that.timeStamp)
+                && badgeId.equals(that.badgeId)
+                && areaId.equals(that.areaId)
+                && direction.equals(that.direction);
     }
 
     @Override

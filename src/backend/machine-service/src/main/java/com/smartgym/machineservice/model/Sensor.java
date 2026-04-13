@@ -10,7 +10,6 @@ public class Sensor implements Entity<String> {
         this.id = id;
     }
 
-
     @Override
     public String getId() {
         return this.id;

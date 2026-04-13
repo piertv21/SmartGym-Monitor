@@ -1,16 +1,15 @@
 package com.smartgym.gateway.service;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
 import java.util.Collection;
 import java.util.Date;
+import javax.crypto.SecretKey;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Component
 public class JwtValidationService {
@@ -22,13 +21,13 @@ public class JwtValidationService {
     public JwtValidationService(
             @Value("${security.jwt.secret:}") String sharedSecret,
             @Value("${security.jwt.issuer:smartgym-auth}") String expectedIssuer,
-            @Value("${security.jwt.audience:smartgym-gateway}") String expectedAudience
-    ) {
+            @Value("${security.jwt.audience:smartgym-gateway}") String expectedAudience) {
         this.expectedIssuer = expectedIssuer;
         this.expectedAudience = expectedAudience;
 
         if (sharedSecret == null || sharedSecret.isBlank()) {
-            throw new IllegalStateException("JWT configuration missing: provide security.jwt.secret");
+            throw new IllegalStateException(
+                    "JWT configuration missing: provide security.jwt.secret");
         }
 
         this.signingKey = Keys.hmacShaKeyFor(sharedSecret.getBytes());
@@ -36,10 +35,7 @@ public class JwtValidationService {
 
     public String validateAndExtractUserId(String token) {
         try {
-            Jws<Claims> jws = Jwts.parser()
-                    .verifyWith(signingKey)
-                    .build()
-                    .parseSignedClaims(token);
+            Jws<Claims> jws = Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token);
 
             if (!"HS256".equals(jws.getHeader().getAlgorithm())) {
                 throw new IllegalStateException("Invalid JWT algorithm");

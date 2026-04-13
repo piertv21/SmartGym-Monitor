@@ -1,9 +1,8 @@
 package com.smartgym.analyticsservice.application.ports;
 
-import org.springframework.http.ResponseEntity;
-
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import org.springframework.http.ResponseEntity;
 
 public interface AnalyticsRestController {
 
@@ -11,8 +10,8 @@ public interface AnalyticsRestController {
 
     CompletableFuture<ResponseEntity<?>> getAllAttendanceStats();
 
-    CompletableFuture<ResponseEntity<?>> getAttendanceSeries(String from, String to, String granularity, String areaId);
-
+    CompletableFuture<ResponseEntity<?>> getAttendanceSeries(
+            String from, String to, String granularity, String areaId);
 
     CompletableFuture<ResponseEntity<?>> getGymSessionDurationByDate(String date);
 }

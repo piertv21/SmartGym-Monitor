@@ -24,7 +24,9 @@ def get_status_service() -> StatusService:
     if "status_service" not in g:
         g.status_service = StatusService(
             gateway_base_url=current_app.config["GATEWAY_BASE_URL"],
-            statuses_path=current_app.config.get("EMBEDDED_STATUSES_PATH", "/embedded-service/statuses"),
+            statuses_path=current_app.config.get(
+                "EMBEDDED_STATUSES_PATH", "/embedded-service/statuses"
+            ),
             timeout=current_app.config.get("STATUS_TIMEOUT_SECONDS", 5),
         )
     return g.status_service

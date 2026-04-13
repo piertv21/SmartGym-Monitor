@@ -1,5 +1,3 @@
 package com.smartgym.trackingservice.ddd;
 
-public interface ValueObject {
-
-}
+public interface ValueObject {}

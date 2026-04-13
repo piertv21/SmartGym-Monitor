@@ -540,7 +540,6 @@ func (e *Engine) updateDeviceHealth(device *Device) {
 // Lookup helpers
 // ---------------------------------------------------------------------------
 
-
 func (e *Engine) findArea(areaID string) *Area {
 	for i := range e.areas {
 		if e.areas[i].AreaID == areaID {

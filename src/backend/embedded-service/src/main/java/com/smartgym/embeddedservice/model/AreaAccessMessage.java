@@ -21,10 +21,10 @@ public class AreaAccessMessage {
     @JsonProperty("direction") // "IN" or "OUT"
     private String direction;
 
-    public AreaAccessMessage() {
-    }
+    public AreaAccessMessage() {}
 
-    public AreaAccessMessage(String deviceId, String timestamp, String badgeId, String areaId, String direction) {
+    public AreaAccessMessage(
+            String deviceId, String timestamp, String badgeId, String areaId, String direction) {
         this.deviceId = deviceId;
         this.timestamp = timestamp;
         this.badgeId = badgeId;
@@ -74,12 +74,22 @@ public class AreaAccessMessage {
 
     @Override
     public String toString() {
-        return "AreaAccessMessage{" +
-                "deviceId='" + deviceId + '\'' +
-                ", timestamp='" + timestamp + '\'' +
-                ", badgeId='" + badgeId + '\'' +
-                ", areaId='" + areaId + '\'' +
-                ", direction='" + direction + '\'' +
-                '}';
+        return "AreaAccessMessage{"
+                + "deviceId='"
+                + deviceId
+                + '\''
+                + ", timestamp='"
+                + timestamp
+                + '\''
+                + ", badgeId='"
+                + badgeId
+                + '\''
+                + ", areaId='"
+                + areaId
+                + '\''
+                + ", direction='"
+                + direction
+                + '\''
+                + '}';
     }
 }
