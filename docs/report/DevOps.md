@@ -80,7 +80,7 @@ Examples:
 - `fix/<bug-name>`
 - `feature/docs`
 
-### Automated Enforcement
+### 6.3.1 Automated Enforcement
 
 To enforce these conventions:
 
@@ -166,7 +166,7 @@ The telemetry flow is:
 - Prometheus scrapes those endpoints according to `prometheus.yml` (5s scrape interval).
 - Grafana reads Prometheus as default datasource and renders the pre-provisioned dashboards.
 
-### Prometheus Targets
+### 6.9.1 Prometheus Targets
 
 `prometheus.yml` registers a dedicated job for each backend microservice:
 
@@ -181,7 +181,7 @@ The telemetry flow is:
 
 All jobs scrape `/actuator/prometheus` and run inside the Docker network (`smartgym-net`) using internal service hostnames.
 
-### Grafana Provisioning and Dashboard
+### 6.9.2 Grafana Provisioning and Dashboard
 
 Grafana is preconfigured at startup through:
 

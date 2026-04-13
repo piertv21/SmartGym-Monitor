@@ -1,4 +1,4 @@
-# 3 Domain Driven Design to Microservices
+# 3. Domain-Driven Design to Microservices
 
 > In the following subsections we describe how the domain model has been translated into a distributed architecture based on microservices, service discovery, and event-driven integration.
 
@@ -37,7 +37,7 @@
 
 > Each bounded context has been mapped to a dedicated microservice in order to preserve separation of concerns, service autonomy, and database isolation.
 
-## 3.2.1 Tracking Service (Core)
+### 3.2.1 Tracking Service (Core)
 
 The `tracking-service` implements the core domain of the system.
 It manages gym sessions and the global count of members currently inside the gym.
@@ -51,7 +51,7 @@ It manages gym sessions and the global count of members currently inside the gym
 
 <p align="center"><em>Table 3.3: Tracking service responsibilities</em></p>
 
-## 3.2.2 Area Management Service (Supporting)
+### 3.2.2 Area Management Service (Supporting)
 
 The `area-service` manages gym areas and area-level occupancy.
 
@@ -64,7 +64,7 @@ The `area-service` manages gym areas and area-level occupancy.
 
 <p align="center"><em>Table 3.4: Area service responsibilities</em></p>
 
-## 3.2.3 Machine Management Service (Supporting)
+### 3.2.3 Machine Management Service (Supporting)
 
 The `machine-service` manages machines, machine sessions, and state transitions.
 
@@ -77,7 +77,7 @@ The `machine-service` manages machines, machine sessions, and state transitions.
 
 <p align="center"><em>Table 3.5: Machine service responsibilities</em></p>
 
-## 3.2.4 Embedded Service (Supporting)
+### 3.2.4 Embedded Service (Supporting)
 
 The `embedded-service` acts as the bridge between simulated devices and backend services.
 It is not a classic CRUD microservice: its main responsibility is to receive MQTT messages, translate them, and forward them to the operational services through HTTP adapters.
@@ -91,7 +91,7 @@ It is not a classic CRUD microservice: its main responsibility is to receive MQT
 
 <p align="center"><em>Table 3.6: Embedded service responsibilities</em></p>
 
-## 3.2.5 Analytics Service (Generic)
+### 3.2.5 Analytics Service (Generic)
 
 The `analytics-service` provides historical and aggregated information for monitoring.
 
@@ -104,7 +104,7 @@ The `analytics-service` provides historical and aggregated information for monit
 
 <p align="center"><em>Table 3.7: Analytics service responsibilities</em></p>
 
-## 3.2.6 Authentication Service (Generic)
+### 3.2.6 Authentication Service (Generic)
 
 The `auth-service` manages administrator authentication and token-based security.
 
@@ -117,7 +117,7 @@ The `auth-service` manages administrator authentication and token-based security
 
 <p align="center"><em>Table 3.8: Authentication service responsibilities</em></p>
 
-## 3.2.7 Infrastructure Services
+### 3.2.7 Infrastructure Services
 
 The architecture also includes two supporting infrastructure services:
 
@@ -143,7 +143,7 @@ The architecture also includes two supporting infrastructure services:
 
 > The system exposes two integration layers: asynchronous MQTT communication for simulated devices and synchronous REST APIs for the backend microservices and the frontend.
 
-## 3.4.1 Gateway and Service Discovery
+### 3.4.1 Gateway and Service Discovery
 
 The gateway is the external HTTP entry point of the backend.
 It uses Eureka to discover the registered services and applies JWT validation through a global filter.
@@ -164,7 +164,7 @@ The gateway routes the following service families:
 - `area-service`
 - `tracking-service`
 
-## 3.4.2 Authentication Service
+### 3.4.2 Authentication Service
 
 The authentication service exposes the following controller paths:
 
@@ -177,7 +177,7 @@ The authentication service exposes the following controller paths:
 
 <p align="center"><em>Table 3.10: Authentication service endpoints</em></p>
 
-## 3.4.3 Tracking Service
+### 3.4.3 Tracking Service
 
 The tracking service exposes the following controller paths:
 
@@ -190,7 +190,7 @@ The tracking service exposes the following controller paths:
 
 <p align="center"><em>Table 3.11: Tracking service endpoints</em></p>
 
-## 3.4.4 Area Management Service
+### 3.4.4 Area Management Service
 
 The area service exposes the following controller paths:
 
@@ -204,7 +204,7 @@ The area service exposes the following controller paths:
 
 <p align="center"><em>Table 3.12: Area service endpoints</em></p>
 
-## 3.4.5 Machine Management Service
+### 3.4.5 Machine Management Service
 
 The machine service exposes the following controller paths:
 
@@ -220,7 +220,7 @@ The machine service exposes the following controller paths:
 
 <p align="center"><em>Table 3.13: Machine service endpoints</em></p>
 
-## 3.4.6 Analytics Service
+### 3.4.6 Analytics Service
 
 The analytics service exposes the following controller paths:
 
@@ -242,7 +242,7 @@ The analytics service exposes the following controller paths:
 
 <p align="center"><em>Table 3.14: Analytics service endpoints</em></p>
 
-## 3.4.7 Embedded Service and MQTT Topics
+### 3.4.7 Embedded Service and MQTT Topics
 
 The embedded layer is driven by MQTT rather than by business REST endpoints.
 The Go simulator publishes events to the broker using the following topics:
@@ -254,7 +254,7 @@ The Go simulator publishes events to the broker using the following topics:
 
 The embedded service consumes these messages, normalizes their payloads, and forwards the resulting commands to the backend services through HTTP adapters.
 
-## 3.4.8 Frontend Flask Application
+### 3.4.8 Frontend Flask Application
 
 The frontend is a lightweight Flask application used as the administrative entry point.
 Its main routes are:
