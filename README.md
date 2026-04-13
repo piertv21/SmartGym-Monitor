@@ -95,6 +95,31 @@ docker compose up --build
 http://localhost:5001
 ```
 
+## Monitoring (Prometheus + Grafana)
+
+The Docker Compose stack also starts a monitoring pipeline based on Spring Boot Actuator, Prometheus, and Grafana.
+
+- **Prometheus** scrapes backend metrics from `/actuator/prometheus` using `prometheus.yml`.
+- **Grafana** uses a provisioned Prometheus datasource and auto-loads the dashboard in `grafana/dashboards/smartgym-overview.json`.
+
+Useful local endpoints (default values from `.env.example`):
+
+- Prometheus UI: `http://localhost:9090`
+- Grafana UI: `http://localhost:3000`
+- Example metrics endpoint: `http://localhost:8080/actuator/prometheus` (gateway)
+
+Grafana default credentials are configured through environment variables:
+
+- username: `admin`
+- password: `admin`
+
+After login, open the dashboard with UID `smartgym-overview` (title: `SmartGym Monitor`) to inspect:
+
+- request rate and p95 latency per service;
+- JVM memory and thread trends;
+- service availability (`up`);
+- HTTP 5xx rate and CPU usage.
+
 ## Project Structure
 
 ```text

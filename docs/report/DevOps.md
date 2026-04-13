@@ -156,7 +156,49 @@ Renovate:
 
 Each update is reviewed and validated through the CI pipeline before being merged.
 
-## 6.9 DevOps Benefits
+## 6.9 Observability with Prometheus and Grafana
+
+To monitor runtime behavior and detect regressions early, the project includes an observability stack integrated in `docker-compose.yml`.
+
+The telemetry flow is:
+
+- Spring Boot services expose metrics via Actuator at `/actuator/prometheus`.
+- Prometheus scrapes those endpoints according to `prometheus.yml` (5s scrape interval).
+- Grafana reads Prometheus as default datasource and renders the pre-provisioned dashboards.
+
+### Prometheus Targets
+
+`prometheus.yml` registers a dedicated job for each backend microservice:
+
+- `gateway`
+- `service-discovery`
+- `auth-service`
+- `analytics-service`
+- `area-service`
+- `machine-service`
+- `tracking-service`
+- `embedded-service`
+
+All jobs scrape `/actuator/prometheus` and run inside the Docker network (`smartgym-net`) using internal service hostnames.
+
+### Grafana Provisioning and Dashboard
+
+Grafana is preconfigured at startup through:
+
+- datasource file: `grafana/provisioning/datasources/prometheus.yml`
+  - datasource name: `Prometheus`
+  - URL: `http://prometheus:9090`
+  - `isDefault: true`
+- dashboard provider file: `grafana/provisioning/dashboards/dashboards.yml`
+  - loads dashboards from `/var/lib/grafana/dashboards`
+
+The default dashboard is `grafana/dashboards/smartgym-overview.json` with:
+
+- UID: `smartgym-overview`
+- title: `SmartGym Monitor`
+- key panels for throughput, p95 response time, JVM memory/threads, `up` status, 5xx error rate, and system CPU usage.
+
+## 6.10 DevOps Benefits
 
 The adopted DevOps strategy provides:
 
