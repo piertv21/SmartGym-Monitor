@@ -162,15 +162,15 @@ It processes access events, exit events, area queries, and capacity updates.
 
 Main endpoints:
 
-- `POST /access`
-- `POST /exit`
-- `GET /{areaId}`
-- `GET /`
-- `PUT /capacity`
+- `POST /area-service/access`
+- `POST /area-service/exit`
+- `GET /area-service/{areaId}`
+- `GET /area-service`
+- `PUT /area-service/capacity`
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(AreaServiceHttpAdapter)"] -->|"POST /access (IN)\nPOST /exit (OUT)"| CTRL["AreaRestControllerImpl"]
+    EMB["embedded-service\n(AreaServiceHttpAdapter)"] -->|"POST /area-service/access (IN)\nPOST /area-service/exit (OUT)"| CTRL["AreaRestControllerImpl"]
 
     subgraph area-service
         CTRL --> API["AreaServiceApiImpl"]
@@ -178,7 +178,7 @@ flowchart TD
         REPO --> DB[(MongoDB\narea-db)]
     end
 
-    DASH["Dashboard\n(via Gateway)"] -->|"GET /\nGET /areaId\nPUT /capacity"| CTRL
+    DASH["Dashboard\n(via Gateway)"] -->|"GET /area-service\nGET /area-service/areaId\nPUT /area-service/capacity"| CTRL
     API -->|"lista aree +\noccupazione"| CTRL
 ```
 
@@ -194,8 +194,10 @@ Main endpoints:
 - `POST /start-session`
 - `POST /end-session`
 - `POST /set-maintenance`
+- `GET /machines`
 - `GET /{machineId}`
 - `GET /history/{machineId}`
+- `GET /machines/history/series`
 
 ```mermaid
 flowchart TD
@@ -207,30 +209,21 @@ flowchart TD
         REPO --> DB[(MongoDB\nmachine-db)]
     end
 
-    DASH["Dashboard\n(via Gateway)"] -->|"POST /set-maintenance\nGET /machines\nGET /machineId\nGET /history/machineId"| CTRL
+    DASH["Dashboard\n(via Gateway)"] -->|"POST /set-maintenance\nGET /machines\nGET /machineId\nGET /history/machineId\nGET /machines/history/series"| CTRL
     API -->|"stato + storico"| CTRL
 ```
 
 ### 4.2.7 Analytics-service
 
 The analytics service stores and exposes historical data used by the dashboard.
-It ingests events and computes attendance, area attendance, machine utilization, and peak hours.
+It ingests events and computes attendance statistics and gym session duration metrics.
 
 Main endpoints:
 
 - `POST /events/ingest`
-- `GET /attendance/{date}`
 - `GET /attendance`
-- `GET /machine-utilization`
-- `GET /machine-utilization/{date}`
-- `GET /peak-hours`
-- `GET /peak-hours/{date}`
-- `GET /area-attendance`
-- `GET /area-attendance/{date}`
-- `GET /area-attendance/{date}/{areaId}`
-- `GET /area-peak-hours`
-- `GET /area-peak-hours/{date}`
-- `GET /area-peak-hours/{date}/{areaId}`
+- `GET /attendance/series`
+- `GET /gym-session-duration/{date}`
 
 ```mermaid
 flowchart TD
@@ -242,7 +235,7 @@ flowchart TD
         REPO --> DB[(MongoDB\nanalytics-db)]
     end
 
-    DASH["Dashboard\n(via Gateway)"] -->|"GET /attendance\nGET /machine-utilization\nGET /peak-hours\nGET /area-attendance"| CTRL
+    DASH["Dashboard\n(via Gateway)"] -->|"GET /attendance\nGET /attendance/series\nGET /gym-session-duration/date"| CTRL
     API -->|"metriche aggregate"| CTRL
 ```
 
@@ -252,6 +245,13 @@ The embedded service is the integration layer between physical devices and backe
 It subscribes to MQTT topics, forwards events to the operational services, and translates low-level messages into higher-level domain commands.
 
 The service uses adapters for the area, tracking, machine, and analytics services, plus an MQTT manager to publish and receive messages.
+
+The embedded service also exposes a REST endpoint:
+
+- `GET /statuses`
+
+This endpoint is used by the frontend dashboard to retrieve the current status of all known devices.
+
 Here is a simplified flow of how the embedded service processes incoming MQTT messages and interacts with the backend services.
 
 ```mermaid
@@ -267,8 +267,10 @@ flowchart TD
         ESAPI -->|"HTTP"| ANP["AnalyticsServiceHttpAdapter"]
         ESAPI -->|"salva evento"| REPO["EmbeddedRepositoryImpl"]
         REPO --> DB[(MongoDB\nembedded-db)]
+        CTRL["EmbeddedRestControllerImpl"] -->|"getAllDeviceStatuses()"| ESAPI
     end
 
+    DASH["Dashboard\n(via Gateway)"] -->|"GET /statuses"| CTRL
     TSP --> TRK[tracking-service]
     ASP --> AREA[area-service]
     MSP --> MACH[machine-service]
@@ -278,15 +280,18 @@ flowchart TD
 ## 4.3 Frontend Web Application
 
 The frontend is a Flask application located in `src/frontend/smartgym_flask`.
-It provides a lightweight dashboard for authentication and for checking the reachability of the backend services.
+It provides a lightweight administrative dashboard for authentication, real-time monitoring, and historical data exploration.
 
 The application includes:
 
 - a login page that authenticates against `auth-service`;
-- a dashboard page that verifies the logged user via `/login/{username}`;
-- a health endpoint at `/api/health` used by automated checks.
+- a dashboard page that shows attendance and gym session duration stats;
+- a live monitor page that displays real-time area occupancy and machine statuses;
+- a history page that allows exploring attendance series and machine session history;
+- a health endpoint at `/api/health` used by automated checks;
+- several API endpoints (`/api/statuses`, `/api/analytics/dashboard`, `/api/machines`, `/api/live-monitor`, `/api/maintenance/toggle`, `/api/history/filters`, `/api/history`) that aggregate data from backend services for the frontend views.
 
-The frontend stores the access token in the user session and forwards it when interacting with the authentication service.
+The frontend stores the access token in the user session and forwards it as a Bearer token when interacting with the backend services through the gateway.
 It does not implement the business logic of the gym: that remains in the backend microservices.
 
 ```mermaid
@@ -304,6 +309,7 @@ flowchart TD
         API_BP --> AS["AnalyticsService"]
         API_BP --> MS["MachineService"]
         API_BP --> ARS["AreaService"]
+        API_BP --> TS["TrackingService"]
     end
 
     US -->|"/auth-service/*"| GW["Gateway"]
@@ -311,6 +317,7 @@ flowchart TD
     AS -->|"/analytics-service/*"| GW
     MS -->|"/machine-service/*"| GW
     ARS -->|"/area-service/*"| GW
+    TS -->|"/tracking-service/*"| GW
 ```
 
 ## 4.4 Simulator and Event Generation
