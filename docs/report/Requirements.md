@@ -1,6 +1,6 @@
 # 2. Requirements Analysis
 
-This section describes the domain and system requirements following a Domain-Driven Design approach.
+This chapter describes the domain and system requirements following a Domain-Driven Design approach.
 
 ## 2.1 Domain Definition
 

@@ -1,6 +1,6 @@
 # 3. Domain-Driven Design to Microservices
 
-In the following subsections we describe how the domain model has been translated into a distributed architecture based on microservices, service discovery, and event-driven integration.
+In the following chapter we describe how the domain model has been translated into a distributed architecture based on microservices, service discovery, and event-driven integration.
 
 ## 3.1 System Operations
 

@@ -1,6 +1,7 @@
 # 6. DevOps and Development Process
 
-This section describes the DevOps practices, workflows, and automation strategies adopted during the development of the SmartGym Monitor system.
+This chapter describes the DevOps practices, workflows, and automation strategy adopted in SmartGym Monitor.
+The tools and processes implemented in the repository aim to ensure a structured development process, high code quality, and efficient release management.
 
 ## 6.1 Version Control Strategy
 
@@ -13,37 +14,33 @@ The main branches are:
 - `feature/<feature-name>`: used for the development of individual features.
 
 Each new functionality is developed in a dedicated `feature` branch created from `develop`.
-
-Each `feature` branch is in turn broken down into sub-branches `feature/<feature-name>-<sub-name>` that make up the feature in its entirety.
-
 Once completed, the feature is merged back into `develop` through a Pull Request.
 
 The `main` branch only receives code that has been validated and is ready for release.
 
 This approach ensures:
 
-- Isolation of new features
-- Controlled integration
-- Clear separation between stable and in-progress code
+- Isolation of new features.
+- Controlled integration.
+- Clear separation between stable and in-progress code.
 
 ## 6.2 Branch Protection Rules
 
-To preserve repository integrity and prevent accidental changes to production code, strict protection rules are applied to the `main` branch,
-using GitHub rulesets.
+To preserve repository integrity and prevent accidental changes to production code, strict protection rules are applied to the `main` branch using **GitHub rulesets**.
 
 The following restrictions are enforced:
 
 - Direct pushes to `main` are prohibited.
 - Code cannot be added or deleted directly on `main`.
 - Every Pull Request targeting `main` requires at least one review before merging.
-- All required CI checks must pass before merge approval (e.g., commit message validation).
+- All required CI checks must pass before merge approval.
 
 This guarantees that production code is always reviewed, tested, and validated.
 
 ## 6.3 Conventional Commits and Branch Naming
 
 The project adopts the **Conventional Commits specification** to standardize commit messages and improve traceability.
-More info on Conventional Commits can be found [here](https://www.conventionalcommits.org/en/v1.0.0/).
+More information available [here](https://www.conventionalcommits.org/en/v1.0.0/).
 
 Commit messages follow a structured format:
 
@@ -64,7 +61,7 @@ Examples:
 - `docs(readme): update setup instructions`
 
 Branch naming also follows a consistent convention, the **Conventional Branch specification**.
-More info on Conventional Branch Naming can be found [here](https://conventional-branch.github.io/).
+More information available [here](https://conventional-branch.github.io/).
 
 Branch names are structured as follows:
 
@@ -77,86 +74,88 @@ Branch names are structured as follows:
 Examples:
 
 - `feature/<feature-name>`
-- `fix/<bug-name>`
 - `feature/docs`
 
 ### 6.3.1 Automated Enforcement
 
-To enforce these conventions:
+To enforce these conventions, **Git hooks** were implemented using [Husky](https://typicode.github.io/husky/).
 
-- **Husky** is used to configure Git hooks locally.
-  - A _commit-msg_ hook validates commit messages before they are accepted.
-  - A _pre-commit_ hook formats code to ensure code style consistency.
-  - A _pre-push_ hook runs tests to catch issues before code is pushed.
-- A **GitHub Action** runs on each Pull Request to verify that all commits comply with the Conventional Commit standard.
+These hooks run locally, upon commit and push actions:
+
+- _commit-msg_ validates commit messages before acceptance, using [commitlint](https://commitlint.js.org/) with the Conventional Commits configuration.
+- _pre-commit_ formats staged code to keep style consistency, using:
+  - [Prettier](https://prettier.io/) for docs/web files
+  - [Spotless](https://github.com/diffplug/spotless) for Java
+  - [Ruff formatter](https://docs.astral.sh/ruff/formatter/) for Python
+  - [gofumpt](https://github.com/mvdan/gofumpt) for Go
+- _pre-push_ runs tests before push.
 
 This prevents inconsistent commit history and improves maintainability.
 
-## 6.4 Continuous Integration (CI)
+## 6.5 GitHub Actions Workflows
 
-The project uses GitHub Actions to validate pull requests and keep the main branch stable.
-The main CI workflow is `build-and-test.yml`, which performs the following checks:
+**GitHub Actions** orchestrates the automation pipeline of the project through four workflows: CI validation, commit validation, documentation deployment, and release automation. The following subsections describe each workflow and its role in the overall quality gate.
 
-- frontend tests with Python 3.12 and Poetry;
-- backend microservice tests and integration validation with Gradle and Docker Compose;
-- e2e test execution for the full backend stack;
-- artifact collection for JUnit reports and Docker logs.
+### 6.5.1 Continuous Integration Workflow (`build-and-test.yml`)
 
-This workflow ensures that functional changes are verified before merging and that regressions are detected early.
+The CI workflow runs on Pull Requests targeting `main` and can also be launched manually (`workflow_dispatch`).
 
-## 6.5 Continuous Deployment and Documentation Publishing
+It thoroughly tests the backend by running JUnit, integration, and end-to-end tests, and test the frontend in parallel.
 
-The documentation site is built with VitePress and deployed through GitHub Pages.
-The `deploy-report-site.yml` workflow is triggered when files under `docs/**` change on `main`.
+The workflow also uploads execution artifacts to support debugging:
 
-Its pipeline is straightforward:
+- JUnit XML reports.
+- e2e HTML report.
+- Docker Compose logs.
 
-- checkout the repository;
-- install Node.js dependencies in `docs/`;
-- build the static documentation site;
-- publish the generated artifact to GitHub Pages.
+This structure ensures that every change is validated against the existing test suite, preventing regressions and maintaining code quality before merging into `main`.
 
-This keeps the project documentation aligned with the latest code and report updates.
+### 6.5.2 Commit Validation Workflow (`validate-commits.yml`)
 
-## 6.6 Automated Release Process
+The commit validation workflow runs on Pull Requests to `main`.
 
-The repository uses Semantic Release for automated versioning and release generation.
-The release process is defined in `release.yml` together with `release.config.js`.
+This workflow guarantees that release automation receives a clean and machine-readable commit history, which is required for semantic versioning decisions.
 
-When a change reaches `main`, the workflow:
+### 6.5.3 Documentation Deployment Workflow (`deploy-report-site.yml`)
 
-- checks out the repository with release permissions;
-- installs Node.js dependencies;
-- runs `semantic-release`;
-- creates a new Git tag and release when the commit history contains a release-worthy change.
+The documentation deployment workflow runs when:
 
-Release automation is supported by Conventional Commits and commit validation, so version increments remain predictable and traceable.
+- a push reaches `main`, and
+- at least one file under `docs/**` changed.
 
-## 6.7 Automated Testing
+It's used to automatically deploy the latest version of the documentation site, based on [VitePress](https://vitepress.dev/), to GitHub Pages, ensuring that the public report is always up to date with the latest approved changes in the `main` branch.
 
-Automated tests are integrated into both the backend and frontend development flow.
-The repository includes:
+### 6.5.4 Automated Release Workflow (`release.yml`)
 
-- JUnit tests for the Java services;
-- Cucumber-based e2e tests for the full backend stack;
-- pytest tests for the Flask frontend.
+The release workflow is triggered automatically on every push to `main`.
+It executes `semantic-release`, which analyzes commit messages to determine the next version number, generate the changelog, and publish the release.
+The adopted release model follows the [SemVer](https://semver.org/), using [semantic-release](https://semantic-release.gitbook.io/semantic-release).
 
-The combination of unit, integration, and e2e tests provides fast feedback on individual components while also validating the complete system behavior.
+In this model, for service-scoped release streams, each service release is expected to produce:
 
-## 6.8 Dependency Management with Renovate
+- A Git tag with the version number (for example `2.0.0`).
+- A GitHub Release with an auto-generated changelog, published on the repository Releases page.
 
-The repository integrates **Renovate Bot** to automate dependency updates.
+In the current repository workflow, release detection is based on SemVer-like tags (for example `v2.0.0`), and release notes are reflected in `CHANGELOG.md` for traceability directly in the codebase.
 
-Renovate:
+## 6.6 Automated Testing Strategy
 
-- monitors project dependencies;
-- automatically creates pull requests when updates are available;
-- can auto-merge safe minor and patch updates;
-- keeps the dependency tree up to date with minimal manual effort.
+Automated tests are integrated into the CI process with multiple layers:
+
+- Unit and integration tests for backend services (JUnit).
+- End-to-end tests in the backend `e2e` module (Cucumber-based).
+- Frontend tests with `pytest`.
+
+This layered strategy reduces regression risk and improves confidence in cross-service behavior.
+
+## 6.7 Dependency Management with Renovate
+
+The repository uses [Renovate](https://docs.renovatebot.com/) to keep dependencies up to date.
+Renovate periodically scans the repository and automatically opens pull requests whenever newer dependency versions are available, across package ecosystems used in the repo.
 
 Each update is reviewed and validated through the CI pipeline before being merged.
 
-## 6.9 Observability with Prometheus and Grafana
+## 6.8 Observability with Prometheus and Grafana
 
 To monitor runtime behavior and detect regressions early, the project includes an observability stack integrated in `docker-compose.yml`.
 
@@ -166,7 +165,7 @@ The telemetry flow is:
 - Prometheus scrapes those endpoints according to `prometheus.yml` (5s scrape interval).
 - Grafana reads Prometheus as default datasource and renders the pre-provisioned dashboards.
 
-### 6.9.1 Prometheus Targets
+### 6.8.1 Prometheus Targets
 
 `prometheus.yml` registers a dedicated job for each backend microservice:
 
@@ -181,32 +180,32 @@ The telemetry flow is:
 
 All jobs scrape `/actuator/prometheus` and run inside the Docker network (`smartgym-net`) using internal service hostnames.
 
-### 6.9.2 Grafana Provisioning and Dashboard
+### 6.8.2 Grafana Provisioning and Dashboard
 
 Grafana is preconfigured at startup through:
 
-- datasource file: `grafana/provisioning/datasources/prometheus.yml`
-  - datasource name: `Prometheus`
+- Datasource file: `grafana/provisioning/datasources/prometheus.yml`
+  - Datasource name: `Prometheus`
   - URL: `http://prometheus:9090`
   - `isDefault: true`
-- dashboard provider file: `grafana/provisioning/dashboards/dashboards.yml`
-  - loads dashboards from `/var/lib/grafana/dashboards`
+- Dashboard provider file: `grafana/provisioning/dashboards/dashboards.yml`
+  - Loads dashboards from `/var/lib/grafana/dashboards`
 
 The default dashboard is `grafana/dashboards/smartgym-overview.json` with:
 
 - UID: `smartgym-overview`
-- title: `SmartGym Monitor`
-- key panels for throughput, p95 response time, JVM memory/threads, `up` status, 5xx error rate, and system CPU usage.
+- Title: `SmartGym Monitor`
+- Key panels for throughput, p95 response time, JVM memory/threads, `up` status, 5xx error rate, and system CPU usage.
 
-## 6.10 DevOps Benefits
+## 6.9 DevOps Benefits
 
 The adopted DevOps strategy provides:
 
-- structured collaboration;
-- high code quality;
-- automated validation;
-- safe and controlled releases;
-- continuous documentation updates;
-- automated dependency management.
+- Structured collaboration.
+- High code quality.
+- Automated validation.
+- Safe and controlled releases.
+- Continuous documentation updates.
+- Automated dependency management.
 
-Overall, the combination of Git Flow, CI/CD automation, commit standardization, and dependency monitoring significantly increases the robustness and maintainability of the SmartGym Monitor system.
+Overall, the combination of Git Flow, GitHub Actions automation, commit standardization, and dependency monitoring significantly increases the robustness and maintainability of SmartGym Monitor.
