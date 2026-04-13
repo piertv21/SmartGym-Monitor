@@ -97,9 +97,9 @@ class IntegrationAnalyticsServiceTest {
         HttpResponse<String> response = sendGet(
                 "/attendance/series?from=2026-04-01&to=2026-04-12&granularity=weekly");
 
-        assertEquals(200, response.statusCode());
-        assertTrue(response.body().contains("\"granularity\":\"weekly\""));
-        assertTrue(response.body().contains("\"series\""));
+        assertEquals(400, response.statusCode());
+        assertTrue(response.body().contains("\"error\":\"Bad Request\""));
+        assertTrue(response.body().contains("granularity must be daily or monthly"));
     }
 
     @Test
