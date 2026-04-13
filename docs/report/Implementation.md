@@ -5,7 +5,7 @@ The implementation follows the bounded contexts and the microservice decompositi
 
 ## 4.1 Overall Structure
 
-The solution is composed of three main layers:
+The project is organized as a monorepo with three main layers:
 
 - **Backend microservices** implemented in Java 21 with Spring Boot 3.4.3;
 - **Frontend web application** implemented in Python 3.12 with Flask;

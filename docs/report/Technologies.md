@@ -47,7 +47,7 @@ Separate databases are used for auth, area, machine, tracking, analytics, and em
 
 ### 5.2.2 MQTT / Mosquitto
 
-The simulator publishes events to Mosquitto, and the embedded service consumes them.
+The simulator publishes events to [Mosquitto](https://mosquitto.org/), a lightweight MQTT broker, and the embedded service consumes them.
 MQTT is the main protocol for device-to-backend communication.
 
 ## 5.3 Frontend Stack
@@ -58,13 +58,9 @@ The dashboard frontend is implemented in Python 3.12.
 
 ### 5.3.2 Flask 3.0.3
 
-Flask is used to build the lightweight web interface for login and dashboard views.
+[Flask](https://flask.palletsprojects.com/en/stable/) is used to build the lightweight web interface for login and dashboard views.
 
-### 5.3.3 Requests
-
-The frontend uses `requests` to communicate with `auth-service`.
-
-### 5.3.4 Gunicorn
+### 5.3.3 Gunicorn
 
 Gunicorn is the production-ready WSGI server used to run the Flask application.
 
@@ -83,40 +79,45 @@ The simulator relies on `github.com/eclipse/paho.mqtt.golang` to publish MQTT me
 
 ### 5.5.1 JUnit and Cucumber
 
-The backend repository includes JUnit tests and a Cucumber-based e2e suite.
+The backend repository includes [JUnit](https://junit.org/) tests and a [Cucumber](https://cucumber.io/)-based e2e suite.
 
-### 5.5.2 pytest
+### 5.5.2 Pytest
 
-The Flask frontend is tested with `pytest`.
+The Flask frontend is tested with [pytest](https://docs.pytest.org/en/stable/).
 
 ## 5.6 Tooling and DevOps
 
 ### 5.6.1 Gradle
 
 Gradle orchestrates the Java backend build.
+It manages dependencies across the multi-module project, using a [Version Catalog](https://docs.gradle.org/current/userguide/version_catalogs.html) to centralize versions and ensure consistency.
 
 ### 5.6.2 Poetry
 
 Poetry manages Python dependencies and the Flask application environment.
 
-### 5.6.3 Docker and Docker Compose
+### 5.6.3 Go Modules
+
+Go Modules handle the dependencies for the Go simulator, ensuring reproducible builds and version management.
+
+### 5.6.4 Docker and Docker Compose
 
 Docker is used to containerize each component, while Docker Compose orchestrates the full stack locally.
 
-### 5.6.4 VitePress and Mermaid
+### 5.6.5 VitePress and Mermaid
 
 The documentation site is built with VitePress, and Mermaid is used for diagrams.
 
-### 5.6.5 GitHub Actions
+### 5.6.6 GitHub Actions
 
 GitHub Actions implements the CI, documentation deployment, release, and commit validation workflows.
 
-### 5.6.6 Husky, commitlint, and Renovate
+### 5.6.7 Husky, commitlint, and Renovate
 
 - **Husky** enforces local Git hooks.
-- **commitlint** validates Conventional Commits.
+- **Commitlint** validates Conventional Commits.
 - **Renovate** automates dependency update pull requests.
 
-### 5.6.7 semantic-release
+### 5.6.8 semantic-release
 
 Semantic Release handles automated releases from the main branch.
