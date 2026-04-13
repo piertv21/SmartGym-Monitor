@@ -1,6 +1,6 @@
 # 2. Requirements Analysis
 
-> This section describes the domain and system requirements following a Domain-Driven Design approach.
+This section describes the domain and system requirements following a Domain-Driven Design approach.
 
 ## 2.1 Domain Definition
 
@@ -36,9 +36,9 @@ We decide to split the domain in more subdomains as shown in the following secti
 
 ## 2.3 Ubiquitous Language / Glossary
 
-> This section defines the shared domain language used throughout the project.
-> All terms listed in the table below must be used consistently in documentation,
-> diagrams, and source code.
+This section defines the shared domain language used throughout the project.
+All terms listed in the table below must be used consistently in documentation,
+diagrams, and source code.
 
 | Term                       | Description                                                                                                                 | Notes / Context            |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
@@ -135,8 +135,8 @@ In the following tables the description of each use case related to Administrato
 
 ## 2.6 User Stories
 
-> In order to better understand the domain following Domain Driven Design we
-> isolate user stories in order to better achieve acceptance criteria.
+In order to better understand the domain following Domain Driven Design we
+isolate user stories in order to better achieve acceptance criteria.
 
 | ID    | User Story                                                                                                                  | Related FR |
 | ----- | --------------------------------------------------------------------------------------------------------------------------- | ---------- |
@@ -163,10 +163,10 @@ In the following tables the description of each use case related to Administrato
 
 ## 2.8 Story Telling
 
-> In this section, realistic usage scenarios are described in order to better understand how the SmartGym Monitor system behaves
-> in real-life situations. Storytelling is used as a complementary technique to formal models and diagrams, allowing us to
-> observe how domain concepts interact dynamically over time. <br> The objective of this section is to highlight how the system reacts to physical events (such as badge scans or machine usage detection),
-> how sessions are created and terminated, and how data becomes available for monitoring and analytics.
+In this section, realistic usage scenarios are described in order to better understand how the SmartGym Monitor system behaves
+in real-life situations. Storytelling is used as a complementary technique to formal models and diagrams, allowing us to
+observe how domain concepts interact dynamically over time. <br> The objective of this section is to highlight how the system reacts to physical events (such as badge scans or machine usage detection),
+how sessions are created and terminated, and how data becomes available for monitoring and analytics.
 
 ### 2.8.1 Gym member Storytelling
 
@@ -198,8 +198,8 @@ The administrator can then view User Gym Sessions and User Machine Sessions in a
 
 ## 2.9 Domain Model
 
-> Analyzing the requirements we started to create the domain model considering the main entities, value objects and aggregates in our
-> core domain. In following section the are the main entities of the core domain.
+Analyzing the requirements we started to create the domain model considering the main entities, value objects and aggregates in our
+core domain. In following section the are the main entities of the core domain.
 
 ### 2.9.1 Entities and Value Objects
 
@@ -250,7 +250,7 @@ The administrator can then view User Gym Sessions and User Machine Sessions in a
 
 ## 2.10 Bounded Context
 
-> Each bounded context defines its own **model, terminology, and invariants**, reducing coupling and enabling independent evolution of system components.
+Each bounded context defines its own **model, terminology, and invariants**, reducing coupling and enabling independent evolution of system components.
 
 ![BC_SmartGymMonitor](../public/resources/BC_SmartGymMonitor.png)
 

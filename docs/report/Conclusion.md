@@ -1,4 +1,4 @@
-# 7. Conclusions
+# 8. Conclusions
 
 SmartGym Monitor demonstrates how Domain-Driven Design can be translated into a practical microservice-based system for gym monitoring.
 The project combines simulated devices, operational services, historical analytics, and a lightweight web frontend in a coherent architecture.

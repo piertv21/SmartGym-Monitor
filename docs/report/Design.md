@@ -1,10 +1,10 @@
 # 3. Domain-Driven Design to Microservices
 
-> In the following subsections we describe how the domain model has been translated into a distributed architecture based on microservices, service discovery, and event-driven integration.
+In the following subsections we describe how the domain model has been translated into a distributed architecture based on microservices, service discovery, and event-driven integration.
 
 ## 3.1 System Operations
 
-> This section shows the main operations identified in the SmartGym Monitor system. Operations are derived from the use cases and represent the commands exposed by the services.
+This section shows the main operations identified in the SmartGym Monitor system. Operations are derived from the use cases and represent the commands exposed by the services.
 
 | Actor      | Related Use Case   | Command                             | Description                                                                  |
 | ---------- | ------------------ | ----------------------------------- | ---------------------------------------------------------------------------- |
@@ -35,7 +35,7 @@
 
 ## 3.2 Subdomains to Microservices
 
-> Each bounded context has been mapped to a dedicated microservice in order to preserve separation of concerns, service autonomy, and database isolation.
+Each bounded context has been mapped to a dedicated microservice in order to preserve separation of concerns, service autonomy, and database isolation.
 
 ### 3.2.1 Tracking Service (Core)
 
@@ -126,7 +126,7 @@ The architecture also includes two supporting infrastructure services:
 
 ## 3.3 System Operation Identification
 
-> This section identifies the main operations exposed by each microservice and the components they collaborate with.
+This section identifies the main operations exposed by each microservice and the components they collaborate with.
 
 | Microservice        | Operations                                                                                                                                                   | Collaborators                                                              |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
@@ -141,7 +141,7 @@ The architecture also includes two supporting infrastructure services:
 
 ## 3.4 API Interface Definition and Identification
 
-> The system exposes two integration layers: asynchronous MQTT communication for simulated devices and synchronous REST APIs for the backend microservices and the frontend.
+The system exposes two integration layers: asynchronous MQTT communication for simulated devices and synchronous REST APIs for the backend microservices and the frontend.
 
 ### 3.4.1 Gateway and Service Discovery
 
