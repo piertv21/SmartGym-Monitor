@@ -6,6 +6,7 @@ spring-cloud                 = "2024.0.1"
 vertx                        = "4.5.13"
 jjwt                         = "0.12.6"
 cucumber                     = "7.22.2"
+spotless                     = "7.0.4"
 
 [libraries]
 # --- Spring Boot starters (version managed by Spring Boot BOM) ---
@@ -52,3 +53,4 @@ jjwt          = ["jjwt-api", "jjwt-impl", "jjwt-jackson"]
 [plugins]
 spring-boot            = { id = "org.springframework.boot",        version.ref = "spring-boot" }
 spring-dependency-mgmt = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+spotless               = { id = "com.diffplug.spotless",           version.ref = "spotless" }

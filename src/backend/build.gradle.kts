@@ -9,6 +9,7 @@ import org.gradle.kotlin.dsl.getByType
 plugins {
     alias(libs.plugins.spring.boot) apply false
     alias(libs.plugins.spring.dependency.mgmt) apply false
+    alias(libs.plugins.spotless) apply false
 }
 
 val libsCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
@@ -16,6 +17,7 @@ val libsCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 subprojects {
     apply(plugin = "java")
     apply(plugin = "io.spring.dependency-management")
+    apply(plugin = "com.diffplug.spotless")
 
     group = "com.smartgym"
     version = "1.0.0"
@@ -25,6 +27,15 @@ subprojects {
             languageVersion.set(
                 JavaLanguageVersion.of(libsCatalog.findVersion("java").get().requiredVersion.toInt())
             )
+        }
+    }
+
+    extensions.configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+        java {
+            googleJavaFormat().aosp()
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
         }
     }
 
