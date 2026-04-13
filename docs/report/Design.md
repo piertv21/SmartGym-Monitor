@@ -19,7 +19,7 @@
 | Admin      | Set Maintenance    | `setMachineMaintenance(message)`    | Changes the machine state to maintenance.                                    |
 | Admin      | Login              | `handleLogin(credentials)`          | Validates admin credentials and issues a JWT token.                          |
 
-_Table 3.1: Main System Operations_
+<p align="center"><em>Table 3.1: Main System Operations</em></p>
 
 | Query                          | Description                                                   |
 | ------------------------------ | ------------------------------------------------------------- |
@@ -31,7 +31,7 @@ _Table 3.1: Main System Operations_
 | `getAttendanceStats(date)`     | Returns attendance statistics for a specific date.            |
 | `getMachineUtilization()`      | Returns aggregated machine usage metrics.                     |
 
-_Table 3.2: Main System Queries_
+<p align="center"><em>Table 3.2: Main System Queries</em></p>
 
 ## 3.2 Subdomains to Microservices
 
@@ -49,6 +49,8 @@ It manages gym sessions and the global count of members currently inside the gym
 | Invariant Enforcement  | Ensures that a badge cannot have more than one active session at the same time.  |
 | Persistence            | Stores session history in its own MongoDB database.                              |
 
+<p align="center"><em>Table 3.3: Tracking service responsibilities</em></p>
+
 ## 3.2.2 Area Management Service (Supporting)
 
 The `area-service` manages gym areas and area-level occupancy.
@@ -60,6 +62,8 @@ The `area-service` manages gym areas and area-level occupancy.
 | Capacity Enforcement | Guarantees that `0 ≤ currentCount ≤ capacity` always holds.        |
 | Event Handling       | Processes access and exit messages coming from the embedded layer. |
 
+<p align="center"><em>Table 3.4: Area service responsibilities</em></p>
+
 ## 3.2.3 Machine Management Service (Supporting)
 
 The `machine-service` manages machines, machine sessions, and state transitions.
@@ -70,6 +74,8 @@ The `machine-service` manages machines, machine sessions, and state transitions.
 | Machine Session Lifecycle   | Creates and closes `MachineSession` entities.                                      |
 | State Transition Validation | Ensures valid transitions between `Free`, `Occupied`, and `Maintenance`.           |
 | Consistency Enforcement     | Guarantees that a machine cannot have more than one active session simultaneously. |
+
+<p align="center"><em>Table 3.5: Machine service responsibilities</em></p>
 
 ## 3.2.4 Embedded Service (Supporting)
 
@@ -83,6 +89,8 @@ It is not a classic CRUD microservice: its main responsibility is to receive MQT
 | Asynchronous Communication | Consumes and publishes MQTT messages on the broker.                           |
 | Forwarding Layer           | Invokes the tracking, area, machine, and analytics services through adapters. |
 
+<p align="center"><em>Table 3.6: Embedded service responsibilities</em></p>
+
 ## 3.2.5 Analytics Service (Generic)
 
 The `analytics-service` provides historical and aggregated information for monitoring.
@@ -94,6 +102,8 @@ The `analytics-service` provides historical and aggregated information for monit
 | Historical Data Aggregation | Processes domain events to generate analytical snapshots. |
 | Read Model Management       | Maintains optimized read models for the dashboard.        |
 
+<p align="center"><em>Table 3.7: Analytics service responsibilities</em></p>
+
 ## 3.2.6 Authentication Service (Generic)
 
 The `auth-service` manages administrator authentication and token-based security.
@@ -104,6 +114,8 @@ The `auth-service` manages administrator authentication and token-based security
 | Token Management     | Issues JWT access tokens and supports token validation in the gateway.  |
 | Access Control       | Protects dashboard access and service calls that require authorization. |
 | User Registry        | Stores the seeded administrator account and login history.              |
+
+<p align="center"><em>Table 3.8: Authentication service responsibilities</em></p>
 
 ## 3.2.7 Infrastructure Services
 
@@ -124,6 +136,8 @@ The architecture also includes two supporting infrastructure services:
 | `analytics-service` | `ingestEvent()`, `getAttendanceStats()`, `getAllAttendanceStats()`, `getMachineUtilization()`, `getPeakHours()`, `getAreaAttendance()`, `getAreaPeakHours()` | `tracking-service`, `area-service`, `machine-service`                      |
 | `auth-service`      | `handleLogin()`, `handleRegister()`, `handleVerifyUser()`, `handleLogout()`                                                                                  | `gateway`, `frontend`                                                      |
 | `embedded-service`  | MQTT event handling and HTTP forwarding                                                                                                                      | `tracking-service`, `area-service`, `machine-service`, `analytics-service` |
+
+<p align="center"><em>Table 3.9: Microservice operations and collaborators</em></p>
 
 ## 3.4 API Interface Definition and Identification
 
@@ -161,6 +175,8 @@ The authentication service exposes the following controller paths:
 | `/login/{username}` | GET  | Verifies whether a user exists.                          |
 | `/logout`           | POST | Registers the logout event using the `X-User-Id` header. |
 
+<p align="center"><em>Table 3.10: Authentication service endpoints</em></p>
+
 ## 3.4.3 Tracking Service
 
 The tracking service exposes the following controller paths:
@@ -171,6 +187,8 @@ The tracking service exposes the following controller paths:
 | `/end-session`     | POST | Ends the active gym session.   |
 | `/count`           | GET  | Returns the current gym count. |
 | `/active-sessions` | GET  | Returns active gym sessions.   |
+
+<p align="center"><em>Table 3.11: Tracking service endpoints</em></p>
 
 ## 3.4.4 Area Management Service
 
@@ -183,6 +201,8 @@ The area service exposes the following controller paths:
 | `/{areaId}` | GET  | Returns a specific area by id.           |
 | `/`         | GET  | Returns all areas.                       |
 | `/capacity` | PUT  | Updates the maximum capacity of an area. |
+
+<p align="center"><em>Table 3.12: Area service endpoints</em></p>
 
 ## 3.4.5 Machine Management Service
 
@@ -197,6 +217,8 @@ The machine service exposes the following controller paths:
 | `/set-maintenance`      | POST | Sets the machine status to maintenance.                     |
 | `/{machineId}`          | GET  | Returns the current state of a machine.                     |
 | `/history/{machineId}`  | GET  | Returns the historical usage sessions of a machine.         |
+
+<p align="center"><em>Table 3.13: Machine service endpoints</em></p>
 
 ## 3.4.6 Analytics Service
 
@@ -217,6 +239,8 @@ The analytics service exposes the following controller paths:
 | `/area-peak-hours`                 | GET  | Returns peak attendance periods per area.                     |
 | `/area-peak-hours/{date}`          | GET  | Returns peak attendance periods per area for a specific date. |
 | `/area-peak-hours/{date}/{areaId}` | GET  | Returns peak attendance periods for a specific date and area. |
+
+<p align="center"><em>Table 3.14: Analytics service endpoints</em></p>
 
 ## 3.4.7 Embedded Service and MQTT Topics
 
@@ -243,6 +267,8 @@ Its main routes are:
 | `/logout`     | GET  | Clears the session and notifies the auth service.                  |
 | `/dashboard`  | GET  | Displays the user dashboard and service connectivity summary.      |
 | `/api/health` | GET  | Returns a simple health response for deployment checks.            |
+
+<p align="center"><em>Table 3.15: Frontend Flask routes</em></p>
 
 ## 3.5 Architectural Notes
 

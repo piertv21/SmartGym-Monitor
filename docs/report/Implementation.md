@@ -31,6 +31,8 @@ flowchart LR
 	Gateway --> Embedded
 ```
 
+<p align="center"><em>Listing 4.1: High-level architecture flow represented in Mermaid</em></p>
+
 ## 4.2 Backend Microservices
 
 ### 4.2.1 `service-discovery`

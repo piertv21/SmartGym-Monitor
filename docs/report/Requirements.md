@@ -68,7 +68,7 @@ We decide to split the domain in more subdomains as shown in the following secti
 | Gym Member Session         | The time interval during which a gym member stays in the gym.                                                               | tracking-service           |
 | Admin or Administrator     | Staff member responsible for monitoring gym usage and congestion.                                                           | Analytics / Authentication |
 
-_Table 1: Glossary of SmartGym Domain_
+<p align="center"><em>Table 2.1: SmartGym domain glossary</em></p>
 
 ## 2.4 System Requirements
 
@@ -111,6 +111,8 @@ view of the two main actors: Administrator and Gym Member.
 
 ![UseCaseDiagram](../public/resources/use_case_diagram.png)
 
+<p align="center"><em>Figure 2.1: SmartGym Monitor use case diagram</em></p>
+
 In the following tables the description of each use case related to Administrator and Gym Member.
 
 | Use Case                   | Description                                                                                                        |
@@ -120,7 +122,7 @@ In the following tables the description of each use case related to Administrato
 | View Machine Usage History | Allows the administrator to consult historical data about machine usage sessions.                                  |
 | Monitor Gym Attendance     | Shows aggregated data about gym attendance, including peak hours and occupancy trends.                             |
 
-_Table 2: Administrator Use Case Description_
+<p align="center"><em>Table 2.2: Administrator use case descriptions</em></p>
 
 | Use Case        | Description                                                                                                                         |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
@@ -129,7 +131,7 @@ _Table 2: Administrator Use Case Description_
 | Access Gym Area | Allows the gym member to enter a specific gym area using badge authentication.                                                      |
 | Use Machine     | Allows the gym member to use a machine if it is available. The system detects and records the machine session automatically.        |
 
-_Table 3: Gym Member Use Case Description_
+<p align="center"><em>Table 2.3: Gym Member use case descriptions</em></p>
 
 ## 2.6 User Stories
 
@@ -143,6 +145,8 @@ _Table 3: Gym Member Use Case Description_
 | US-03 | As a **Gym Member**, I want machine usage to be detected automatically, so that sessions are recorded without manual input. | FR-4, FR-5 |
 | US-04 | As an **Administrator**, I want to monitor machine occupancy and history, so that I can analyze usage trends.               | FR-6       |
 
+<p align="center"><em>Table 2.4: Main user stories and related functional requirements</em></p>
+
 ## 2.7 Quality Attributes Scenarios
 
 | Quality Attribute  | Stimulus                                               | Environment                                              | Artifact                                                        | Response                                                                            | Response Measure                                                        |
@@ -154,6 +158,8 @@ _Table 3: Gym Member Use Case Description_
 | **Security**       | An administrator attempts to access the dashboard.     | Internal or external network access.                     | Authentication service and API Gateway.                         | The system requires valid credentials and enforces authorization.                   | Unauthorized access denied and logged; communication encrypted (HTTPS). |
 | **Modifiability**  | A new gym area or machine is added.                    | Maintenance phase.                                       | Configuration files and the `area-service` / `machine-service`. | The system allows configuration without changing core logic.                        | New elements configurable without code modification.                    |
 | **Data Integrity** | Concurrent machine occupancy events occur.             | High concurrent usage.                                   | Machine Management aggregate and database.                      | The system maintains consistent machine state transitions.                          | A machine cannot be both _Free_ and _Occupied_ simultaneously.          |
+
+<p align="center"><em>Table 2.5: Quality attribute scenarios</em></p>
 
 ## 2.8 Story Telling
 
@@ -204,7 +210,7 @@ The administrator can then view User Gym Sessions and User Machine Sessions in a
 | Gym Session     | GymSessionId     | badgeId, startTime, endTime            | Track presence inside the gym                           | tracking-service   |
 | Machine Session | MachineSessionId | machineId, badgeId, startTime, endTime | Track machine usage duration                            | Machine Management |
 
-_Table X: Core Domain Entities_
+<p align="center"><em>Table 2.6: Core domain entities</em></p>
 
 | Value Object        | Attributes                    | Role |
 | ------------------- | ----------------------------- | ---- |
@@ -215,7 +221,7 @@ _Table X: Core Domain Entities_
 | **AreaCount**       | currentCount                  |      |
 | **BadgeId**         | string/uuid                   |      |
 
-_Table X: Core Domain Value Objects_
+<p align="center"><em>Table 2.7: Core domain value objects</em></p>
 
 ### 2.9.2 Aggregates
 
@@ -226,7 +232,7 @@ _Table X: Core Domain Value Objects_
 | **GymSession**     | Member presence inside the gym                      | A badge cannot have more than one active _GymSession_ at the same time; a session must have a start time and can only end through a valid exit event.                  |
 | **MachineSession** | Member usage of a machine                           | A machine cannot have more than one active session simultaneously; every _MachineSession_ must be associated with exactly one _Machine_.                               |
 
-_Table X: Core Domain Aggregates_
+<p align="center"><em>Table 2.8: Core domain aggregates</em></p>
 
 ### 2.9.3 Domain Events
 
@@ -240,13 +246,15 @@ _Table X: Core Domain Aggregates_
 | **MachineSessionEnded**     | A machine transitions to _Free_          | Closes the active _MachineSession_ and sets the machine status to _Free_.            |
 | **MachineSetToMaintenance** | An administrator sets the machine status | Updates the machine status to _Maintenance_ and prevents new sessions from starting. |
 
-_Table X: Core Domain Events_
+<p align="center"><em>Table 2.9: Core domain events</em></p>
 
 ## 2.10 Bounded Context
 
 > Each bounded context defines its own **model, terminology, and invariants**, reducing coupling and enabling independent evolution of system components.
 
 ![BC_SmartGymMonitor](../public/resources/BC_SmartGymMonitor.png)
+
+<p align="center"><em>Figure 2.2: SmartGym Monitor bounded contexts</em></p>
 
 The SmartGym Monitor system is structured into **Core**, **Supporting**, and **Generic** bounded contexts as described below.
 

@@ -42,4 +42,6 @@ Below is the system dashboard, which provides an overview of the operational sta
     <img src="/resources/screen.png" alt="Demo" style="max-width: 100%; height: auto;">
 </div>
 
+<p align="center"><em>Figure 1.2: SmartGym Monitor dashboard overview</em></p>
+
 > The project logo was generated using simple prompts with the model <a target="_blank" href="https://aistudio.google.com/models/gemini-3-1-flash-image">Gemini 3.1 Flash Image</a>.

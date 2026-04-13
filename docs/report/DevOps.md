@@ -55,6 +55,8 @@ Commit messages follow a structured format:
 [optional footer(s)]
 ```
 
+<p align="center"><em>Listing 6.1: Conventional Commits message format</em></p>
+
 Examples:
 
 - `feat(auth): add login endpoint`
@@ -69,6 +71,8 @@ Branch names are structured as follows:
 ```
 <type>/<description>
 ```
+
+<p align="center"><em>Listing 6.2: Branch naming format</em></p>
 
 Examples:
 
