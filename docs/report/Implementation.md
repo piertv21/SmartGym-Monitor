@@ -16,19 +16,19 @@ Operational data is persisted in MongoDB, while the embedded layer converts devi
 
 ```mermaid
 flowchart LR
-	Sim[Go Simulator] -->|MQTT| Mosquitto[(Mosquitto Broker)]
-	Mosquitto --> Embedded[embedded-service]
-	Embedded --> Tracking[tracking-service]
-	Embedded --> Area[area-service]
-	Embedded --> Machine[machine-service]
-	Embedded --> Analytics[analytics-service]
-	Frontend[Flask frontend] --> Gateway[API Gateway]
-	Gateway --> Auth[auth-service]
-	Gateway --> Tracking
-	Gateway --> Area
-	Gateway --> Machine
-	Gateway --> Analytics
-	Gateway --> Embedded
+    Sim[Go Simulator] -->|MQTT| Mosquitto[(Mosquitto Broker)]
+    Mosquitto --> Embedded[embedded-service]
+    Embedded --> Tracking[tracking-service]
+    Embedded --> Area[area-service]
+    Embedded --> Machine[machine-service]
+    Embedded --> Analytics[analytics-service]
+    Frontend[Flask frontend] --> Gateway[API Gateway]
+    Gateway --> Auth[auth-service]
+    Gateway --> Tracking
+    Gateway --> Area
+    Gateway --> Machine
+    Gateway --> Analytics
+    Gateway --> Embedded
 ```
 
 <p align="center"><em>Listing 4.1: High-level architecture flow represented in Mermaid</em></p>
@@ -115,17 +115,17 @@ Main endpoints:
 
 ```mermaid
 flowchart TD
-    GW[API Gateway] -->|"POST /login\nPOST /register\nGET /login/username\nPOST /logout"| CTRL["AuthRestControllerImpl"]
+    GW[API Gateway]
 
     subgraph auth-service
+        CTRL["AuthRestControllerImpl"]
         CTRL --> API["AuthServiceApiImpl"]
         API -->|"verifica credenziali\n(BCrypt)"| REPO["AuthRepositoryImpl"]
         API -->|"genera / valida\naccess token"| JWT["JwtTokenService"]
         REPO --> DB[(MongoDB\nauth-db)]
     end
 
-    API -->|"accessToken"| CTRL
-    CTRL -->|"risposta JSON"| GW
+    GW -->|"POST /login\nPOST /register\nGET /login/{username}\nPOST /logout"| CTRL
 ```
 
 ### 4.2.4 Tracking-service
@@ -142,17 +142,19 @@ Main endpoints:
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(TrackingServiceHttpAdapter)"] -->|"POST /start-session\n(ENTRY)"| CTRL["TrackingRestControllerImpl"]
-    EMB -->|"POST /end-session\n(EXIT)"| CTRL
+    EMB["embedded-service\n(TrackingServiceHttpAdapter)"]
+    DASH["Dashboard\n(via Gateway)"]
 
     subgraph tracking-service
+        CTRL["TrackingRestControllerImpl"]
         CTRL --> API["TrackingServiceApiImpl"]
         API -->|"crea / chiudi sessione"| REPO["TrackingRepositoryImpl"]
         REPO --> DB[(MongoDB\ntracking-db)]
     end
 
-    DASH["Dashboard\n(via Gateway)"] -->|"GET /count\nGET /active-sessions"| CTRL
-    API -->|"conteggio presenze"| CTRL
+    EMB -->|"POST /start-session\n(ENTRY)"| CTRL
+    EMB -->|"POST /end-session\n(EXIT)"| CTRL
+    DASH -->|"GET /count\nGET /active-sessions"| CTRL
 ```
 
 ### 4.2.5 Area-service
@@ -162,24 +164,26 @@ It processes access events, exit events, area queries, and capacity updates.
 
 Main endpoints:
 
-- `POST /area-service/access`
-- `POST /area-service/exit`
-- `GET /area-service/{areaId}`
-- `GET /area-service`
-- `PUT /area-service/capacity`
+- `POST /access`
+- `POST /exit`
+- `GET /{areaId}`
+- `GET /`
+- `PUT /capacity`
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(AreaServiceHttpAdapter)"] -->|"POST /area-service/access (IN)\nPOST /area-service/exit (OUT)"| CTRL["AreaRestControllerImpl"]
+    EMB["embedded-service\n(AreaServiceHttpAdapter)"]
+    DASH["Dashboard\n(via Gateway)"]
 
     subgraph area-service
+        CTRL["AreaRestControllerImpl"]
         CTRL --> API["AreaServiceApiImpl"]
         API -->|"incrementa / decrementa\ncurrentCount"| REPO["AreaRepositoryImpl"]
         REPO --> DB[(MongoDB\narea-db)]
     end
 
-    DASH["Dashboard\n(via Gateway)"] -->|"GET /area-service\nGET /area-service/areaId\nPUT /area-service/capacity"| CTRL
-    API -->|"lista aree +\noccupazione"| CTRL
+    EMB -->|"POST /access (IN)\nPOST /exit (OUT)"| CTRL
+    DASH -->|"GET /\nGET /{areaId}\nPUT /capacity"| CTRL
 ```
 
 ### 4.2.6 Machine-service
@@ -201,16 +205,18 @@ Main endpoints:
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(MachineServiceHttpAdapter)"] -->|"POST /start-session\nPOST /end-session"| CTRL["MachineRestControllerImpl"]
+    EMB["embedded-service\n(MachineServiceHttpAdapter)"]
+    DASH["Dashboard\n(via Gateway)"]
 
     subgraph machine-service
+        CTRL["MachineRestControllerImpl"]
         CTRL --> API["MachineServiceApiImpl"]
         API -->|"aggiorna stato\nmacchina + sessione"| REPO["MachineRepositoryImpl"]
         REPO --> DB[(MongoDB\nmachine-db)]
     end
 
-    DASH["Dashboard\n(via Gateway)"] -->|"POST /set-maintenance\nGET /machines\nGET /machineId\nGET /history/machineId\nGET /machines/history/series"| CTRL
-    API -->|"stato + storico"| CTRL
+    EMB -->|"POST /start-session\nPOST /end-session"| CTRL
+    DASH -->|"POST /set-maintenance\nGET /machines\nGET /{machineId}\nGET /history/{machineId}\nGET /machines/history/series"| CTRL
 ```
 
 ### 4.2.7 Analytics-service
@@ -227,16 +233,18 @@ Main endpoints:
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(AnalyticsServiceHttpAdapter)"] -->|"POST /events/ingest"| CTRL["AnalyticsRestControllerImpl"]
+    EMB["embedded-service\n(AnalyticsServiceHttpAdapter)"]
+    DASH["Dashboard\n(via Gateway)"]
 
     subgraph analytics-service
+        CTRL["AnalyticsRestControllerImpl"]
         CTRL --> API["AnalyticsServiceApiImpl"]
         API -->|"salva evento +\ncalcola aggregati"| REPO["AnalyticsRepositoryImpl"]
         REPO --> DB[(MongoDB\nanalytics-db)]
     end
 
-    DASH["Dashboard\n(via Gateway)"] -->|"GET /attendance\nGET /attendance/series\nGET /gym-session-duration/date"| CTRL
-    API -->|"metriche aggregate"| CTRL
+    EMB -->|"POST /events/ingest"| CTRL
+    DASH -->|"GET /attendance\nGET /attendance/series\nGET /gym-session-duration/{date}"| CTRL
 ```
 
 ### 4.2.8 Embedded-service
@@ -257,9 +265,9 @@ Here is a simplified flow of how the embedded service processes incoming MQTT me
 ```mermaid
 flowchart TD
     SIM["Go Simulator"] -->|"MQTT"| BROKER["Mosquitto Broker"]
-    BROKER -->|"MQTT"| MQTT["VertxMqttClientAdapter"]
 
     subgraph embedded-service
+        MQTT["VertxMqttClientAdapter"]
         MQTT --> ESAPI["EmbeddedServiceApiImpl"]
         ESAPI -->|"HTTP"| TSP["TrackingServiceHttpAdapter"]
         ESAPI -->|"HTTP"| ASP["AreaServiceHttpAdapter"]
@@ -270,6 +278,7 @@ flowchart TD
         CTRL["EmbeddedRestControllerImpl"] -->|"getAllDeviceStatuses()"| ESAPI
     end
 
+    BROKER -->|"MQTT"| MQTT
     DASH["Dashboard\n(via Gateway)"] -->|"GET /statuses"| CTRL
     TSP --> TRK[tracking-service]
     ASP --> AREA[area-service]
