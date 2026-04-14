@@ -1,9 +1,9 @@
 server:
-  port: ${TRACKING_SERVICE_INSTANCE_PORT:8085}
+  port: ${TRACKING_SERVICE_INSTANCE_PORT:8087}
 
 spring:
   application:
-    name: tracking-service
+    name: ${TRACKING_SERVICE_INSTANCE_HOSTNAME:tracking-service}
   data:
     mongodb:
       uri: ${TRACKING_MONGODB_URI:mongodb://localhost:27017/trackingservicedb}
@@ -21,7 +21,7 @@ eureka:
 
 management:
   server:
-    port: ${TRACKING_SERVICE_INSTANCE_PORT:8085}
+    port: ${TRACKING_SERVICE_INSTANCE_PORT:8087}
     servlet:
       context-path: /
   endpoints:

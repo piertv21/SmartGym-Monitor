@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: analytics-service
+    name: ${ANALYTICS_SERVICE_INSTANCE_HOSTNAME:analytics-service}
   data:
     mongodb:
       uri: ${ANALYTICS_MONGODB_URI:mongodb://localhost:27017/analyticsservicedb}
@@ -21,7 +21,7 @@ eureka:
 
 management:
   server:
-    port: 8085
+    port: ${ANALYTICS_SERVICE_INSTANCE_PORT:8085}
     servlet:
       context-path: /
   endpoints:

@@ -1,5 +1,10 @@
 echo "Running Gradle tests before push..."
 
+if [ -n "$CI" ]; then
+  echo "Skipping tests in CI"
+  exit 0
+fi
+
 cd src/backend && ./gradlew test
 
 if [ $? -ne 0 ]; then
