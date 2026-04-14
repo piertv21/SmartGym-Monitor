@@ -1,3 +1,16 @@
+## [3.2.1](https://github.com/piertv21/SmartGym-Monitor/compare/3.2.0...3.2.1) (2026-04-14)
+
+### Dependency updates
+
+- **deps:** update dependency lint-staged to v16.4.0 ([be8eeea](https://github.com/piertv21/SmartGym-Monitor/commit/be8eeea847439a591f5375b85bdc4e5470a66a64))
+- **deps:** update dependency prettier to v3.8.2 ([56b5191](https://github.com/piertv21/SmartGym-Monitor/commit/56b51915b6666ac0bee29831c4513c4cb3bda6cf))
+- **deps:** update dependency pytest to v9 ([8bf4a17](https://github.com/piertv21/SmartGym-Monitor/commit/8bf4a1791d0118f97615a1ae77c45071340b5741))
+- **deps:** update dependency python ([0a7c3a2](https://github.com/piertv21/SmartGym-Monitor/commit/0a7c3a2f7eadb8cc80fad64dfefb042a580d3c67))
+
+### Bug Fixes
+
+- **deps:** update vertx to v4.5.26 ([cd3e5c7](https://github.com/piertv21/SmartGym-Monitor/commit/cd3e5c7656e08e5c0f4873bb6acf015efb138e99))
+
 ## [3.2.0](https://github.com/piertv21/SmartGym-Monitor/compare/3.1.0...3.2.0) (2026-04-14)
 
 ### Features
