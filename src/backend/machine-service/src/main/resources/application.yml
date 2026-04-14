@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: machine-service
+    name: ${MACHINE_SERVICE_INSTANCE_HOSTNAME:machine-service}
   data:
     mongodb:
       uri: ${MACHINE_MONGODB_URI:mongodb://localhost:27017/machineservicedb}
@@ -21,7 +21,7 @@ eureka:
 
 management:
   server:
-    port: ${MACHINE_SERVICE_INSTANCE_PORT:8085}
+    port: ${MACHINE_SERVICE_INSTANCE_PORT:8084}
     servlet:
       context-path: /
   endpoints:

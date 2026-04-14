@@ -1,9 +1,9 @@
 server:
-  port: 8761
+  port: ${SERVICE_DISCOVERY_INSTANCE_PORT:8761}
 
 spring:
   application:
-    name: service-discovery
+    name: ${SERVICE_DISCOVERY_INSTANCE_HOSTNAME:service-discovery}
 
 eureka:
   client:
@@ -26,4 +26,4 @@ management:
     tags:
       application: ${spring.application.name:service-discovery}
   server:
-    port: 8761
+    port: ${SERVICE_DISCOVERY_INSTANCE_PORT:8761}

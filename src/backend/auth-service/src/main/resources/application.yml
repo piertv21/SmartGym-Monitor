@@ -3,10 +3,10 @@ server:
 
 spring:
   application:
-    name: auth-service
+    name: ${AUTH_SERVICE_INSTANCE_HOSTNAME:auth-service}
   data:
     mongodb:
-      uri: ${AUTH_MONGODB_URI:mongodb://localhost:27017/mongo-auth}
+      uri: ${AUTH_MONGODB_URI:mongodb://localhost:27017/authservicedb}
 
 eureka:
   client:
@@ -21,7 +21,7 @@ eureka:
 
 management:
   server:
-    port: 8081
+    port: ${AUTH_SERVICE_INSTANCE_PORT:8081}
     servlet:
       context-path: /
   endpoints:
@@ -53,4 +53,4 @@ security:
     issuer: ${JWT_ISSUER:smartgym-auth}
     audience: ${JWT_AUDIENCE:smartgym-gateway}
     access-token-ttl-seconds: ${JWT_ACCESS_TOKEN_TTL_SECONDS:86400}
-    secret: ${JWT_SECRET:smartgym-jwt-secret-change-me-32-bytes-min}
+    secret: ${JWT_SECRET:smartgym-jwt-secret-to-change-32-bytes-min}
