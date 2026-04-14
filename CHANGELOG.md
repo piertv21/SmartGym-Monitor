@@ -1,3 +1,78 @@
+## [3.2.0](https://github.com/piertv21/SmartGym-Monitor/compare/3.1.0...3.2.0) (2026-04-14)
+
+### Features
+
+- add auth token expiration check, removed old auth service ([ad0656b](https://github.com/piertv21/SmartGym-Monitor/commit/ad0656b6e457a142404c2bd8227935cd4065b178))
+- add dashboard kpi icons, update ui libs versions ([27d921e](https://github.com/piertv21/SmartGym-Monitor/commit/27d921e74a3ab6f80b3de76c31035e9615a22342))
+- add default Live monitor page ([db0c262](https://github.com/piertv21/SmartGym-Monitor/commit/db0c2622097107300174c7fbfe4d057d5c67d187))
+- add endpoint to build graph on frontend ([4bbd879](https://github.com/piertv21/SmartGym-Monitor/commit/4bbd87931ae2c9f672e53c4f6d5b04d9855fd9cf))
+- add frontend favicon ([84e250c](https://github.com/piertv21/SmartGym-Monitor/commit/84e250c8c67d7cdee6bedba877631a6611b3e2d5))
+- add history page impl, refined machine stats response to match page ui ([d06ec82](https://github.com/piertv21/SmartGym-Monitor/commit/d06ec824a5ddd2ac118a45104e76d1e86cafe589))
+- add machine session endpoint for graph data ([b501a78](https://github.com/piertv21/SmartGym-Monitor/commit/b501a78b5845394b9216f27b9a5fce9836d816de))
+- add microservices db reset on docker start ([cb1ced3](https://github.com/piertv21/SmartGym-Monitor/commit/cb1ced37fc1cb13adced360d6e36daef1d4f58d6))
+- add page description, beautify ui ([f3c4bea](https://github.com/piertv21/SmartGym-Monitor/commit/f3c4beab479935e0b5c465924685807d5ee6092a))
+- cleanup old code comments ([c4bff0e](https://github.com/piertv21/SmartGym-Monitor/commit/c4bff0e4c4e52e5a236811ed335803a7b3fd4e60))
+- cleanup old comments in analytics service ([1f8541f](https://github.com/piertv21/SmartGym-Monitor/commit/1f8541f6794483df25cbdc80eca96dc392b2a3eb))
+- full implemented dashboard, add support to end maintenance ([f2b6d11](https://github.com/piertv21/SmartGym-Monitor/commit/f2b6d11d54323c7d8d97ed68d3158c53b0c51f66))
+- implemented live monitor page ([15f552f](https://github.com/piertv21/SmartGym-Monitor/commit/15f552f473313a7c007483392cae4ee25cede651))
+
+### Bug Fixes
+
+- add extend ddd class or interface ([bd5a0a4](https://github.com/piertv21/SmartGym-Monitor/commit/bd5a0a4f457aa3a3370b91dbb47ce08c8f6756ba))
+- add integration test between services ([6ad1a39](https://github.com/piertv21/SmartGym-Monitor/commit/6ad1a3926564e638dd39433fe4201aeda730d794))
+- dashboard live-user count ([c4fa6d4](https://github.com/piertv21/SmartGym-Monitor/commit/c4fa6d45404c6c8b5de4a97c625648f89bfe069f))
+- fix history graph in analytics ([fe79b54](https://github.com/piertv21/SmartGym-Monitor/commit/fe79b548ac343c552f1dd5da8a3d984f2b7379f2))
+- fix session average ([1b66ccc](https://github.com/piertv21/SmartGym-Monitor/commit/1b66cccc5ebd1b004e4e703ad01bb64df09859ed))
+- **frontend:** add tzdata for zoneinfo ([f7a4c5f](https://github.com/piertv21/SmartGym-Monitor/commit/f7a4c5f7aa6eca0ab054a27ab2b4e08e2132ca65))
+- gateway start error, removed redundant and hard-coded values ([b7ad446](https://github.com/piertv21/SmartGym-Monitor/commit/b7ad4463e8b60dd45f9d45113ff8eba4615bbc14))
+- remove all dependency not used, clean project ([b49ef18](https://github.com/piertv21/SmartGym-Monitor/commit/b49ef18f239a45e8bf3e6d270a90dd9541d650d7))
+- removed area-service name in endpoint mapping ([69c896b](https://github.com/piertv21/SmartGym-Monitor/commit/69c896b59781862ceac5603e83328907a123811d))
+- simulator publisher msg queue, refined machine session history timestamp ([12d2d12](https://github.com/piertv21/SmartGym-Monitor/commit/12d2d12d4b28d36ad275b201a1037722a856724a))
+- test module gradle config ([ba6702d](https://github.com/piertv21/SmartGym-Monitor/commit/ba6702d27d4b3321bb71b325166b71c1f37f49b2))
+- user number mismatch in dashboard, remove unused env vars ([b9119c5](https://github.com/piertv21/SmartGym-Monitor/commit/b9119c5bfdcbcad456f64e66c3ff224e645c84db))
+
+### Documentation
+
+- add diagram in implementation chapter ([7df43e6](https://github.com/piertv21/SmartGym-Monitor/commit/7df43e66f7f6c86327ac4f94cb21a8523fe7d349))
+- add missing hook to devops section ([345c6de](https://github.com/piertv21/SmartGym-Monitor/commit/345c6de547541cf44b940e2762a761c732ac998b))
+- add Prometheus and grafana to devops chapter ([84a35b1](https://github.com/piertv21/SmartGym-Monitor/commit/84a35b1c9dea427dbfbeba9ec49b1a705d648d62))
+- complete deployment chapter, refined other chapters style ([b10c7fb](https://github.com/piertv21/SmartGym-Monitor/commit/b10c7fb832317904e7f1b9bd3b94b32dbc0eda0d))
+- fix chapters enumeration ([5519339](https://github.com/piertv21/SmartGym-Monitor/commit/5519339a11e0b7c7ff1940fa836441c2e264b41c))
+- improved devops chapter, refined design and requirements chapters ([a6efb42](https://github.com/piertv21/SmartGym-Monitor/commit/a6efb421179c0745a898f4166c36f69ae10e09e8))
+- refined implementation and technologies chapters, add deployment chapter ([02740d1](https://github.com/piertv21/SmartGym-Monitor/commit/02740d11ff13247a4f69a008287917fa29d0a912))
+- refined index ([0123987](https://github.com/piertv21/SmartGym-Monitor/commit/0123987fcdd906d1b88a098b387503684c6fe01b))
+- update img, tables and listing enumeration ([f723812](https://github.com/piertv21/SmartGym-Monitor/commit/f72381235fae24adb20ae5e385fda07f4d2414c3))
+- update index, add project dashboard screen ([a44b8fb](https://github.com/piertv21/SmartGym-Monitor/commit/a44b8fba1abf03418bd453b3f59ceb831ce6d7dc))
+- update README.md ([aa61a24](https://github.com/piertv21/SmartGym-Monitor/commit/aa61a2447d6f3f9b5a7d9dd663349f53aa75fd92))
+
+### Tests
+
+- fix getAttendanceSeriesWithWeeklyGranularity() test ([e411558](https://github.com/piertv21/SmartGym-Monitor/commit/e4115582f234438135e3e28a56a443547881d4a5))
+
+### Build and continuous integration
+
+- add pre-push test hook ([c65a615](https://github.com/piertv21/SmartGym-Monitor/commit/c65a6154da55e86961e679edbe578443b0ec2d10))
+- fix hook now skipping test in ci ([a1f60b1](https://github.com/piertv21/SmartGym-Monitor/commit/a1f60b178dc80665468865965fd81ba206651da6))
+- versions of poetry and go aligned to the local configuration in dockerfile ([cd1ce65](https://github.com/piertv21/SmartGym-Monitor/commit/cd1ce65f85ded0e06a8e7354a90f657263ec1395))
+
+### General maintenance
+
+- clean up unused files and fix minor formatting issues ([7aec180](https://github.com/piertv21/SmartGym-Monitor/commit/7aec180ab9e593a3d938a3fbf32188bd695b133f))
+- configure code formatters for java, python and go, add auto-format upon commit ([009b339](https://github.com/piertv21/SmartGym-Monitor/commit/009b33921241459a42fb925cda9b9ab624174d17))
+- preserve analytics changes after sync with develop ([7d72bb6](https://github.com/piertv21/SmartGym-Monitor/commit/7d72bb6361260a06f9db0ca0ed2227ce3409e246))
+- refactor code ([53cc4d4](https://github.com/piertv21/SmartGym-Monitor/commit/53cc4d424b83f18eb25d1b47af347a1d7dbca8fc))
+
+### Style improvements
+
+- apply code formatting across project ([f803b47](https://github.com/piertv21/SmartGym-Monitor/commit/f803b47b9aadac4aaa8ce6693d7e73603b1d6e50))
+
+### Refactoring
+
+- completely rewritten frontend now using Bootstrap 5, add theme toggle and default data ([2ab5f7f](https://github.com/piertv21/SmartGym-Monitor/commit/2ab5f7f9754953817ddea2f4ca52f9b359dd5082))
+- removed old seed script, moved mosquitto config ([90d2ef5](https://github.com/piertv21/SmartGym-Monitor/commit/90d2ef5987083ff4ddd4c0a7fc04754f714a0e51))
+- **simulator-engine:** rewrite for stability and correct simulation flow ([3a70699](https://github.com/piertv21/SmartGym-Monitor/commit/3a7069922ee1a7b789a9753b363e191a9fdc360c))
+- small edit in frontend api calls ([c43b32d](https://github.com/piertv21/SmartGym-Monitor/commit/c43b32d87fc34fc1f0e09a799a408cacd959a2e8))
+
 ## [3.1.0](https://github.com/piertv21/SmartGym-Monitor/compare/3.0.0...3.1.0) (2026-04-05)
 
 ### Features
