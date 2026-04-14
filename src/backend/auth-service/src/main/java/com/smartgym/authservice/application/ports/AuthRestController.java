@@ -3,22 +3,25 @@ package com.smartgym.authservice.application.ports;
 import com.smartgym.authservice.model.LoginMessage;
 import com.smartgym.authservice.model.RegisterMessage;
 import io.vertx.core.json.JsonObject;
+import java.util.concurrent.CompletableFuture;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.concurrent.CompletableFuture;
 @RestController
 public interface AuthRestController {
 
     @PostMapping("/login")
-    CompletableFuture<ResponseEntity<JsonObject>> handleLogin(@RequestBody LoginMessage credentials);
+    CompletableFuture<ResponseEntity<JsonObject>> handleLogin(
+            @RequestBody LoginMessage credentials);
 
     @PostMapping("/register")
-    CompletableFuture<ResponseEntity<JsonObject>> handleRegister(@RequestBody RegisterMessage registerMessage);
+    CompletableFuture<ResponseEntity<JsonObject>> handleRegister(
+            @RequestBody RegisterMessage registerMessage);
 
     @GetMapping("/login/{username}")
     CompletableFuture<ResponseEntity<JsonObject>> handleVerifyUser(@PathVariable String username);
 
     @PostMapping("/logout")
-    CompletableFuture<ResponseEntity<JsonObject>> handleLogout(@RequestHeader("X-User-Id") String username);
+    CompletableFuture<ResponseEntity<JsonObject>> handleLogout(
+            @RequestHeader("X-User-Id") String username);
 }

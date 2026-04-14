@@ -7,13 +7,12 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.smartgym.authservice.application.ports.AuthRepository;
 import com.smartgym.authservice.model.AuthUser;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 public class AuthRepositoryImpl implements AuthRepository {
 
@@ -31,8 +30,7 @@ public class AuthRepositoryImpl implements AuthRepository {
             MongoClient mongoClient,
             PasswordEncoder passwordEncoder,
             String defaultAdminUsername,
-            String defaultAdminPassword
-    ) {
+            String defaultAdminPassword) {
         MongoDatabase database = mongoClient.getDatabase("authservicedb");
         this.usersCollection = database.getCollection(USERS_COLLECTION);
         this.logsCollection = database.getCollection(LOGS_COLLECTION);
@@ -45,16 +43,11 @@ public class AuthRepositoryImpl implements AuthRepository {
     private void initializeIndexes() {
         try {
             usersCollection.createIndex(
-                    Indexes.ascending("username"),
-                    new IndexOptions().unique(true)
-            );
+                    Indexes.ascending("username"), new IndexOptions().unique(true));
 
             logsCollection.createIndex(
                     Indexes.compoundIndex(
-                            Indexes.ascending("username"),
-                            Indexes.descending("timestamp")
-                    )
-            );
+                            Indexes.ascending("username"), Indexes.descending("timestamp")));
 
             logger.info("✅ MongoDB indexes created successfully");
         } catch (Exception e) {
@@ -74,7 +67,8 @@ public class AuthRepositoryImpl implements AuthRepository {
             Document query = new Document("username", username);
             Document result = usersCollection.find(query).first();
 
-            logger.debug("User lookup for '{}': {}", username, result != null ? "found" : "not found");
+            logger.debug(
+                    "User lookup for '{}': {}", username, result != null ? "found" : "not found");
 
             future.complete(Optional.ofNullable(result).map(this::toDomain));
         } catch (Exception e) {
@@ -100,7 +94,8 @@ public class AuthRepositoryImpl implements AuthRepository {
                 throw new IllegalArgumentException("Invalid user payload");
             }
 
-            Document existing = usersCollection.find(new Document("username", user.getUsername())).first();
+            Document existing =
+                    usersCollection.find(new Document("username", user.getUsername())).first();
             if (existing != null) {
                 future.complete(false);
                 return future;
@@ -109,8 +104,12 @@ public class AuthRepositoryImpl implements AuthRepository {
             usersCollection.insertOne(toDocument(user));
             future.complete(true);
         } catch (Exception e) {
-            logger.error("Failed to save user '{}': {}", user != null ? user.getUsername() : "unknown", e.getMessage());
-            future.completeExceptionally(new RuntimeException("Failed to save user: " + e.getMessage(), e));
+            logger.error(
+                    "Failed to save user '{}': {}",
+                    user != null ? user.getUsername() : "unknown",
+                    e.getMessage());
+            future.completeExceptionally(
+                    new RuntimeException("Failed to save user: " + e.getMessage(), e));
         }
 
         return future;
@@ -132,10 +131,11 @@ public class AuthRepositoryImpl implements AuthRepository {
                 throw new IllegalArgumentException("Invalid timestamp");
             }
 
-            Document logDoc = new Document()
-                    .append("username", username)
-                    .append("action", action)
-                    .append("timestamp", timestamp);
+            Document logDoc =
+                    new Document()
+                            .append("username", username)
+                            .append("action", action)
+                            .append("timestamp", timestamp);
 
             logsCollection.insertOne(logDoc);
             logger.debug("Log saved: {} for user '{}'", action, username);
@@ -144,7 +144,8 @@ public class AuthRepositoryImpl implements AuthRepository {
         } catch (Exception e) {
             logger.error("Failed to save {} log for '{}': {}", action, username, e.getMessage());
             future.completeExceptionally(
-                    new RuntimeException("Failed to save " + action + " log: " + e.getMessage(), e));
+                    new RuntimeException(
+                            "Failed to save " + action + " log: " + e.getMessage(), e));
         }
 
         return future;
@@ -155,16 +156,18 @@ public class AuthRepositoryImpl implements AuthRepository {
         CompletableFuture<Void> future = new CompletableFuture<>();
 
         try {
-            Document existingAdmin = usersCollection.find(new Document("username", defaultAdminUsername)).first();
+            Document existingAdmin =
+                    usersCollection.find(new Document("username", defaultAdminUsername)).first();
             if (existingAdmin != null) {
                 logger.info("Default admin '{}' already exists", defaultAdminUsername);
                 future.complete(null);
                 return future;
             }
 
-            String passwordToStore = defaultAdminPassword.startsWith("$2")
-                    ? defaultAdminPassword
-                    : passwordEncoder.encode(defaultAdminPassword);
+            String passwordToStore =
+                    defaultAdminPassword.startsWith("$2")
+                            ? defaultAdminPassword
+                            : passwordEncoder.encode(defaultAdminPassword);
 
             AuthUser defaultAdmin = new AuthUser(defaultAdminUsername, passwordToStore);
             usersCollection.insertOne(toDocument(defaultAdmin));
@@ -173,7 +176,8 @@ public class AuthRepositoryImpl implements AuthRepository {
         } catch (Exception e) {
             logger.error("❌ Failed to initialize default admin: {}", e.getMessage());
             future.completeExceptionally(
-                    new RuntimeException("Failed to initialize default admin: " + e.getMessage(), e));
+                    new RuntimeException(
+                            "Failed to initialize default admin: " + e.getMessage(), e));
         }
 
         return future;
@@ -184,7 +188,6 @@ public class AuthRepositoryImpl implements AuthRepository {
     }
 
     private Document toDocument(AuthUser user) {
-        return new Document("username", user.getUsername())
-                .append("password", user.getPassword());
+        return new Document("username", user.getUsername()).append("password", user.getPassword());
     }
 }

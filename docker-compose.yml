@@ -10,22 +10,16 @@ services:
         SERVICE: service-discovery
     env_file:
       - .env
-    container_name: ${EUREKA_INSTANCE_HOSTNAME}
+    container_name: ${SERVICE_DISCOVERY_INSTANCE_HOSTNAME}
     ports:
-      - "${EUREKA_INSTANCE_PORT}:${EUREKA_INSTANCE_PORT}"
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=${EUREKA_CLIENT_REGISTER_WITH_EUREKA}
-      - EUREKA_CLIENT_FETCH_REGISTRY=${EUREKA_CLIENT_FETCH_REGISTRY}
-      - EUREKA_INSTANCE_HOSTNAME=${EUREKA_INSTANCE_HOSTNAME}
-      - EUREKA_INSTANCE_PORT=${EUREKA_INSTANCE_PORT}
+      - "${SERVICE_DISCOVERY_INSTANCE_PORT}:${SERVICE_DISCOVERY_INSTANCE_PORT}"
     networks:
       - smartgym-net
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "curl --fail --silent http://localhost:${EUREKA_INSTANCE_PORT}/actuator/health || exit 1",
+          "curl --fail --silent http://localhost:${SERVICE_DISCOVERY_INSTANCE_PORT}/actuator/health || exit 1",
         ]
       interval: 30s
       timeout: 10s
@@ -49,15 +43,6 @@ services:
     depends_on:
       service-discovery:
         condition: service_healthy
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_INSTANCE_HOSTNAME=${API_GATEWAY_INSTANCE_HOSTNAME}
-      - EUREKA_INSTANCE_PORT=${API_GATEWAY_INSTANCE_PORT}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_ISSUER=${JWT_ISSUER}
-      - JWT_AUDIENCE=${JWT_AUDIENCE}
     networks:
       - smartgym-net
     healthcheck:
@@ -90,17 +75,8 @@ services:
         condition: service_healthy
       mongo-auth:
         condition: service_healthy
-    environment:
-      - SPRING_DATA_MONGODB_URI=${AUTH_MONGODB_URI}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
-      - EUREKA_INSTANCE_HOSTNAME=${AUTH_SERVICE_INSTANCE_HOSTNAME}
-      - SERVER_PORT=${AUTH_SERVICE_INSTANCE_PORT}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_ISSUER=${JWT_ISSUER}
-      - JWT_AUDIENCE=${JWT_AUDIENCE}
-      - JWT_ACCESS_TOKEN_TTL_SECONDS=${JWT_ACCESS_TOKEN_TTL_SECONDS}
+      mongo-reset:
+        condition: service_completed_successfully
     networks:
       - smartgym-net
     healthcheck:
@@ -153,15 +129,8 @@ services:
         condition: service_healthy
       mongo-analytics:
         condition: service_healthy
-    environment:
-      - SERVICE_NAME=analytics-service
-      - SERVICE_PORT=${ANALYTICS_SERVICE_INSTANCE_PORT}
-      - SPRING_DATA_MONGODB_URI=${ANALYTICS_MONGODB_URI}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
-      - EUREKA_INSTANCE_HOSTNAME=${ANALYTICS_SERVICE_INSTANCE_HOSTNAME}
-      - SERVER_PORT=${ANALYTICS_SERVICE_INSTANCE_PORT}
+      mongo-reset:
+        condition: service_completed_successfully
     networks:
       - smartgym-net
     healthcheck:
@@ -214,15 +183,8 @@ services:
         condition: service_healthy
       mongo-area:
         condition: service_healthy
-    environment:
-      - SERVICE_NAME=area-service
-      - SERVICE_PORT=${AREA_SERVICE_INSTANCE_PORT}
-      - SPRING_DATA_MONGODB_URI=${AREA_MONGODB_URI}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
-      - EUREKA_INSTANCE_HOSTNAME=${AREA_SERVICE_INSTANCE_HOSTNAME}
-      - SERVER_PORT=${AREA_SERVICE_INSTANCE_PORT}
+      mongo-seed:
+        condition: service_completed_successfully
     networks:
       - smartgym-net
     healthcheck:
@@ -264,10 +226,8 @@ services:
         condition: service_healthy
       mongo-machine:
         condition: service_healthy
-      area-service:
-        condition: service_healthy
-      machine-service:
-        condition: service_healthy
+      mongo-reset:
+        condition: service_completed_successfully
     command:
       [
         "sh",
@@ -300,15 +260,8 @@ services:
         condition: service_healthy
       mongo-machine:
         condition: service_healthy
-    environment:
-      - SERVICE_NAME=machine-service
-      - SERVICE_PORT=${MACHINE_SERVICE_INSTANCE_PORT}
-      - SPRING_DATA_MONGODB_URI=${MACHINE_MONGODB_URI}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
-      - EUREKA_INSTANCE_HOSTNAME=${MACHINE_SERVICE_INSTANCE_HOSTNAME}
-      - SERVER_PORT=${MACHINE_SERVICE_INSTANCE_PORT}
+      mongo-seed:
+        condition: service_completed_successfully
     networks:
       - smartgym-net
     healthcheck:
@@ -361,15 +314,8 @@ services:
         condition: service_healthy
       mongo-tracking:
         condition: service_healthy
-    environment:
-      - SERVICE_NAME=tracking-service
-      - SERVICE_PORT=${TRACKING_SERVICE_INSTANCE_PORT}
-      - SPRING_DATA_MONGODB_URI=${TRACKING_MONGODB_URI}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
-      - EUREKA_INSTANCE_HOSTNAME=${TRACKING_SERVICE_INSTANCE_HOSTNAME}
-      - SERVER_PORT=${TRACKING_SERVICE_INSTANCE_PORT}
+      mongo-reset:
+        condition: service_completed_successfully
     networks:
       - smartgym-net
     healthcheck:
@@ -422,25 +368,21 @@ services:
         condition: service_healthy
       mongo-embedded:
         condition: service_healthy
+      mongo-reset:
+        condition: service_completed_successfully
+      area-service:
+        condition: service_healthy
+      analytics-service:
+        condition: service_healthy
+      machine-service:
+        condition: service_healthy
+      tracking-service:
+        condition: service_healthy
     environment:
-      - SERVICE_NAME=embedded-service
-      - SERVICE_PORT=${EMBEDDED_SERVICE_INSTANCE_PORT}
-      - SPRING_DATA_MONGODB_URI=${EMBEDDED_MONGODB_URI}
-      - MQTT_BROKER_HOST=${MQTT_BROKER_HOST}
-      - MQTT_BROKER_PORT=${MQTT_BROKER_PORT}
-      - MQTT_BROKER_PROTOCOL=${MQTT_BROKER_PROTOCOL}
-      - MQTT_USERNAME=${MQTT_USERNAME}
-      - MQTT_PASSWORD=${MQTT_PASSWORD}
-      - MQTT_TOPIC=${MQTT_TOPIC}
-      - AREA_SERVICE_BASE_URL=http://area-service:${AREA_SERVICE_INSTANCE_PORT} #SERVE PER L'ADAPTER ESTERNO!
-      - ANALYTICS_SERVICE_BASE_URL=http://analytics-service:${ANALYTICS_SERVICE_INSTANCE_PORT} #SERVE PER L'ADAPTER ESTERNO!
-      - MACHINE_SERVICE_BASE_URL=http://machine-service:${MACHINE_SERVICE_INSTANCE_PORT} #SERVE PER L'ADAPTER ESTERNO!
+      - AREA_SERVICE_BASE_URL=http://area-service:${AREA_SERVICE_INSTANCE_PORT}
+      - ANALYTICS_SERVICE_BASE_URL=http://analytics-service:${ANALYTICS_SERVICE_INSTANCE_PORT}
+      - MACHINE_SERVICE_BASE_URL=http://machine-service:${MACHINE_SERVICE_INSTANCE_PORT}
       - TRACKING_SERVICE_BASE_URL=http://tracking-service:${TRACKING_SERVICE_INSTANCE_PORT}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
-      - EUREKA_CLIENT_FETCH_REGISTRY=true
-      - EUREKA_INSTANCE_HOSTNAME=${EMBEDDED_SERVICE_INSTANCE_HOSTNAME}
-      - SERVER_PORT=${EMBEDDED_SERVICE_INSTANCE_PORT}
     networks:
       - smartgym-net
     healthcheck:
@@ -474,6 +416,34 @@ services:
       retries: 5
       start_period: 20s
 
+  mongo-reset:
+    image: mongo:7
+    container_name: mongo-reset
+    depends_on:
+      mongo-auth:
+        condition: service_healthy
+      mongo-analytics:
+        condition: service_healthy
+      mongo-area:
+        condition: service_healthy
+      mongo-machine:
+        condition: service_healthy
+      mongo-tracking:
+        condition: service_healthy
+      mongo-embedded:
+        condition: service_healthy
+    env_file:
+      - .env
+    command:
+      [
+        "sh",
+        "-c",
+        "mongosh --quiet '${AUTH_MONGODB_URI}' --eval 'db.dropDatabase()' && mongosh --quiet '${ANALYTICS_MONGODB_URI}' --eval 'db.dropDatabase()' && mongosh --quiet '${AREA_MONGODB_URI}' --eval 'db.dropDatabase()' && mongosh --quiet '${MACHINE_MONGODB_URI}' --eval 'db.dropDatabase()' && mongosh --quiet '${TRACKING_MONGODB_URI}' --eval 'db.dropDatabase()' && mongosh --quiet '${EMBEDDED_MONGODB_URI}' --eval 'db.dropDatabase()'",
+      ]
+    networks:
+      - smartgym-net
+    restart: "no"
+
   ########################
   # FRONTEND FLASK
   ########################
@@ -491,11 +461,6 @@ services:
         condition: service_healthy
       auth-service:
         condition: service_healthy
-    environment:
-      - AUTH_SERVICE_BASE_URL=${AUTH_SERVICE_BASE_URL}
-      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
-      - GATEWAY_CLIENT_ID=${GATEWAY_CLIENT_ID}
-      - GATEWAY_CLIENT_SECRET=${GATEWAY_CLIENT_SECRET}
     networks:
       - smartgym-net
     healthcheck:
@@ -530,7 +495,7 @@ services:
         chmod 640 /mosquitto/config/passwordfile
         exec mosquitto -c /mosquitto/config/mosquitto.conf
     volumes:
-      - ./infrastructure/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto-data:/mosquitto/data
       - mosquitto-log:/mosquitto/log
     networks:
@@ -552,48 +517,50 @@ services:
         condition: service_healthy
       mosquitto:
         condition: service_started
+      embedded-service:
+        condition: service_healthy
     networks:
       - smartgym-net
-    environment:
-      - MQTT_BROKER_HOST=${MQTT_BROKER_HOST}
-      - MQTT_BROKER_PORT=${MQTT_BROKER_PORT}
-      - MQTT_BROKER_PROTOCOL=${MQTT_BROKER_PROTOCOL}
-      - MQTT_USERNAME=${MQTT_USERNAME}
-      - MQTT_PASSWORD=${MQTT_PASSWORD}
-      - MQTT_TOPIC=${MQTT_TOPIC}
     restart: unless-stopped
 
   #####################
   # PROMETHEUS        #
   #####################
-#  prometheus:
-#    image: prom/prometheus:latest
-#    container_name: ${PROMETHEUS_INSTANCE_HOSTNAME}
-#    ports:
-#      - "${PROMETHEUS_INSTANCE_PORT}:${PROMETHEUS_INSTANCE_PORT}"
-#    networks:
-#      - ${SMARTPARKING_NETWORK}
-#    volumes:
-#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-#    depends_on:
-#      gateway:
-#        condition: service_healthy
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ${PROMETHEUS_INSTANCE_HOSTNAME}
+    ports:
+      - "${PROMETHEUS_INSTANCE_PORT}:9090"
+    networks:
+      - smartgym-net
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      gateway:
+        condition: service_healthy
+    restart: unless-stopped
 
-#####################
-# GRAFANA           #
-#####################
-#  grafana:
-#    image: grafana/grafana
-#    container_name: ${GRAFANA_INSTANCE_HOSTNAME}
-#    ports:
-#      - "${GRAFANA_INSTANCE_PORT}:${GRAFANA_INSTANCE_PORT}"
-#    environment:
-#      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
-#      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
-#    networks:
-#      - ${SMARTPARKING_NETWORK}
-#    depends_on:
-#      - prometheus
+  #####################
+  # GRAFANA           #
+  #####################
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ${GRAFANA_INSTANCE_HOSTNAME}
+    ports:
+      - "${GRAFANA_INSTANCE_PORT}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    networks:
+      - smartgym-net
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
 
 #############################
 # VOLUMES AND NETWORKS      #
@@ -607,6 +574,8 @@ volumes:
   mongo-embedded-data:
   mosquitto-data:
   mosquitto-log:
+  prometheus-data:
+  grafana-data:
 
 networks:
   smartgym-net:

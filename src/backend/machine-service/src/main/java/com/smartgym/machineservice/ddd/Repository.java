@@ -1,5 +1,3 @@
 package com.smartgym.machineservice.ddd;
 
-public interface Repository {
-
-}
+public interface Repository {}

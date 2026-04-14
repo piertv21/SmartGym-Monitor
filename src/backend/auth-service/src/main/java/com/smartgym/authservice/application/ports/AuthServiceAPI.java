@@ -1,11 +1,12 @@
 package com.smartgym.authservice.application.ports;
 
+import com.smartgym.authservice.ddd.Service;
 import com.smartgym.authservice.model.AuthUser;
 import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public interface AuthServiceAPI {
+public interface AuthServiceAPI extends Service {
 
     CompletableFuture<Optional<AuthUser>> authenticate(String username, String password);
 

@@ -8,13 +8,9 @@ springBoot {
 
 dependencies {
     implementation(libs.spring.boot.starter.web)
-    implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.data.mongodb)
 
-    implementation(libs.bundles.vertx.base)
-    implementation(libs.vertx.mongo.client)
-
-    implementation(libs.itext)
+    implementation(libs.vertx.core)
 
     implementation(libs.spring.cloud.eureka.client)
 }

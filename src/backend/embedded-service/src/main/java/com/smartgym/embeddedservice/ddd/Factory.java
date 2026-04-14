@@ -1,5 +1,3 @@
 package com.smartgym.embeddedservice.ddd;
 
-public interface Factory {
-
-}
+public interface Factory {}

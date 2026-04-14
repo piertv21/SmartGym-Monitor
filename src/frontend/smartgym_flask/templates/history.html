@@ -1,0 +1,188 @@
+{% extends "base.html" %} {% block content %}
+<div
+  class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3"
+>
+  <div>
+    <h1 class="page-title mb-1">History</h1>
+    <p class="page-description mb-0">
+      Dati storici su ingressi in palestra e utilizzo macchinari.
+    </p>
+  </div>
+</div>
+
+<section class="card mb-3">
+  <div class="card-body">
+    <div class="row g-3 align-items-end">
+      <div class="col-12 col-md-6 col-xl-3">
+        <label class="form-label small text-secondary" for="history-area-filter"
+          >Area</label
+        >
+        <select id="history-area-filter" class="form-select">
+          <option value="">Tutte le aree</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <label
+          class="form-label small text-secondary"
+          for="history-machine-filter"
+          >Macchina</label
+        >
+        <select id="history-machine-filter" class="form-select">
+          <option value="">Tutte le macchine</option>
+        </select>
+      </div>
+      <div class="col-12 col-xl-6">
+        <label class="form-label small text-secondary d-block"
+          >Intervallo</label
+        >
+        <div
+          class="btn-group w-100"
+          role="group"
+          aria-label="Preset intervallo storico"
+        >
+          <button
+            type="button"
+            class="btn btn-outline-secondary active"
+            data-history-range="day"
+          >
+            Ultimo giorno
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            data-history-range="week"
+          >
+            Ultima settimana
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            data-history-range="month"
+          >
+            Ultimo mese
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            data-history-range="custom"
+          >
+            Custom
+          </button>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <label class="form-label small text-secondary" for="history-date-from"
+          >Da</label
+        >
+        <input
+          id="history-date-from"
+          type="date"
+          class="form-control"
+          disabled
+        />
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <label class="form-label small text-secondary" for="history-date-to"
+          >A</label
+        >
+        <input id="history-date-to" type="date" class="form-control" disabled />
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <button
+          id="history-apply-filters"
+          type="button"
+          class="btn btn-outline-secondary w-100"
+        >
+          Aggiorna
+        </button>
+      </div>
+    </div>
+    <p
+      id="history-feedback"
+      class="text-secondary small mt-3 mb-0"
+      aria-live="polite"
+    >
+      Caricamento in corso...
+    </p>
+  </div>
+</section>
+
+<section class="card mb-3">
+  <div class="card-body">
+    <div class="history-chart-container">
+      <canvas
+        id="history-attendance-chart"
+        aria-label="Andamento ingressi palestra"
+        role="img"
+      ></canvas>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-body">
+    <div
+      class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"
+    >
+      <h2 class="h6 mb-0">Machine Session Log</h2>
+      <button
+        id="history-export-csv"
+        type="button"
+        class="btn btn-sm btn-outline-success"
+      >
+        Export CSV
+      </button>
+    </div>
+    <div class="table-responsive table-scroll">
+      <table
+        class="table table-sm table-hover align-middle mb-0"
+        aria-label="Storico sessioni macchine"
+      >
+        <thead>
+          <tr>
+            <th>Machine ID</th>
+            <th>Area</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Duration</th>
+            <th>Member ID</th>
+          </tr>
+        </thead>
+        <tbody id="history-sessions-body">
+          <tr>
+            <td colspan="6" class="text-secondary">Caricamento sessioni...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <p id="history-pagination-label" class="text-secondary small mb-0">
+        Nessuna sessione disponibile.
+      </p>
+      <div
+        class="btn-group btn-group-sm"
+        role="group"
+        aria-label="Paginazione log sessioni"
+      >
+        <button
+          id="history-page-prev"
+          type="button"
+          class="btn btn-outline-secondary"
+        >
+          &lt;
+        </button>
+        <button
+          id="history-page-next"
+          type="button"
+          class="btn btn-outline-secondary"
+        >
+          &gt;
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %} {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endblock %}

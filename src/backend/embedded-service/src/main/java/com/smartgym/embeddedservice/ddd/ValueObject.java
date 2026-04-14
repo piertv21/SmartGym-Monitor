@@ -1,5 +1,3 @@
 package com.smartgym.embeddedservice.ddd;
 
-public interface ValueObject {
-
-}
+public interface ValueObject {}

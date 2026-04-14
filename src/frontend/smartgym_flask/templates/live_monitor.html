@@ -1,0 +1,45 @@
+{% extends "base.html" %} {% block content %}
+<div
+  class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3"
+>
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <span class="text-danger fs-5 blink-dot">●</span>
+      <h1 class="page-title mb-0">Live Monitor</h1>
+    </div>
+    <p class="page-description mb-0">
+      Monitoraggio dinamico delle aree palestra.
+    </p>
+  </div>
+
+  <div class="text-end">
+    <p id="live-last-update" class="text-secondary small mb-2">
+      Ultimo aggiornamento: --:--:--
+    </p>
+    <button
+      id="refresh-live-monitor"
+      class="btn btn-outline-secondary btn-sm"
+      type="button"
+      aria-label="Aggiorna live monitor"
+    >
+      Refresh
+    </button>
+  </div>
+</div>
+
+<p id="live-feedback" class="text-secondary small mb-3" aria-live="polite">
+  Caricamento in corso...
+</p>
+
+<div id="live-monitor-areas" class="row gx-4 gy-4">
+  <div class="col-12">
+    <div class="card live-area-card">
+      <div class="card-body text-secondary small">
+        Caricamento dati live monitor...
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/live_monitor.js') }}"></script>
+{% endblock %}

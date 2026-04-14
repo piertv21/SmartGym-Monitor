@@ -12,8 +12,7 @@ public class StartMachineSessionMessage {
     @JsonProperty("badgeId")
     private String badgeId;
 
-    public StartMachineSessionMessage() {
-    }
+    public StartMachineSessionMessage() {}
 
     public StartMachineSessionMessage(String machineId, String badgeId) {
         this.machineId = machineId;
@@ -38,9 +37,13 @@ public class StartMachineSessionMessage {
 
     @Override
     public String toString() {
-        return "StartMachineSessionMessage{" +
-                "machineId='" + machineId + '\'' +
-                ", badgeId='" + badgeId + '\'' +
-                '}';
+        return "StartMachineSessionMessage{"
+                + "machineId='"
+                + machineId
+                + '\''
+                + ", badgeId='"
+                + badgeId
+                + '\''
+                + '}';
     }
 }

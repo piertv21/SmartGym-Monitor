@@ -1,5 +1,3 @@
 package com.smartgym.authservice.ddd;
 
-public interface ValueObject {
-
-}
+public interface ValueObject {}

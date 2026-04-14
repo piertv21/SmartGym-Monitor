@@ -20,6 +20,7 @@ def login():
         return redirect(url_for("dashboard.dashboard"))
     return render_template("login.html")
 
+
 @auth_bp.post("/login")
 def login_post():
     username = (request.form.get("username") or "").strip()
@@ -75,4 +76,3 @@ def logout():
 
     flash("Logged out.", "success")
     return redirect(url_for("auth.login"))
-

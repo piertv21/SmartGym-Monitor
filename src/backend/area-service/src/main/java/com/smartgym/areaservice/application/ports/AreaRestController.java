@@ -2,9 +2,8 @@ package com.smartgym.areaservice.application.ports;
 
 import com.smartgym.areaservice.model.AreaAccessMessage;
 import com.smartgym.areaservice.model.UpdateAreaCapacityMessage;
-import org.springframework.http.ResponseEntity;
-
 import java.util.concurrent.CompletableFuture;
+import org.springframework.http.ResponseEntity;
 
 public interface AreaRestController {
 

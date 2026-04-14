@@ -1,13 +1,13 @@
 package com.smartgym.areaservice;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.smartgym.areaservice.application.AreaServiceAPIImpl;
 import com.smartgym.areaservice.application.ports.AreaRepository;
 import com.smartgym.areaservice.model.AreaAccessMessage;
 import com.smartgym.areaservice.model.AreaType;
 import com.smartgym.areaservice.model.GymArea;
 import com.smartgym.areaservice.model.UpdateAreaCapacityMessage;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,8 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class JUnitAreaServiceTest {
 
@@ -26,13 +25,13 @@ public class JUnitAreaServiceTest {
         AreaRepository repository = new InMemoryAreaRepository(Map.of("cardio-area", cardio));
         AreaServiceAPIImpl areaService = new AreaServiceAPIImpl(repository);
 
-        AreaAccessMessage message = new AreaAccessMessage(
-                "reader-cardio-01",
-                "2026-03-26T10:00:00Z",
-                "badge-001",
-                "cardio-area",
-                "IN"
-        );
+        AreaAccessMessage message =
+                new AreaAccessMessage(
+                        "reader-cardio-01",
+                        "2026-03-26T10:00:00Z",
+                        "badge-001",
+                        "cardio-area",
+                        "IN");
 
         areaService.processAreaAccess(message).join();
 
@@ -46,13 +45,13 @@ public class JUnitAreaServiceTest {
         AreaRepository repository = new InMemoryAreaRepository(Map.of("cardio-area", cardio));
         AreaServiceAPIImpl areaService = new AreaServiceAPIImpl(repository);
 
-        AreaAccessMessage message = new AreaAccessMessage(
-                "reader-cardio-01",
-                "2026-03-26T10:05:00Z",
-                "badge-001",
-                "cardio-area",
-                "OUT"
-        );
+        AreaAccessMessage message =
+                new AreaAccessMessage(
+                        "reader-cardio-01",
+                        "2026-03-26T10:05:00Z",
+                        "badge-001",
+                        "cardio-area",
+                        "OUT");
 
         areaService.processAreaAccess(message).join();
 
@@ -66,13 +65,13 @@ public class JUnitAreaServiceTest {
         AreaRepository repository = new InMemoryAreaRepository(Map.of("cardio-area", cardio));
         AreaServiceAPIImpl areaService = new AreaServiceAPIImpl(repository);
 
-        AreaAccessMessage message = new AreaAccessMessage(
-                "reader-cardio-01",
-                "2026-03-26T10:05:00Z",
-                "badge-001",
-                "cardio-area",
-                "OUT"
-        );
+        AreaAccessMessage message =
+                new AreaAccessMessage(
+                        "reader-cardio-01",
+                        "2026-03-26T10:05:00Z",
+                        "badge-001",
+                        "cardio-area",
+                        "OUT");
 
         areaService.processAreaExit(message).join();
 
@@ -86,13 +85,13 @@ public class JUnitAreaServiceTest {
         AreaRepository repository = new InMemoryAreaRepository(Map.of("cardio-area", cardio));
         AreaServiceAPIImpl areaService = new AreaServiceAPIImpl(repository);
 
-        AreaAccessMessage message = new AreaAccessMessage(
-                "reader-cardio-01",
-                "2026-03-26T10:05:00Z",
-                "badge-001",
-                "cardio-area",
-                "OUT"
-        );
+        AreaAccessMessage message =
+                new AreaAccessMessage(
+                        "reader-cardio-01",
+                        "2026-03-26T10:05:00Z",
+                        "badge-001",
+                        "cardio-area",
+                        "OUT");
 
         areaService.processAreaAccess(message).join();
 
@@ -106,13 +105,13 @@ public class JUnitAreaServiceTest {
         AreaRepository repository = new InMemoryAreaRepository(Map.of("cardio-area", cardio));
         AreaServiceAPIImpl areaService = new AreaServiceAPIImpl(repository);
 
-        AreaAccessMessage message = new AreaAccessMessage(
-                "reader-cardio-01",
-                "2026-03-26T10:05:00Z",
-                "badge-001",
-                "cardio-area",
-                "OUT"
-        );
+        AreaAccessMessage message =
+                new AreaAccessMessage(
+                        "reader-cardio-01",
+                        "2026-03-26T10:05:00Z",
+                        "badge-001",
+                        "cardio-area",
+                        "OUT");
 
         areaService.processAreaExit(message).join();
 
@@ -125,18 +124,18 @@ public class JUnitAreaServiceTest {
         AreaRepository repository = new InMemoryAreaRepository(Map.of());
         AreaServiceAPIImpl areaService = new AreaServiceAPIImpl(repository);
 
-        AreaAccessMessage message = new AreaAccessMessage(
-                "reader-cardio-01",
-                "2026-03-26T10:00:00Z",
-                "badge-001",
-                "missing-area",
-                "IN"
-        );
+        AreaAccessMessage message =
+                new AreaAccessMessage(
+                        "reader-cardio-01",
+                        "2026-03-26T10:00:00Z",
+                        "badge-001",
+                        "missing-area",
+                        "IN");
 
-        CompletionException ex = assertThrows(
-                CompletionException.class,
-                () -> areaService.processAreaAccess(message).join()
-        );
+        CompletionException ex =
+                assertThrows(
+                        CompletionException.class,
+                        () -> areaService.processAreaAccess(message).join());
 
         assertNotNull(ex.getCause());
         assertTrue(ex.getCause() instanceof IllegalArgumentException);
@@ -172,12 +171,11 @@ public class JUnitAreaServiceTest {
         GymArea cardio = new GymArea("cardio-area", "Cardio Zone", AreaType.CARDIO, 20, 2);
         GymArea weight = new GymArea("weight-area", "Weight Zone", AreaType.WEIGHT, 15, 1);
 
-        AreaRepository repository = new InMemoryAreaRepository(
-                Map.of(
-                        "cardio-area", cardio,
-                        "weight-area", weight
-                )
-        );
+        AreaRepository repository =
+                new InMemoryAreaRepository(
+                        Map.of(
+                                "cardio-area", cardio,
+                                "weight-area", weight));
 
         AreaServiceAPIImpl areaService = new AreaServiceAPIImpl(repository);
 
@@ -208,14 +206,17 @@ public class JUnitAreaServiceTest {
 
         UpdateAreaCapacityMessage message = new UpdateAreaCapacityMessage("cardio-area", 5);
 
-        CompletionException ex = assertThrows(
-                CompletionException.class,
-                () -> areaService.updateAreaCapacity(message).join()
-        );
+        CompletionException ex =
+                assertThrows(
+                        CompletionException.class,
+                        () -> areaService.updateAreaCapacity(message).join());
 
         assertNotNull(ex.getCause());
         assertTrue(ex.getCause() instanceof IllegalStateException);
-        assertTrue(ex.getCause().getMessage().contains("New capacity cannot be lower than current count"));
+        assertTrue(
+                ex.getCause()
+                        .getMessage()
+                        .contains("New capacity cannot be lower than current count"));
     }
 
     @Test
@@ -225,10 +226,10 @@ public class JUnitAreaServiceTest {
 
         UpdateAreaCapacityMessage message = new UpdateAreaCapacityMessage("missing-area", 10);
 
-        CompletionException ex = assertThrows(
-                CompletionException.class,
-                () -> areaService.updateAreaCapacity(message).join()
-        );
+        CompletionException ex =
+                assertThrows(
+                        CompletionException.class,
+                        () -> areaService.updateAreaCapacity(message).join());
 
         assertNotNull(ex.getCause());
         assertTrue(ex.getCause() instanceof IllegalArgumentException);

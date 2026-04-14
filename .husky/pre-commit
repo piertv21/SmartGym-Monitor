@@ -1,1 +1,25 @@
 npx lint-staged
+
+# Spotless (Java backend)
+JAVA_STAGED=$(git diff --cached --name-only --diff-filter=d -- 'src/backend/**/*.java')
+if [ -n "$JAVA_STAGED" ]; then
+  echo "🔧 Formatting Java files with Spotless..."
+  cd src/backend && ./gradlew spotlessApply && cd ../..
+  git add $JAVA_STAGED
+fi
+
+# Ruff (Python frontend)
+PY_STAGED=$(git diff --cached --name-only --diff-filter=d -- 'src/frontend/**/*.py')
+if [ -n "$PY_STAGED" ]; then
+  echo "🔧 Formatting Python files with Ruff..."
+  cd src/frontend && poetry run ruff format . && cd ../..
+  git add $PY_STAGED
+fi
+
+# gofumpt (Go simulator)
+GO_STAGED=$(git diff --cached --name-only --diff-filter=d -- 'src/simulator/**/*.go')
+if [ -n "$GO_STAGED" ]; then
+  echo "🔧 Formatting Go files with gofumpt..."
+  cd src/simulator && go tool gofumpt -w . && cd ../..
+  git add $GO_STAGED
+fi

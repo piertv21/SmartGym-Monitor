@@ -12,8 +12,7 @@ public class RegisterMessage {
     @JsonProperty("password")
     private String password;
 
-    public RegisterMessage() {
-    }
+    public RegisterMessage() {}
 
     public RegisterMessage(String username, String password) {
         this.username = username;

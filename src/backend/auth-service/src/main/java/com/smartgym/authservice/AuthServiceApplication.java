@@ -22,8 +22,7 @@ public class AuthServiceApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceApplication.class);
 
-    @Autowired
-    private MongoClient mongoClient;
+    @Autowired private MongoClient mongoClient;
 
     @Value("${spring.application.name}")
     private String appName;
@@ -44,13 +43,13 @@ public class AuthServiceApplication {
             MongoClient mongoClient,
             PasswordEncoder passwordEncoder,
             @Value("${auth.seed.admin.username:ADMIN}") String adminUsername,
-            @Value("${auth.seed.admin.password:ADMIN}") String adminPassword
-    ) {
+            @Value("${auth.seed.admin.password:ADMIN}") String adminPassword) {
         return new AuthRepositoryImpl(mongoClient, passwordEncoder, adminUsername, adminPassword);
     }
 
     @Bean
-    public AuthServiceAPI authServiceAPI(AuthRepository repository, PasswordEncoder passwordEncoder) {
+    public AuthServiceAPI authServiceAPI(
+            AuthRepository repository, PasswordEncoder passwordEncoder) {
         return new AuthServiceApiImpl(repository, passwordEncoder);
     }
 

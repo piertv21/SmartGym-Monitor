@@ -1,4 +1,12 @@
-# 1. Introduction
+# Introduction
+
+<p align="center">
+  <a href="https://github.com/piertv21/SmartGym-Monitor">
+    <img alt="Logo" src="/resources/Logo.png" style="width: 30%">
+  </a>
+</p>
+
+## Context and Goals
 
 Modern gyms are complex environments composed of different areas, various types of equipment, and a number of users that changes significantly during the day.  
 For this reason, monitoring the occupancy of gym areas and machines is important to ensure safety, improve user experience, and support better management decisions.
@@ -25,3 +33,15 @@ The project also adopts basic **DevOps practices**, such as containerization and
 All components are designed to be modular and loosely coupled, supporting future extensions of the system.
 
 This document presents the domain analysis and design of the SmartGym Monitor system, focusing on the domain model, the ubiquitous language, the bounded contexts, and their interactions.
+
+## System Overview
+
+Below is the system dashboard, which provides an overview of the operational status.
+
+<div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+    <img src="/resources/screen.png" alt="Demo" style="max-width: 100%; height: auto;">
+</div>
+
+<p align="center"><em>Figure: SmartGym Monitor dashboard overview</em></p>
+
+> The project logo was generated using simple prompts with the model <a target="_blank" href="https://aistudio.google.com/models/gemini-3-1-flash-image">Gemini 3.1 Flash Image</a>.

@@ -15,24 +15,37 @@ public class GymAccessVerticle extends AbstractVerticle {
 
     @Override
     public void start() {
-        vertx.eventBus().<String>consumer(EventBusAddresses.GYM_ACCESS, msg -> {
-            try {
-                JsonObject json = new JsonObject(msg.body());
-                GymAccessMessage gymAccessMessage = json.mapTo(GymAccessMessage.class);
+        vertx.eventBus()
+                .<String>consumer(
+                        EventBusAddresses.GYM_ACCESS,
+                        msg -> {
+                            try {
+                                JsonObject json = new JsonObject(msg.body());
+                                GymAccessMessage gymAccessMessage =
+                                        json.mapTo(GymAccessMessage.class);
 
-                System.out.println("[GymAccessVerticle] Gym access event received: " + gymAccessMessage);
+                                System.out.println(
+                                        "[GymAccessVerticle] Gym access event received: "
+                                                + gymAccessMessage);
 
-                embeddedService.processGymAccess(gymAccessMessage)
-                        .thenAccept(result ->
-                                System.out.println("[GymAccessVerticle] Gym access event processed successfully"))
-                        .exceptionally(ex -> {
-                            System.err.println("❌ Failed to process gym access event: " + ex.getMessage());
-                            return null;
+                                embeddedService
+                                        .processGymAccess(gymAccessMessage)
+                                        .thenAccept(
+                                                result ->
+                                                        System.out.println(
+                                                                "[GymAccessVerticle] Gym access event processed successfully"))
+                                        .exceptionally(
+                                                ex -> {
+                                                    System.err.println(
+                                                            "❌ Failed to process gym access event: "
+                                                                    + ex.getMessage());
+                                                    return null;
+                                                });
+
+                            } catch (Exception e) {
+                                System.err.println(
+                                        "❌ Invalid gym access event payload: " + e.getMessage());
+                            }
                         });
-
-            } catch (Exception e) {
-                System.err.println("❌ Invalid gym access event payload: " + e.getMessage());
-            }
-        });
     }
 }

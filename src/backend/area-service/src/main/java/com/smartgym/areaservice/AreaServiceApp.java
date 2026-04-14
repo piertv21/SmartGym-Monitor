@@ -4,18 +4,15 @@ import com.mongodb.client.MongoClient;
 import com.smartgym.areaservice.application.AreaServiceAPIImpl;
 import com.smartgym.areaservice.application.ports.AreaRepository;
 import com.smartgym.areaservice.application.ports.AreaServiceAPI;
-import com.smartgym.areaservice.application.ports.DummyServiceAdapter;
-import com.smartgym.areaservice.infrastructure.adapters.DummyServiceAdapterImpl;
 import com.smartgym.areaservice.infrastructure.persistence.AreaRepositoryImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
-
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -23,8 +20,7 @@ public class AreaServiceApp {
 
     private static final Logger logger = LoggerFactory.getLogger(AreaServiceApp.class);
 
-    @Autowired
-    private MongoClient mongoClient;
+    @Autowired private MongoClient mongoClient;
 
     @Value("${spring.application.name}")
     private String appName;
@@ -46,12 +42,6 @@ public class AreaServiceApp {
     public AreaServiceAPI areaServiceAPI(AreaRepository areaRepository) {
         logger.info("Initializing AreaServiceAPI");
         return new AreaServiceAPIImpl(areaRepository);
-    }
-
-    @Bean
-    public DummyServiceAdapter dummyServicePort() {
-        logger.info("Initializing DummyServiceAdapter");
-        return new DummyServiceAdapterImpl();
     }
 
     public static void main(String[] args) {

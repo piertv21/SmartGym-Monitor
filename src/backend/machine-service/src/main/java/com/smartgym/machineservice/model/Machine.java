@@ -8,29 +8,22 @@ public class Machine implements Aggregate<String> {
     private final String areaId;
     private OccupancyStatus status;
     private String activeSessionId;
-    private Sensor sensor;
+    private final Sensor sensor;
 
     public Machine(String machineId, String areaId) {
         this(machineId, areaId, OccupancyStatus.FREE, null, null);
-    }
-
-    public Machine(String machineId, String areaId, Sensor sensor) {
-        this(machineId, areaId, OccupancyStatus.FREE, null, sensor);
-    }
-
-    public Machine(String machineId, String areaId, OccupancyStatus status) {
-        this(machineId, areaId, status, null, null);
     }
 
     public Machine(String machineId, String areaId, OccupancyStatus status, Sensor sensor) {
         this(machineId, areaId, status, null, sensor);
     }
 
-    public Machine(String machineId, String areaId, OccupancyStatus status, String activeSessionId) {
-        this(machineId, areaId, status, activeSessionId, null);
-    }
-
-    public Machine(String machineId, String areaId, OccupancyStatus status, String activeSessionId, Sensor sensor) {
+    public Machine(
+            String machineId,
+            String areaId,
+            OccupancyStatus status,
+            String activeSessionId,
+            Sensor sensor) {
         this.machineId = requireNotBlank(machineId, "machineId");
         this.areaId = requireNotBlank(areaId, "areaId");
         this.status = status == null ? OccupancyStatus.FREE : status;
@@ -38,10 +31,12 @@ public class Machine implements Aggregate<String> {
         this.sensor = sensor;
 
         if (this.status == OccupancyStatus.OCCUPIED && this.activeSessionId == null) {
-            throw new IllegalArgumentException("activeSessionId is required when machine is occupied");
+            throw new IllegalArgumentException(
+                    "activeSessionId is required when machine is occupied");
         }
         if (this.status != OccupancyStatus.OCCUPIED && this.activeSessionId != null) {
-            throw new IllegalArgumentException("activeSessionId must be null when machine is not occupied");
+            throw new IllegalArgumentException(
+                    "activeSessionId must be null when machine is not occupied");
         }
     }
 
@@ -63,10 +58,6 @@ public class Machine implements Aggregate<String> {
 
     public Sensor getSensor() {
         return sensor;
-    }
-
-    public void setSensor(Sensor sensor) {
-        this.sensor = sensor;
     }
 
     public void startSession(String sessionId) {
@@ -122,7 +113,11 @@ public class Machine implements Aggregate<String> {
         if (o == null || getClass() != o.getClass()) return false;
 
         Machine machine = (Machine) o;
-        return machineId.equals(machine.machineId) && areaId.equals(machine.areaId) && status == machine.status && activeSessionId.equals(machine.activeSessionId) && sensor.equals(machine.sensor);
+        return machineId.equals(machine.machineId)
+                && areaId.equals(machine.areaId)
+                && status == machine.status
+                && activeSessionId.equals(machine.activeSessionId)
+                && sensor.equals(machine.sensor);
     }
 
     @Override
@@ -137,13 +132,21 @@ public class Machine implements Aggregate<String> {
 
     @Override
     public String toString() {
-        return "Machine{" +
-                "machineId='" + machineId + '\'' +
-                ", areaId='" + areaId + '\'' +
-                ", status=" + status +
-                ", activeSessionId='" + activeSessionId + '\'' +
-                ", sensor=" + sensor +
-                '}';
+        return "Machine{"
+                + "machineId='"
+                + machineId
+                + '\''
+                + ", areaId='"
+                + areaId
+                + '\''
+                + ", status="
+                + status
+                + ", activeSessionId='"
+                + activeSessionId
+                + '\''
+                + ", sensor="
+                + sensor
+                + '}';
     }
 
     @Override
@@ -151,4 +154,3 @@ public class Machine implements Aggregate<String> {
         return this.machineId;
     }
 }
-

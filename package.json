@@ -18,10 +18,11 @@
   },
   "scripts": {
     "prepare": "husky",
-    "prettier:check": "prettier --check ."
+    "prettier:check": "prettier --check .",
+    "prettier:write": "prettier --write ."
   },
   "lint-staged": {
-    "**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml,html}": [
+    "**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml,html,mts}": [
       "prettier --write"
     ]
   },

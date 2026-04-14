@@ -1,13 +1,16 @@
 package com.smartgym.trackingservice;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartgym.trackingservice.application.TrackingServiceAPIImpl;
 import com.smartgym.trackingservice.application.ports.TrackingRepository;
 import com.smartgym.trackingservice.model.EndGymSessionMessage;
 import com.smartgym.trackingservice.model.GymSession;
 import com.smartgym.trackingservice.model.StartGymSessionMessage;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,11 +21,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
 
 class JUnitTrackingServiceTest {
 
@@ -46,10 +45,12 @@ class JUnitTrackingServiceTest {
         repository.saveGymSession(new GymSession("s-1", "badge-01", LocalDateTime.now())).join();
         TrackingServiceAPIImpl service = new TrackingServiceAPIImpl(repository);
 
-        CompletionException ex = assertThrows(
-                CompletionException.class,
-                () -> service.startGymSession(new StartGymSessionMessage("badge-01")).join()
-        );
+        CompletionException ex =
+                assertThrows(
+                        CompletionException.class,
+                        () ->
+                                service.startGymSession(new StartGymSessionMessage("badge-01"))
+                                        .join());
 
         assertNotNull(ex.getCause());
         assertTrue(ex.getCause() instanceof IllegalStateException);
@@ -123,24 +124,22 @@ class JUnitTrackingServiceTest {
                     sessionsById.values().stream()
                             .filter(s -> s.getBadgeId().equals(badgeId))
                             .filter(GymSession::isActive)
-                            .findFirst()
-            );
+                            .findFirst());
         }
 
         @Override
         public CompletableFuture<List<GymSession>> findActiveSessions() {
-            List<GymSession> sessions = sessionsById.values().stream()
-                    .filter(GymSession::isActive)
-                    .sorted(Comparator.comparing(GymSession::getStartTime).reversed())
-                    .collect(Collectors.toCollection(ArrayList::new));
+            List<GymSession> sessions =
+                    sessionsById.values().stream()
+                            .filter(GymSession::isActive)
+                            .sorted(Comparator.comparing(GymSession::getStartTime).reversed())
+                            .collect(Collectors.toCollection(ArrayList::new));
             return CompletableFuture.completedFuture(sessions);
         }
 
         @Override
         public CompletableFuture<Long> countActiveSessions() {
-            long count = sessionsById.values().stream()
-                    .filter(GymSession::isActive)
-                    .count();
+            long count = sessionsById.values().stream().filter(GymSession::isActive).count();
             return CompletableFuture.completedFuture(count);
         }
     }

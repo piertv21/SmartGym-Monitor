@@ -5,15 +5,14 @@ import com.smartgym.trackingservice.application.TrackingServiceAPIImpl;
 import com.smartgym.trackingservice.application.ports.TrackingRepository;
 import com.smartgym.trackingservice.application.ports.TrackingServiceAPI;
 import com.smartgym.trackingservice.infrastructure.persistence.TrackingRepositoryImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
-
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -21,8 +20,7 @@ public class TrackingServiceApp {
 
     private static final Logger logger = LoggerFactory.getLogger(TrackingServiceApp.class);
 
-    @Autowired
-    private MongoClient mongoClient;
+    @Autowired private MongoClient mongoClient;
 
     @Value("${spring.application.name}")
     private String appName;
@@ -52,4 +50,3 @@ public class TrackingServiceApp {
         logger.info("✅ Tracking Service started successfully!");
     }
 }
-

@@ -1,8 +1,9 @@
 package com.smartgym.machineservice.model;
 
+import com.smartgym.machineservice.ddd.Entity;
 import java.time.LocalDateTime;
 
-public class MachineSession {
+public class MachineSession implements Entity<String> {
 
     private final String sessionId;
     private final String machineId;
@@ -10,11 +11,17 @@ public class MachineSession {
     private final LocalDateTime startTime;
     private LocalDateTime endTime;
 
-    public MachineSession(String sessionId, String machineId, String badgeId, LocalDateTime startTime) {
+    public MachineSession(
+            String sessionId, String machineId, String badgeId, LocalDateTime startTime) {
         this(sessionId, machineId, badgeId, startTime, null);
     }
 
-    public MachineSession(String sessionId, String machineId, String badgeId, LocalDateTime startTime, LocalDateTime endTime) {
+    public MachineSession(
+            String sessionId,
+            String machineId,
+            String badgeId,
+            LocalDateTime startTime,
+            LocalDateTime endTime) {
         this.sessionId = requireNotBlank(sessionId, "sessionId");
         this.machineId = requireNotBlank(machineId, "machineId");
         this.badgeId = requireNotBlank(badgeId, "badgeId");
@@ -30,6 +37,11 @@ public class MachineSession {
 
     public String getSessionId() {
         return sessionId;
+    }
+
+    @Override
+    public String getId() {
+        return this.sessionId;
     }
 
     public String getMachineId() {
@@ -69,4 +81,3 @@ public class MachineSession {
         return value;
     }
 }
-

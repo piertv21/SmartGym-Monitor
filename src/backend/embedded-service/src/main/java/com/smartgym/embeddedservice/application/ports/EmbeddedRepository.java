@@ -1,20 +1,13 @@
 package com.smartgym.embeddedservice.application.ports;
 
+import com.smartgym.embeddedservice.ddd.Repository;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public interface EmbeddedRepository {
+public interface EmbeddedRepository extends Repository {
 
     CompletableFuture<Void> saveEvent(JsonObject event);
-
-    CompletableFuture<Optional<JsonObject>> findEventById(String eventId);
-
-    CompletableFuture<JsonArray> findAllEvents();
-
-    CompletableFuture<JsonArray> findAllEventsByType(String eventType);
 
     CompletableFuture<JsonArray> findLatestDeviceStatuses();
 }

@@ -1,6 +1,6 @@
 # 2. Requirements Analysis
 
-> This section describes the domain and system requirements following a Domain-Driven Design approach.
+This chapter describes the domain and system requirements following a Domain-Driven Design approach.
 
 ## 2.1 Domain Definition
 
@@ -36,9 +36,9 @@ We decide to split the domain in more subdomains as shown in the following secti
 
 ## 2.3 Ubiquitous Language / Glossary
 
-> This section defines the shared domain language used throughout the project.
-> All terms listed in the table below must be used consistently in documentation,
-> diagrams, and source code.
+This section defines the shared domain language used throughout the project.
+All terms listed in the table below must be used consistently in documentation,
+diagrams, and source code.
 
 | Term                       | Description                                                                                                                 | Notes / Context            |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
@@ -68,7 +68,7 @@ We decide to split the domain in more subdomains as shown in the following secti
 | Gym Member Session         | The time interval during which a gym member stays in the gym.                                                               | tracking-service           |
 | Admin or Administrator     | Staff member responsible for monitoring gym usage and congestion.                                                           | Analytics / Authentication |
 
-_Table 1: Glossary of SmartGym Domain_
+<p align="center"><em>Table 2.1: SmartGym domain glossary</em></p>
 
 ## 2.4 System Requirements
 
@@ -111,6 +111,8 @@ view of the two main actors: Administrator and Gym Member.
 
 ![UseCaseDiagram](../public/resources/use_case_diagram.png)
 
+<p align="center"><em>Figure 2.1: SmartGym Monitor use case diagram</em></p>
+
 In the following tables the description of each use case related to Administrator and Gym Member.
 
 | Use Case                   | Description                                                                                                        |
@@ -120,7 +122,7 @@ In the following tables the description of each use case related to Administrato
 | View Machine Usage History | Allows the administrator to consult historical data about machine usage sessions.                                  |
 | Monitor Gym Attendance     | Shows aggregated data about gym attendance, including peak hours and occupancy trends.                             |
 
-_Table 2: Administrator Use Case Description_
+<p align="center"><em>Table 2.2: Administrator use case descriptions</em></p>
 
 | Use Case        | Description                                                                                                                         |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
@@ -129,12 +131,12 @@ _Table 2: Administrator Use Case Description_
 | Access Gym Area | Allows the gym member to enter a specific gym area using badge authentication.                                                      |
 | Use Machine     | Allows the gym member to use a machine if it is available. The system detects and records the machine session automatically.        |
 
-_Table 3: Gym Member Use Case Description_
+<p align="center"><em>Table 2.3: Gym Member use case descriptions</em></p>
 
 ## 2.6 User Stories
 
-> In order to better understand the domain following Domain Driven Design we
-> isolate user stories in order to better achieve acceptance criteria.
+In order to better understand the domain following Domain Driven Design we
+isolate user stories in order to better achieve acceptance criteria.
 
 | ID    | User Story                                                                                                                  | Related FR |
 | ----- | --------------------------------------------------------------------------------------------------------------------------- | ---------- |
@@ -142,6 +144,8 @@ _Table 3: Gym Member Use Case Description_
 | US-02 | As a **Gym Member**, I want to access a gym area with RFID validation, so that area occupancy is updated in real time.      | FR-2, FR-3 |
 | US-03 | As a **Gym Member**, I want machine usage to be detected automatically, so that sessions are recorded without manual input. | FR-4, FR-5 |
 | US-04 | As an **Administrator**, I want to monitor machine occupancy and history, so that I can analyze usage trends.               | FR-6       |
+
+<p align="center"><em>Table 2.4: Main user stories and related functional requirements</em></p>
 
 ## 2.7 Quality Attributes Scenarios
 
@@ -155,12 +159,14 @@ _Table 3: Gym Member Use Case Description_
 | **Modifiability**  | A new gym area or machine is added.                    | Maintenance phase.                                       | Configuration files and the `area-service` / `machine-service`. | The system allows configuration without changing core logic.                        | New elements configurable without code modification.                    |
 | **Data Integrity** | Concurrent machine occupancy events occur.             | High concurrent usage.                                   | Machine Management aggregate and database.                      | The system maintains consistent machine state transitions.                          | A machine cannot be both _Free_ and _Occupied_ simultaneously.          |
 
+<p align="center"><em>Table 2.5: Quality attribute scenarios</em></p>
+
 ## 2.8 Story Telling
 
-> In this section, realistic usage scenarios are described in order to better understand how the SmartGym Monitor system behaves
-> in real-life situations. Storytelling is used as a complementary technique to formal models and diagrams, allowing us to
-> observe how domain concepts interact dynamically over time. <br> The objective of this section is to highlight how the system reacts to physical events (such as badge scans or machine usage detection),
-> how sessions are created and terminated, and how data becomes available for monitoring and analytics.
+In this section, realistic usage scenarios are described in order to better understand how the SmartGym Monitor system behaves
+in real-life situations. Storytelling is used as a complementary technique to formal models and diagrams, allowing us to
+observe how domain concepts interact dynamically over time. <br> The objective of this section is to highlight how the system reacts to physical events (such as badge scans or machine usage detection),
+how sessions are created and terminated, and how data becomes available for monitoring and analytics.
 
 ### 2.8.1 Gym member Storytelling
 
@@ -192,8 +198,8 @@ The administrator can then view User Gym Sessions and User Machine Sessions in a
 
 ## 2.9 Domain Model
 
-> Analyzing the requirements we started to create the domain model considering the main entities, value objects and aggregates in our
-> core domain. In following section the are the main entities of the core domain.
+Analyzing the requirements we started to create the domain model considering the main entities, value objects and aggregates in our
+core domain. In following section the are the main entities of the core domain.
 
 ### 2.9.1 Entities and Value Objects
 
@@ -204,7 +210,7 @@ The administrator can then view User Gym Sessions and User Machine Sessions in a
 | Gym Session     | GymSessionId     | badgeId, startTime, endTime            | Track presence inside the gym                           | tracking-service   |
 | Machine Session | MachineSessionId | machineId, badgeId, startTime, endTime | Track machine usage duration                            | Machine Management |
 
-_Table X: Core Domain Entities_
+<p align="center"><em>Table 2.6: Core domain entities</em></p>
 
 | Value Object        | Attributes                    | Role |
 | ------------------- | ----------------------------- | ---- |
@@ -215,7 +221,7 @@ _Table X: Core Domain Entities_
 | **AreaCount**       | currentCount                  |      |
 | **BadgeId**         | string/uuid                   |      |
 
-_Table X: Core Domain Value Objects_
+<p align="center"><em>Table 2.7: Core domain value objects</em></p>
 
 ### 2.9.2 Aggregates
 
@@ -226,7 +232,7 @@ _Table X: Core Domain Value Objects_
 | **GymSession**     | Member presence inside the gym                      | A badge cannot have more than one active _GymSession_ at the same time; a session must have a start time and can only end through a valid exit event.                  |
 | **MachineSession** | Member usage of a machine                           | A machine cannot have more than one active session simultaneously; every _MachineSession_ must be associated with exactly one _Machine_.                               |
 
-_Table X: Core Domain Aggregates_
+<p align="center"><em>Table 2.8: Core domain aggregates</em></p>
 
 ### 2.9.3 Domain Events
 
@@ -240,13 +246,15 @@ _Table X: Core Domain Aggregates_
 | **MachineSessionEnded**     | A machine transitions to _Free_          | Closes the active _MachineSession_ and sets the machine status to _Free_.            |
 | **MachineSetToMaintenance** | An administrator sets the machine status | Updates the machine status to _Maintenance_ and prevents new sessions from starting. |
 
-_Table X: Core Domain Events_
+<p align="center"><em>Table 2.9: Core domain events</em></p>
 
 ## 2.10 Bounded Context
 
-> Each bounded context defines its own **model, terminology, and invariants**, reducing coupling and enabling independent evolution of system components.
+Each bounded context defines its own **model, terminology, and invariants**, reducing coupling and enabling independent evolution of system components.
 
 ![BC_SmartGymMonitor](../public/resources/BC_SmartGymMonitor.png)
+
+<p align="center"><em>Figure 2.2: SmartGym Monitor bounded contexts</em></p>
 
 The SmartGym Monitor system is structured into **Core**, **Supporting**, and **Generic** bounded contexts as described below.
 

@@ -2,23 +2,18 @@ package com.smartgym.trackingservice.application.ports;
 
 import com.smartgym.trackingservice.model.EndGymSessionMessage;
 import com.smartgym.trackingservice.model.StartGymSessionMessage;
-
+import java.util.concurrent.CompletableFuture;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.concurrent.CompletableFuture;
-
-/**
- * Port per il layer REST del microservizio Tracking.
- * Definisce gli endpoint HTTP esposti per la gestione del tracking
- */
 public interface TrackingRestController {
 
-	CompletableFuture<ResponseEntity<?>> startGymSession(@RequestBody StartGymSessionMessage message);
+    CompletableFuture<ResponseEntity<?>> startGymSession(
+            @RequestBody StartGymSessionMessage message);
 
-	CompletableFuture<ResponseEntity<?>> endGymSession(@RequestBody EndGymSessionMessage message);
+    CompletableFuture<ResponseEntity<?>> endGymSession(@RequestBody EndGymSessionMessage message);
 
-	CompletableFuture<ResponseEntity<?>> getGymCount();
+    CompletableFuture<ResponseEntity<?>> getGymCount();
 
-	CompletableFuture<ResponseEntity<?>> getActiveSessions();
+    CompletableFuture<ResponseEntity<?>> getActiveSessions();
 }

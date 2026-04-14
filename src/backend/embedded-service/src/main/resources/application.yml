@@ -1,9 +1,9 @@
 server:
-  port: ${EMBEDDED_SERVICE_INSTANCE_PORT:8086}
+  port: ${EMBEDDED_SERVICE_INSTANCE_PORT:8088}
 
 spring:
   application:
-    name: embedded-service
+    name: ${EMBEDDED_SERVICE_INSTANCE_HOSTNAME:embedded-service}
   data:
     mongodb:
       uri: ${EMBEDDED_MONGODB_URI:mongodb://localhost:27022/embeddedservicedb}
@@ -21,7 +21,7 @@ eureka:
 
 management:
   server:
-    port: ${EMBEDDED_SERVICE_INSTANCE_PORT:8086}
+    port: ${EMBEDDED_SERVICE_INSTANCE_PORT:8088}
   endpoints:
     web:
       exposure:
@@ -50,4 +50,4 @@ machine-service:
   base-url: ${MACHINE_SERVICE_BASE_URL:http://machine-service:8084}
 
 tracking-service:
-  base-url: ${TRACKING_SERVICE_BASE_URL:http://tracking-service:8085}
+  base-url: ${TRACKING_SERVICE_BASE_URL:http://tracking-service:8087}

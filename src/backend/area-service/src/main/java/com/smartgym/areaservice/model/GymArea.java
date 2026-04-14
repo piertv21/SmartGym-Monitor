@@ -1,23 +1,23 @@
 package com.smartgym.areaservice.model;
 
+import com.smartgym.areaservice.ddd.Aggregate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "gym_areas")
-public class GymArea {
+public class GymArea implements Aggregate<String> {
 
-    @Id
-    private String id;
+    @Id private String id;
 
     private String name;
     private AreaType areaType;
     private Integer capacity;
     private Integer currentCount;
 
-    public GymArea() {
-    }
+    public GymArea() {}
 
-    public GymArea(String id, String name, AreaType areaType, Integer capacity, Integer currentCount) {
+    public GymArea(
+            String id, String name, AreaType areaType, Integer capacity, Integer currentCount) {
         this.id = id;
         this.name = name;
         this.areaType = areaType;
@@ -82,24 +82,21 @@ public class GymArea {
         this.currentCount--;
     }
 
-    public void updateCapacity(Integer newCapacity) {
-        if (newCapacity == null || newCapacity < 0) {
-            throw new IllegalArgumentException("Capacity must be greater than or equal to zero");
-        }
-        if (this.currentCount != null && newCapacity < this.currentCount) {
-            throw new IllegalArgumentException("New capacity cannot be lower than current count");
-        }
-        this.capacity = newCapacity;
-    }
-
     @Override
     public String toString() {
-        return "GymArea{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", areaType=" + areaType +
-                ", capacity=" + capacity +
-                ", currentCount=" + currentCount +
-                '}';
+        return "GymArea{"
+                + "id='"
+                + id
+                + '\''
+                + ", name='"
+                + name
+                + '\''
+                + ", areaType="
+                + areaType
+                + ", capacity="
+                + capacity
+                + ", currentCount="
+                + currentCount
+                + '}';
     }
 }

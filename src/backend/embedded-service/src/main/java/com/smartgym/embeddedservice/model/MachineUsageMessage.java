@@ -21,10 +21,14 @@ public class MachineUsageMessage {
     @JsonProperty("usageState") // "STARTED" or "STOPPED"
     private String usageState;
 
-    public MachineUsageMessage() {
-    }
+    public MachineUsageMessage() {}
 
-    public MachineUsageMessage(String deviceId, String timestamp, String machineId, String badgeId, String usageState) {
+    public MachineUsageMessage(
+            String deviceId,
+            String timestamp,
+            String machineId,
+            String badgeId,
+            String usageState) {
         this.deviceId = deviceId;
         this.timestamp = timestamp;
         this.machineId = machineId;
@@ -74,12 +78,22 @@ public class MachineUsageMessage {
 
     @Override
     public String toString() {
-        return "MachineUsageMessage{" +
-                "deviceId='" + deviceId + '\'' +
-                ", timestamp='" + timestamp + '\'' +
-                ", machineId='" + machineId + '\'' +
-                ", badgeId='" + badgeId + '\'' +
-                ", usageState='" + usageState + '\'' +
-                '}';
+        return "MachineUsageMessage{"
+                + "deviceId='"
+                + deviceId
+                + '\''
+                + ", timestamp='"
+                + timestamp
+                + '\''
+                + ", machineId='"
+                + machineId
+                + '\''
+                + ", badgeId='"
+                + badgeId
+                + '\''
+                + ", usageState='"
+                + usageState
+                + '\''
+                + '}';
     }
 }

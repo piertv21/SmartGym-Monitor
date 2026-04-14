@@ -1,9 +1,22 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ title or "SmartGym Monitor" }}</title>
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='img/favicon.png') }}"
+    />
+
+    <script>
+      (function () {
+        var t = localStorage.getItem("sg-theme") || "dark";
+        document.documentElement.setAttribute("data-bs-theme", t);
+      })();
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -11,44 +24,136 @@
       rel="stylesheet"
     />
     <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
   </head>
-  <body>
-    <header class="header">
-      <div class="container header__inner">
-        <div class="brand">SmartGym Monitor</div>
-        <nav class="nav">
-          {% if session.get('user') %}
-          <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
-          <a href="{{ url_for('auth.logout') }}">Logout</a>
-          {% else %}
-          <a href="{{ url_for('auth.login') }}">Login</a>
-          {% endif %}
-        </nav>
-      </div>
-    </header>
+  <body class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom py-3">
+      <div class="container-xl d-flex align-items-center position-relative">
+        <a
+          class="navbar-brand fw-bold m-0"
+          href="{{ url_for('dashboard.index') }}"
+          >SmartGym Monitor</a
+        >
 
-    <main class="container">
+        <!-- Desktop Links Center -->
+        <div
+          class="d-none d-lg-flex gap-4 position-absolute start-50 translate-middle-x"
+        >
+          <a
+            class="nav-link text-body {{ 'fw-bold' if request.endpoint == 'dashboard.dashboard' else '' }}"
+            href="{{ url_for('dashboard.dashboard') }}"
+            >Home</a
+          >
+          <a
+            class="nav-link text-body {{ 'fw-bold' if request.endpoint == 'dashboard.live_monitor' else '' }}"
+            href="{{ url_for('dashboard.live_monitor') }}"
+            >Live Monitor</a
+          >
+          <a
+            class="nav-link text-body {{ 'fw-bold' if request.endpoint == 'dashboard.history' else '' }}"
+            href="{{ url_for('dashboard.history') }}"
+            >History</a
+          >
+        </div>
+
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <!-- Theme toggle -->
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            data-theme-toggle
+            aria-label="Passa alla modalità chiara"
+            title="Light mode"
+          >
+            <i class="bi bi-sun-fill"></i>
+          </button>
+
+          {% if session.get('user') %}
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-secondary btn-sm dropdown-toggle text-uppercase"
+              type="button"
+              id="userMenuToggle"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              {{ session.get('user') }}
+            </button>
+            <ul
+              class="dropdown-menu dropdown-menu-end"
+              aria-labelledby="userMenuToggle"
+            >
+              <li>
+                <a class="dropdown-item" href="{{ url_for('auth.logout') }}"
+                  >Logout</a
+                >
+              </li>
+            </ul>
+          </div>
+          {% else %}
+          <a
+            class="btn btn-outline-secondary btn-sm"
+            href="{{ url_for('auth.login') }}"
+            >Login</a
+          >
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+    <main class="container-xl flex-grow-1 py-4">
       {% with messages = get_flashed_messages(with_categories=true) %} {% if
       messages %}
-      <div class="flash">
+      <div class="mb-3">
         {% for category, message in messages %}
-        <div class="flash__msg flash__msg--{{ category }}">{{ message }}</div>
+        <div
+          class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+          role="alert"
+        >
+          {{ message }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close"
+          ></button>
+        </div>
         {% endfor %}
       </div>
       {% endif %} {% endwith %} {% block content %}{% endblock %}
     </main>
 
-    <footer class="footer">
-      <div class="container">
-        <small>
+    <footer class="bg-body-tertiary border-top py-2 mt-auto">
+      <div class="container-xl">
+        <small class="text-secondary">
           Software Process Engineering — demo UI (Flask). Configuration via env
           vars.
         </small>
       </div>
     </footer>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     {% block scripts %}{% endblock %}
   </body>
 </html>

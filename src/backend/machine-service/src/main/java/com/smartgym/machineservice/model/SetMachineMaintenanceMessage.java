@@ -9,11 +9,18 @@ public class SetMachineMaintenanceMessage {
     @JsonProperty("machineId")
     private String machineId;
 
-    public SetMachineMaintenanceMessage() {
-    }
+    @JsonProperty("active")
+    private Boolean active;
+
+    public SetMachineMaintenanceMessage() {}
 
     public SetMachineMaintenanceMessage(String machineId) {
+        this(machineId, true);
+    }
+
+    public SetMachineMaintenanceMessage(String machineId, Boolean active) {
         this.machineId = machineId;
+        this.active = active;
     }
 
     public String getMachineId() {
@@ -24,10 +31,22 @@ public class SetMachineMaintenanceMessage {
         this.machineId = machineId;
     }
 
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
     @Override
     public String toString() {
-        return "SetMachineMaintenanceMessage{" +
-                "machineId='" + machineId + '\'' +
-                '}';
+        return "SetMachineMaintenanceMessage{"
+                + "machineId='"
+                + machineId
+                + '\''
+                + ", active="
+                + active
+                + '}';
     }
 }

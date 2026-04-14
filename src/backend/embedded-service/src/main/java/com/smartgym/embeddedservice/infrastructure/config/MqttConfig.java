@@ -3,14 +3,14 @@ package com.smartgym.embeddedservice.infrastructure.config;
 public class MqttConfig {
 
     private static String getEnvOrDefault(String key, String fallback) {
-        String value = System.getenv(key); //funziona solo se le variabili sono passate nel docker compose
+        String value = System.getenv(key);
         return value == null || value.isBlank() ? fallback : value;
     }
 
-    public static final String BROKER_HOST =
-            getEnvOrDefault("MQTT_BROKER_HOST", "mosquitto");
+    public static final String BROKER_HOST = getEnvOrDefault("MQTT_BROKER_HOST", "mosquitto");
 
-    public static final int BROKER_PORT = Integer.parseInt(getEnvOrDefault("MQTT_BROKER_PORT", "1883"));
+    public static final int BROKER_PORT =
+            Integer.parseInt(getEnvOrDefault("MQTT_BROKER_PORT", "1883"));
 
     public static final String BROKER_PROTOCOL = getEnvOrDefault("MQTT_BROKER_PROTOCOL", "tcp");
 

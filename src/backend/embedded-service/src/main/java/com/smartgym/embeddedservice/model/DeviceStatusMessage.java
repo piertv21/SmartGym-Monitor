@@ -21,10 +21,14 @@ public class DeviceStatusMessage {
     @JsonProperty("statusDetail")
     private String statusDetail;
 
-    public DeviceStatusMessage() {
-    }
+    public DeviceStatusMessage() {}
 
-    public DeviceStatusMessage(String deviceId, String timestamp, String deviceType, Boolean online, String statusDetail) {
+    public DeviceStatusMessage(
+            String deviceId,
+            String timestamp,
+            String deviceType,
+            Boolean online,
+            String statusDetail) {
         this.deviceId = deviceId;
         this.timestamp = timestamp;
         this.deviceType = deviceType;
@@ -74,12 +78,21 @@ public class DeviceStatusMessage {
 
     @Override
     public String toString() {
-        return "DeviceStatusMessage{" +
-                "deviceId='" + deviceId + '\'' +
-                ", timestamp='" + timestamp + '\'' +
-                ", deviceType='" + deviceType + '\'' +
-                ", online=" + online +
-                ", statusDetail='" + statusDetail + '\'' +
-                '}';
+        return "DeviceStatusMessage{"
+                + "deviceId='"
+                + deviceId
+                + '\''
+                + ", timestamp='"
+                + timestamp
+                + '\''
+                + ", deviceType='"
+                + deviceType
+                + '\''
+                + ", online="
+                + online
+                + ", statusDetail='"
+                + statusDetail
+                + '\''
+                + '}';
     }
 }

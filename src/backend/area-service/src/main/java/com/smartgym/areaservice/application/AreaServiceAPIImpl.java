@@ -5,12 +5,11 @@ import com.smartgym.areaservice.application.ports.AreaServiceAPI;
 import com.smartgym.areaservice.model.AreaAccessMessage;
 import com.smartgym.areaservice.model.GymArea;
 import com.smartgym.areaservice.model.UpdateAreaCapacityMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AreaServiceAPIImpl implements AreaServiceAPI {
 
@@ -24,53 +23,75 @@ public class AreaServiceAPIImpl implements AreaServiceAPI {
 
     @Override
     public CompletableFuture<Void> processAreaAccess(AreaAccessMessage message) {
-        return CompletableFuture.runAsync(() -> {
-            validateAreaAccessMessage(message);
+        return CompletableFuture.runAsync(
+                () -> {
+                    validateAreaAccessMessage(message);
 
-            GymArea area = areaRepository.findAreaById(message.getAreaId()).join()
-                    .orElseThrow(() -> new IllegalArgumentException("Area not found: " + message.getAreaId()));
+                    GymArea area =
+                            areaRepository
+                                    .findAreaById(message.getAreaId())
+                                    .join()
+                                    .orElseThrow(
+                                            () ->
+                                                    new IllegalArgumentException(
+                                                            "Area not found: "
+                                                                    + message.getAreaId()));
 
-            if (message.isEntry()) {
-                area.incrementCount();
-            } else if (message.isExit()) {
-                if (area.getCurrentCount() == null || area.getCurrentCount() <= 0) {
-                    logger.warn("OUT ignored at zero: areaId={}, badgeId={}, count={}",
-                            message.getAreaId(), message.getBadgeId(), area.getCurrentCount());
-                }
-                area.decrementCount();
-            } else {
-                throw new IllegalArgumentException("Invalid direction: " + message.getDirection());
-            }
+                    if (message.isEntry()) {
+                        area.incrementCount();
+                    } else if (message.isExit()) {
+                        if (area.getCurrentCount() == null || area.getCurrentCount() <= 0) {
+                            logger.warn(
+                                    "OUT ignored at zero: areaId={}, badgeId={}, count={}",
+                                    message.getAreaId(),
+                                    message.getBadgeId(),
+                                    area.getCurrentCount());
+                        }
+                        area.decrementCount();
+                    } else {
+                        throw new IllegalArgumentException(
+                                "Invalid direction: " + message.getDirection());
+                    }
 
-            areaRepository.saveArea(area).join();
-        });
+                    areaRepository.saveArea(area).join();
+                });
     }
 
     @Override
     public CompletableFuture<Void> processAreaExit(AreaAccessMessage message) {
-        return CompletableFuture.runAsync(() -> {
-            validateAreaAccessMessage(message);
+        return CompletableFuture.runAsync(
+                () -> {
+                    validateAreaAccessMessage(message);
 
-            GymArea area = areaRepository.findAreaById(message.getAreaId()).join()
-                    .orElseThrow(() -> new IllegalArgumentException("Area not found: " + message.getAreaId()));
+                    GymArea area =
+                            areaRepository
+                                    .findAreaById(message.getAreaId())
+                                    .join()
+                                    .orElseThrow(
+                                            () ->
+                                                    new IllegalArgumentException(
+                                                            "Area not found: "
+                                                                    + message.getAreaId()));
 
-            if (area.getCurrentCount() == null || area.getCurrentCount() <= 0) {
-                logger.warn("OUT ignored at zero (exit endpoint): areaId={}, badgeId={}, count={}",
-                        message.getAreaId(), message.getBadgeId(), area.getCurrentCount());
-            }
+                    if (area.getCurrentCount() == null || area.getCurrentCount() <= 0) {
+                        logger.warn(
+                                "OUT ignored at zero (exit endpoint): areaId={}, badgeId={}, count={}",
+                                message.getAreaId(),
+                                message.getBadgeId(),
+                                area.getCurrentCount());
+                    }
 
-            area.decrementCount();
+                    area.decrementCount();
 
-            areaRepository.saveArea(area).join();
-        });
+                    areaRepository.saveArea(area).join();
+                });
     }
 
     @Override
     public CompletableFuture<Optional<GymArea>> getAreaById(String areaId) {
         if (isBlank(areaId)) {
             return CompletableFuture.failedFuture(
-                    new IllegalArgumentException("areaId cannot be null or empty")
-            );
+                    new IllegalArgumentException("areaId cannot be null or empty"));
         }
 
         return areaRepository.findAreaById(areaId);
@@ -83,23 +104,33 @@ public class AreaServiceAPIImpl implements AreaServiceAPI {
 
     @Override
     public CompletableFuture<Void> updateAreaCapacity(UpdateAreaCapacityMessage message) {
-        return CompletableFuture.runAsync(() -> {
-            validateUpdateCapacityMessage(message);
+        return CompletableFuture.runAsync(
+                () -> {
+                    validateUpdateCapacityMessage(message);
 
-            GymArea area = areaRepository.findAreaById(message.getAreaId()).join()
-                    .orElseThrow(() -> new IllegalArgumentException("Area not found: " + message.getAreaId()));
+                    GymArea area =
+                            areaRepository
+                                    .findAreaById(message.getAreaId())
+                                    .join()
+                                    .orElseThrow(
+                                            () ->
+                                                    new IllegalArgumentException(
+                                                            "Area not found: "
+                                                                    + message.getAreaId()));
 
-            if (message.getCapacity() < 0) {
-                throw new IllegalArgumentException("Capacity cannot be negative");
-            }
+                    if (message.getCapacity() < 0) {
+                        throw new IllegalArgumentException("Capacity cannot be negative");
+                    }
 
-            if (area.getCurrentCount() != null && message.getCapacity() < area.getCurrentCount()) {
-                throw new IllegalStateException("New capacity cannot be lower than current count");
-            }
+                    if (area.getCurrentCount() != null
+                            && message.getCapacity() < area.getCurrentCount()) {
+                        throw new IllegalStateException(
+                                "New capacity cannot be lower than current count");
+                    }
 
-            area.setCapacity(message.getCapacity());
-            areaRepository.saveArea(area).join();
-        });
+                    area.setCapacity(message.getCapacity());
+                    areaRepository.saveArea(area).join();
+                });
     }
 
     private void validateAreaAccessMessage(AreaAccessMessage message) {

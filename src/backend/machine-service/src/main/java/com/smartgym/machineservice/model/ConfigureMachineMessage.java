@@ -15,8 +15,7 @@ public class ConfigureMachineMessage {
     @JsonProperty("sensor")
     private String sensor;
 
-    public ConfigureMachineMessage() {
-    }
+    public ConfigureMachineMessage() {}
 
     public ConfigureMachineMessage(String machineId, String areaId) {
         this.machineId = machineId;
@@ -55,10 +54,16 @@ public class ConfigureMachineMessage {
 
     @Override
     public String toString() {
-        return "ConfigureMachineMessage{" +
-                "machineId='" + machineId + '\'' +
-                ", areaId='" + areaId + '\'' +
-                ", sensor='" + sensor + '\'' +
-                '}';
+        return "ConfigureMachineMessage{"
+                + "machineId='"
+                + machineId
+                + '\''
+                + ", areaId='"
+                + areaId
+                + '\''
+                + ", sensor='"
+                + sensor
+                + '\''
+                + '}';
     }
 }

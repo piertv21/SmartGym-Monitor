@@ -1,11 +1,11 @@
-# Work Plan
+# 1. Work Plan
 
 This project follows a structured work plan that combines **Domain-Driven Design (DDD)** principles with an incremental development approach.  
 The goal is to progressively move from domain understanding to implementation, while keeping the domain model consistent and evolvable throughout the project.
 
 The work is divided into several phases, each producing clear and verifiable outputs.
 
-## Phase 1 – Domain Analysis
+## 1.1 Phase 1 - Domain Analysis
 
 The first phase focuses on understanding the gym domain and identifying its main concepts and rules.  
 During this phase, the problem domain is analyzed independently from technical implementation details.
@@ -18,7 +18,7 @@ The main activities of this phase include:
 
 The output of this phase is a clear domain description and a shared vocabulary that will guide all subsequent design and implementation decisions.
 
-## Phase 2 – Bounded Contexts and Context Map
+## 1.2 Phase 2 - Bounded Contexts and Context Map
 
 In the second phase, the domain is divided into **bounded contexts**, each representing a coherent part of the system with a well-defined responsibility and terminology.
 
@@ -30,7 +30,7 @@ The activities of this phase include:
 
 This phase helps reduce complexity and prevents ambiguity in the domain model by clearly separating concerns.
 
-## Phase 3 – Domain Model Design
+## 1.3 Phase 3 - Domain Model Design
 
 During this phase, the conceptual domain model is translated into a software-oriented model using DDD building blocks.
 
@@ -43,7 +43,7 @@ The main activities include:
 
 The result of this phase is a detailed domain model that represents the core business logic of the SmartGym Monitor system.
 
-## Phase 4 – System Architecture and Technology Design
+## 1.4 Phase 4 - System Architecture and Technology Design
 
 Once the domain model is defined, the overall system architecture is designed.  
 This phase focuses on how domain concepts are implemented and how system components interact.
@@ -57,7 +57,7 @@ The activities include:
 
 The architecture is designed to support modularity, scalability, and future extensions.
 
-## Phase 5 – Implementation and Integration
+## 1.5 Phase 5 - Implementation and Integration
 
 In this phase, the system is implemented incrementally following the previously defined design.
 
@@ -70,7 +70,7 @@ The main activities include:
 
 Continuous integration tools are used to ensure code quality and system consistency during development.
 
-## Phase 6 – Testing and Validation
+## 1.6 Phase 6 - Testing and Validation
 
 The goal of this phase is to verify that the system behaves correctly and satisfies the project objectives.  
 Testing activities are organized according to the **Testing Pyramid**, in order to ensure a good balance between reliability, maintainability, and development effort.

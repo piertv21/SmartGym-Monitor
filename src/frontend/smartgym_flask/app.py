@@ -5,7 +5,14 @@ import os
 from flask import Flask
 
 from smartgym_flask.config import Config
-from smartgym_flask.extensions import teardown_status_service, teardown_user_service
+from smartgym_flask.extensions import (
+    teardown_area_service,
+    teardown_analytics_service,
+    teardown_machine_service,
+    teardown_status_service,
+    teardown_tracking_service,
+    teardown_user_service,
+)
 from smartgym_flask.routes import api_bp, auth_bp, dashboard_bp
 
 
@@ -21,6 +28,10 @@ def create_app(config_overrides: dict | None = None) -> Flask:
     app.register_blueprint(api_bp)
     app.teardown_appcontext(teardown_user_service)
     app.teardown_appcontext(teardown_status_service)
+    app.teardown_appcontext(teardown_analytics_service)
+    app.teardown_appcontext(teardown_machine_service)
+    app.teardown_appcontext(teardown_area_service)
+    app.teardown_appcontext(teardown_tracking_service)
 
     return app
 
@@ -30,4 +41,3 @@ app = create_app()
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "5001"))
     app.run(host="0.0.0.0", port=port, debug=False)
-

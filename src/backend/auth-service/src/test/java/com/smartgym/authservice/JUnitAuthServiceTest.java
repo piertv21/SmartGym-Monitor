@@ -1,19 +1,18 @@
 package com.smartgym.authservice;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.smartgym.authservice.application.AuthServiceApiImpl;
 import com.smartgym.authservice.application.ports.AuthRepository;
 import com.smartgym.authservice.model.AuthUser;
 import io.vertx.core.json.JsonObject;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 class JUnitAuthServiceTest {
 
@@ -21,7 +20,9 @@ class JUnitAuthServiceTest {
 
     @Test
     void authenticateSuccessWithDomainEntity() {
-        AuthRepository repository = new InMemoryAuthRepository(Map.of("ADMIN", new AuthUser("ADMIN", passwordEncoder.encode("ADMIN"))));
+        AuthRepository repository =
+                new InMemoryAuthRepository(
+                        Map.of("ADMIN", new AuthUser("ADMIN", passwordEncoder.encode("ADMIN"))));
         AuthServiceApiImpl authService = new AuthServiceApiImpl(repository, passwordEncoder);
 
         Optional<AuthUser> result = authService.authenticate("ADMIN", "ADMIN").join();
@@ -32,7 +33,9 @@ class JUnitAuthServiceTest {
 
     @Test
     void authenticateFailsWithWrongPassword() {
-        AuthRepository repository = new InMemoryAuthRepository(Map.of("ADMIN", new AuthUser("ADMIN", passwordEncoder.encode("ADMIN"))));
+        AuthRepository repository =
+                new InMemoryAuthRepository(
+                        Map.of("ADMIN", new AuthUser("ADMIN", passwordEncoder.encode("ADMIN"))));
         AuthServiceApiImpl authService = new AuthServiceApiImpl(repository, passwordEncoder);
 
         Optional<AuthUser> result = authService.authenticate("ADMIN", "WRONG").join();
@@ -42,7 +45,8 @@ class JUnitAuthServiceTest {
 
     @Test
     void verifyUserExists() {
-        AuthRepository repository = new InMemoryAuthRepository(Map.of("ADMIN", new AuthUser("ADMIN", "ADMIN")));
+        AuthRepository repository =
+                new InMemoryAuthRepository(Map.of("ADMIN", new AuthUser("ADMIN", "ADMIN")));
         AuthServiceApiImpl authService = new AuthServiceApiImpl(repository, passwordEncoder);
 
         boolean exists = authService.userExists("ADMIN").join();
@@ -74,7 +78,8 @@ class JUnitAuthServiceTest {
 
         @Override
         public CompletableFuture<Optional<AuthUser>> findUserByUsername(String username) {
-            return CompletableFuture.completedFuture(Optional.ofNullable(usersByUsername.get(username)));
+            return CompletableFuture.completedFuture(
+                    Optional.ofNullable(usersByUsername.get(username)));
         }
 
         @Override

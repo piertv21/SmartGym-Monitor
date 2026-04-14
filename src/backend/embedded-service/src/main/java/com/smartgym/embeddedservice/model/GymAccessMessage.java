@@ -18,8 +18,7 @@ public class GymAccessMessage {
     @JsonProperty("accessType") // "ENTRY" or "EXIT"
     private String accessType;
 
-    public GymAccessMessage() {
-    }
+    public GymAccessMessage() {}
 
     public GymAccessMessage(String deviceId, String timestamp, String badgeId, String accessType) {
         this.deviceId = deviceId;
@@ -62,11 +61,19 @@ public class GymAccessMessage {
 
     @Override
     public String toString() {
-        return "GymAccessMessage{" +
-                "deviceId='" + deviceId + '\'' +
-                ", timestamp='" + timestamp + '\'' +
-                ", badgeId='" + badgeId + '\'' +
-                ", accessType='" + accessType + '\'' +
-                '}';
+        return "GymAccessMessage{"
+                + "deviceId='"
+                + deviceId
+                + '\''
+                + ", timestamp='"
+                + timestamp
+                + '\''
+                + ", badgeId='"
+                + badgeId
+                + '\''
+                + ", accessType='"
+                + accessType
+                + '\''
+                + '}';
     }
 }

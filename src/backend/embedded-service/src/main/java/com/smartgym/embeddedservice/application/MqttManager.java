@@ -27,9 +27,4 @@ public class MqttManager {
 
         System.out.println("✅ All SmartGym Verticles Deployed Successfully");
     }
-
-    public void publish(String topic, String message) {
-        System.out.println("[MqttManager] Publishing to topic " + topic + "...");
-        VertxMqttClientAdapter.publish(topic, message);
-    }
 }

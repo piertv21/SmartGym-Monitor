@@ -1,5 +1,7 @@
 package com.smartgym.e2e.steps;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -9,13 +11,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
-
 import java.time.Instant;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class MemberFlowSteps {
     private static final String ADMIN_USERNAME = "ADMIN";
@@ -35,11 +33,11 @@ public class MemberFlowSteps {
 
     @Given("A member is authenticated for usage flows")
     public void aMemberIsAuthenticatedForUsageFlows() {
-        JsonObject credentials = new JsonObject()
-                .put("username", ADMIN_USERNAME)
-                .put("password", ADMIN_PASSWORD);
+        JsonObject credentials =
+                new JsonObject().put("username", ADMIN_USERNAME).put("password", ADMIN_PASSWORD);
 
-        HttpResponse<?> loginResponse = postJsonAndWait(gatewayUrl + "/auth-service/login", credentials, null);
+        HttpResponse<?> loginResponse =
+                postJsonAndWait(gatewayUrl + "/auth-service/login", credentials, null);
         assertNotNull(loginResponse, "Missing login response");
         assertEquals(200, loginResponse.statusCode(), "Login failed for usage flows");
 
@@ -59,11 +57,11 @@ public class MemberFlowSteps {
 
     @When("The member enters the gym")
     public void theMemberEntersTheGym() {
-        lastResponse = postJsonAndWait(
-                gatewayUrl + "/tracking-service/start-session",
-                new JsonObject().put("badgeId", BADGE_ID),
-                accessToken
-        );
+        lastResponse =
+                postJsonAndWait(
+                        gatewayUrl + "/tracking-service/start-session",
+                        new JsonObject().put("badgeId", BADGE_ID),
+                        accessToken);
     }
 
     @Then("The gym attendance increases by 1")
@@ -74,11 +72,11 @@ public class MemberFlowSteps {
 
     @When("The member exits the gym")
     public void theMemberExitsTheGym() {
-        lastResponse = postJsonAndWait(
-                gatewayUrl + "/tracking-service/end-session",
-                new JsonObject().put("badgeId", BADGE_ID),
-                accessToken
-        );
+        lastResponse =
+                postJsonAndWait(
+                        gatewayUrl + "/tracking-service/end-session",
+                        new JsonObject().put("badgeId", BADGE_ID),
+                        accessToken);
     }
 
     @Then("The gym attendance returns to baseline")
@@ -94,30 +92,34 @@ public class MemberFlowSteps {
 
     @When("The member enters area {string}")
     public void theMemberEntersArea(String areaId) {
-        lastResponse = postAreaWithFallback(
-                List.of("/area-service/access", "/area-service/area-service/access"),
-                areaMessage(areaId, "IN")
-        );
+        lastResponse =
+                postJsonAndWait(
+                        gatewayUrl + "/area-service/access",
+                        areaMessage(areaId, "IN"),
+                        accessToken);
     }
 
     @Then("The area count for {string} increases by 1")
     public void theAreaCountForIncreasesBy1(String areaId) {
         assertSuccess(lastResponse, "Area entry request failed");
-        assertEquals(areaCountBaseline + 1, getAreaCount(areaId), "Area count did not increase as expected");
+        assertEquals(
+                areaCountBaseline + 1,
+                getAreaCount(areaId),
+                "Area count did not increase as expected");
     }
 
     @When("The member exits area {string}")
     public void theMemberExitsArea(String areaId) {
-        lastResponse = postAreaWithFallback(
-                List.of("/area-service/exit", "/area-service/area-service/exit"),
-                areaMessage(areaId, "OUT")
-        );
+        lastResponse =
+                postJsonAndWait(
+                        gatewayUrl + "/area-service/exit", areaMessage(areaId, "OUT"), accessToken);
     }
 
     @Then("The area count for {string} returns to baseline")
     public void theAreaCountForReturnsToBaseline(String areaId) {
         assertSuccess(lastResponse, "Area exit request failed");
-        assertEquals(areaCountBaseline, getAreaCount(areaId), "Area count did not return to baseline");
+        assertEquals(
+                areaCountBaseline, getAreaCount(areaId), "Area count did not return to baseline");
     }
 
     @And("Machine {string} is available")
@@ -127,11 +129,11 @@ public class MemberFlowSteps {
         assertNotNull(status, "Machine status is missing");
 
         if ("OCCUPIED".equalsIgnoreCase(status)) {
-            HttpResponse<?> endResponse = postJsonAndWait(
-                    gatewayUrl + "/machine-service/end-session",
-                    new JsonObject().put("machineId", machineId),
-                    accessToken
-            );
+            HttpResponse<?> endResponse =
+                    postJsonAndWait(
+                            gatewayUrl + "/machine-service/end-session",
+                            new JsonObject().put("machineId", machineId),
+                            accessToken);
             assertSuccess(endResponse, "Unable to release occupied machine before scenario");
             machine = getMachine(machineId);
             status = machine.getString("status");
@@ -142,13 +144,11 @@ public class MemberFlowSteps {
 
     @When("The member starts a session on machine {string}")
     public void theMemberStartsASessionOnMachine(String machineId) {
-        lastResponse = postJsonAndWait(
-                gatewayUrl + "/machine-service/start-session",
-                new JsonObject()
-                        .put("machineId", machineId)
-                        .put("badgeId", BADGE_ID),
-                accessToken
-        );
+        lastResponse =
+                postJsonAndWait(
+                        gatewayUrl + "/machine-service/start-session",
+                        new JsonObject().put("machineId", machineId).put("badgeId", BADGE_ID),
+                        accessToken);
     }
 
     @Then("Machine {string} is occupied")
@@ -160,11 +160,11 @@ public class MemberFlowSteps {
 
     @When("The member ends the session on machine {string}")
     public void theMemberEndsTheSessionOnMachine(String machineId) {
-        lastResponse = postJsonAndWait(
-                gatewayUrl + "/machine-service/end-session",
-                new JsonObject().put("machineId", machineId),
-                accessToken
-        );
+        lastResponse =
+                postJsonAndWait(
+                        gatewayUrl + "/machine-service/end-session",
+                        new JsonObject().put("machineId", machineId),
+                        accessToken);
     }
 
     @Then("Machine {string} is free")
@@ -175,49 +175,51 @@ public class MemberFlowSteps {
     }
 
     @When("The member completes a full workout journey in area {string} using machine {string}")
-    public void theMemberCompletesAFullWorkoutJourneyInAreaUsingMachine(String areaId, String machineId) {
-        HttpResponse<?> startGym = postJsonAndWait(
-                gatewayUrl + "/tracking-service/start-session",
-                new JsonObject().put("badgeId", BADGE_ID),
-                accessToken
-        );
+    public void theMemberCompletesAFullWorkoutJourneyInAreaUsingMachine(
+            String areaId, String machineId) {
+        HttpResponse<?> startGym =
+                postJsonAndWait(
+                        gatewayUrl + "/tracking-service/start-session",
+                        new JsonObject().put("badgeId", BADGE_ID),
+                        accessToken);
         assertSuccess(startGym, "Gym start failed in complete journey");
 
-        HttpResponse<?> enterArea = postAreaWithFallback(
-                List.of("/area-service/access", "/area-service/area-service/access"),
-                areaMessage(areaId, "IN")
-        );
+        HttpResponse<?> enterArea =
+                postJsonAndWait(
+                        gatewayUrl + "/area-service/access",
+                        areaMessage(areaId, "IN"),
+                        accessToken);
         assertSuccess(enterArea, "Area entry failed in complete journey");
 
-        HttpResponse<?> startMachine = postJsonAndWait(
-                gatewayUrl + "/machine-service/start-session",
-                new JsonObject().put("machineId", machineId).put("badgeId", BADGE_ID),
-                accessToken
-        );
+        HttpResponse<?> startMachine =
+                postJsonAndWait(
+                        gatewayUrl + "/machine-service/start-session",
+                        new JsonObject().put("machineId", machineId).put("badgeId", BADGE_ID),
+                        accessToken);
         assertSuccess(startMachine, "Machine start failed in complete journey");
 
-        HttpResponse<?> endMachine = postJsonAndWait(
-                gatewayUrl + "/machine-service/end-session",
-                new JsonObject().put("machineId", machineId),
-                accessToken
-        );
+        HttpResponse<?> endMachine =
+                postJsonAndWait(
+                        gatewayUrl + "/machine-service/end-session",
+                        new JsonObject().put("machineId", machineId),
+                        accessToken);
         assertSuccess(endMachine, "Machine end failed in complete journey");
 
-        HttpResponse<?> exitArea = postAreaWithFallback(
-                List.of("/area-service/exit", "/area-service/area-service/exit"),
-                areaMessage(areaId, "OUT")
-        );
+        HttpResponse<?> exitArea =
+                postJsonAndWait(
+                        gatewayUrl + "/area-service/exit", areaMessage(areaId, "OUT"), accessToken);
         assertSuccess(exitArea, "Area exit failed in complete journey");
 
-        lastResponse = postJsonAndWait(
-                gatewayUrl + "/tracking-service/end-session",
-                new JsonObject().put("badgeId", BADGE_ID),
-                accessToken
-        );
+        lastResponse =
+                postJsonAndWait(
+                        gatewayUrl + "/tracking-service/end-session",
+                        new JsonObject().put("badgeId", BADGE_ID),
+                        accessToken);
     }
 
     private long getGymCount() {
-        HttpResponse<?> response = getJsonAndWait(gatewayUrl + "/tracking-service/count", accessToken);
+        HttpResponse<?> response =
+                getJsonAndWait(gatewayUrl + "/tracking-service/count", accessToken);
         assertSuccess(response, "Unable to read gym count");
 
         JsonObject payload = unwrapPayload(response.bodyAsJsonObject());
@@ -229,7 +231,7 @@ public class MemberFlowSteps {
     }
 
     private int getAreaCount(String areaId) {
-        HttpResponse<?> response = getAreaByIdWithFallback(areaId);
+        HttpResponse<?> response = getAreaById(areaId);
         assertSuccess(response, "Unable to read area status");
 
         JsonObject payload = unwrapPayload(response.bodyAsJsonObject());
@@ -241,7 +243,8 @@ public class MemberFlowSteps {
     }
 
     private JsonObject getMachine(String machineId) {
-        HttpResponse<?> response = getJsonAndWait(gatewayUrl + "/machine-service/" + machineId, accessToken);
+        HttpResponse<?> response =
+                getJsonAndWait(gatewayUrl + "/machine-service/" + machineId, accessToken);
         assertSuccess(response, "Unable to read machine status");
 
         JsonObject payload = unwrapPayload(response.bodyAsJsonObject());
@@ -258,31 +261,8 @@ public class MemberFlowSteps {
                 .put("direction", direction);
     }
 
-    private HttpResponse<?> postAreaWithFallback(List<String> candidatePaths, JsonObject body) {
-        HttpResponse<?> response = null;
-        for (String path : candidatePaths) {
-            response = postJsonAndWait(gatewayUrl + path, body, accessToken);
-            if (response != null && response.statusCode() >= 200 && response.statusCode() < 300) {
-                return response;
-            }
-        }
-        return response;
-    }
-
-    private HttpResponse<?> getAreaByIdWithFallback(String areaId) {
-        List<String> paths = List.of(
-                gatewayUrl + "/area-service/" + areaId,
-                gatewayUrl + "/area-service/area-service/" + areaId
-        );
-
-        HttpResponse<?> response = null;
-        for (String path : paths) {
-            response = getJsonAndWait(path, accessToken);
-            if (response != null && response.statusCode() >= 200 && response.statusCode() < 300) {
-                return response;
-            }
-        }
-        return response;
+    private HttpResponse<?> getAreaById(String areaId) {
+        return getJsonAndWait(gatewayUrl + "/area-service/" + areaId, accessToken);
     }
 
     private HttpResponse<?> postJsonAndWait(String url, JsonObject body, String bearerToken) {
@@ -293,23 +273,26 @@ public class MemberFlowSteps {
         return getJsonAndWait(url, bearerToken, MAX_503_RETRIES);
     }
 
-    private HttpResponse<?> postJsonAndWait(String url, JsonObject body, String bearerToken, int retriesLeft) {
+    private HttpResponse<?> postJsonAndWait(
+            String url, JsonObject body, String bearerToken, int retriesLeft) {
         CompletableFuture<HttpResponse<?>> future = new CompletableFuture<>();
 
-        var request = client.postAbs(url)
-                .putHeader("Content-Type", "application/json; charset=UTF-8");
+        var request =
+                client.postAbs(url).putHeader("Content-Type", "application/json; charset=UTF-8");
 
         if (bearerToken != null) {
             request.putHeader("Authorization", "Bearer " + bearerToken);
         }
 
-        request.sendJsonObject(body, ar -> {
-            if (ar.succeeded()) {
-                future.complete(ar.result());
-            } else {
-                future.completeExceptionally(ar.cause());
-            }
-        });
+        request.sendJsonObject(
+                body,
+                ar -> {
+                    if (ar.succeeded()) {
+                        future.complete(ar.result());
+                    } else {
+                        future.completeExceptionally(ar.cause());
+                    }
+                });
 
         try {
             HttpResponse<?> response = future.get(10, TimeUnit.SECONDS);
@@ -327,20 +310,21 @@ public class MemberFlowSteps {
     private HttpResponse<?> getJsonAndWait(String url, String bearerToken, int retriesLeft) {
         CompletableFuture<HttpResponse<?>> future = new CompletableFuture<>();
 
-        var request = client.getAbs(url)
-                .putHeader("Content-Type", "application/json; charset=UTF-8");
+        var request =
+                client.getAbs(url).putHeader("Content-Type", "application/json; charset=UTF-8");
 
         if (bearerToken != null) {
             request.putHeader("Authorization", "Bearer " + bearerToken);
         }
 
-        request.send(ar -> {
-            if (ar.succeeded()) {
-                future.complete(ar.result());
-            } else {
-                future.completeExceptionally(ar.cause());
-            }
-        });
+        request.send(
+                ar -> {
+                    if (ar.succeeded()) {
+                        future.complete(ar.result());
+                    } else {
+                        future.completeExceptionally(ar.cause());
+                    }
+                });
 
         try {
             HttpResponse<?> response = future.get(10, TimeUnit.SECONDS);
@@ -365,8 +349,14 @@ public class MemberFlowSteps {
 
     private void assertSuccess(HttpResponse<?> response, String message) {
         assertNotNull(response, message + " (missing response)");
-        assertTrue(response.statusCode() >= 200 && response.statusCode() < 300,
-                message + " (status=" + response.statusCode() + ", body=" + response.bodyAsString() + ")");
+        assertTrue(
+                response.statusCode() >= 200 && response.statusCode() < 300,
+                message
+                        + " (status="
+                        + response.statusCode()
+                        + ", body="
+                        + response.bodyAsString()
+                        + ")");
     }
 
     @After("@gym or @area or @machine or @journey")
@@ -374,4 +364,3 @@ public class MemberFlowSteps {
         vertx.close();
     }
 }
-

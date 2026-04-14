@@ -4,9 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartgym.embeddedservice.application.ports.MachineServicePort;
 import com.smartgym.embeddedservice.model.MachineUsageMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -14,6 +11,8 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MachineServiceHttpAdapter implements MachineServicePort {
 
@@ -26,24 +25,26 @@ public class MachineServiceHttpAdapter implements MachineServicePort {
     private final URI endSessionEndpoint;
 
     public MachineServiceHttpAdapter(String machineServiceBaseUrl) {
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(REQUEST_TIMEOUT)
-                .build();
+        this.httpClient = HttpClient.newBuilder().connectTimeout(REQUEST_TIMEOUT).build();
         this.objectMapper = new ObjectMapper();
-        String normalizedBaseUrl = machineServiceBaseUrl.endsWith("/")
-                ? machineServiceBaseUrl.substring(0, machineServiceBaseUrl.length() - 1)
-                : machineServiceBaseUrl;
+        String normalizedBaseUrl =
+                machineServiceBaseUrl.endsWith("/")
+                        ? machineServiceBaseUrl.substring(0, machineServiceBaseUrl.length() - 1)
+                        : machineServiceBaseUrl;
         this.startSessionEndpoint = URI.create(normalizedBaseUrl + "/start-session");
         this.endSessionEndpoint = URI.create(normalizedBaseUrl + "/end-session");
-        logger.info("🔧 MachineServiceHttpAdapter initialized with base URL: {}", normalizedBaseUrl);
+        logger.info(
+                "🔧 MachineServiceHttpAdapter initialized with base URL: {}", normalizedBaseUrl);
         logger.info("   - Start Session Endpoint: {}", this.startSessionEndpoint);
         logger.info("   - End Session Endpoint: {}", this.endSessionEndpoint);
     }
 
     @Override
     public CompletableFuture<Void> startSession(MachineUsageMessage message) {
-        logger.debug("📤 Preparing to call start-session for machine: {}, badge: {}", 
-                message.getMachineId(), message.getBadgeId());
+        logger.debug(
+                "📤 Preparing to call start-session for machine: {}, badge: {}",
+                message.getMachineId(),
+                message.getBadgeId());
         return post(startSessionEndpoint, toStartSessionBody(message), "startSession");
     }
 
@@ -55,10 +56,10 @@ public class MachineServiceHttpAdapter implements MachineServicePort {
 
     private String toStartSessionBody(MachineUsageMessage message) {
         try {
-            return objectMapper.writeValueAsString(Map.of(
-                    "machineId", message.getMachineId(),
-                    "badgeId", message.getBadgeId()
-            ));
+            return objectMapper.writeValueAsString(
+                    Map.of(
+                            "machineId", message.getMachineId(),
+                            "badgeId", message.getBadgeId()));
         } catch (JsonProcessingException ex) {
             throw new IllegalArgumentException("Invalid machine start-session payload", ex);
         }
@@ -76,33 +77,49 @@ public class MachineServiceHttpAdapter implements MachineServicePort {
         try {
             logger.info("[MachineService] Sending {} request to: {}", operationName, endpoint);
             logger.debug("   Request body: {}", requestBody);
-            
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(endpoint)
-                    .timeout(REQUEST_TIMEOUT)
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
 
-            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                    .thenApply(response -> {
-                        logger.info("[MachineService] {} response received - Status: {}",
-                                operationName, response.statusCode());
-                        if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                            logger.debug("   Response body: {}", response.body());
-                            return response;
-                        }
-                        throw new IllegalStateException("Machine service returned status " 
-                                + response.statusCode() + ": " + response.body());
-                    })
+            HttpRequest request =
+                    HttpRequest.newBuilder()
+                            .uri(endpoint)
+                            .timeout(REQUEST_TIMEOUT)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                            .build();
+
+            return httpClient
+                    .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(
+                            response -> {
+                                logger.info(
+                                        "[MachineService] {} response received - Status: {}",
+                                        operationName,
+                                        response.statusCode());
+                                if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                                    logger.debug("   Response body: {}", response.body());
+                                    return response;
+                                }
+                                throw new IllegalStateException(
+                                        "Machine service returned status "
+                                                + response.statusCode()
+                                                + ": "
+                                                + response.body());
+                            })
                     .thenApply(response -> (Void) null)
-                    .exceptionally(ex -> {
-                        logger.error("[MachineService] {} failed with error: {}",
-                                operationName, ex.getMessage(), ex);
-                        throw new RuntimeException(ex);
-                    });
+                    .exceptionally(
+                            ex -> {
+                                logger.error(
+                                        "[MachineService] {} failed with error: {}",
+                                        operationName,
+                                        ex.getMessage(),
+                                        ex);
+                                throw new RuntimeException(ex);
+                            });
         } catch (Exception ex) {
-            logger.error("[MachineService] {} preparation failed: {}", operationName, ex.getMessage(), ex);
+            logger.error(
+                    "[MachineService] {} preparation failed: {}",
+                    operationName,
+                    ex.getMessage(),
+                    ex);
             return CompletableFuture.failedFuture(ex);
         }
     }

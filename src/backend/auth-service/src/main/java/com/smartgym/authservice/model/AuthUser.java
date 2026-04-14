@@ -1,8 +1,9 @@
 package com.smartgym.authservice.model;
 
+import com.smartgym.authservice.ddd.Aggregate;
 import java.util.Objects;
 
-public class AuthUser {
+public class AuthUser implements Aggregate<String> {
 
     private final String username;
     private final String password;
@@ -22,6 +23,10 @@ public class AuthUser {
         return username;
     }
 
+    @Override
+    public String getId() {
+        return this.username;
+    }
 
     public String getPassword() {
         return password;
@@ -35,7 +40,8 @@ public class AuthUser {
         if (!(o instanceof AuthUser authUser)) {
             return false;
         }
-        return Objects.equals(username, authUser.username) && Objects.equals(password, authUser.password);
+        return Objects.equals(username, authUser.username)
+                && Objects.equals(password, authUser.password);
     }
 
     @Override
@@ -43,4 +49,3 @@ public class AuthUser {
         return Objects.hash(username, password);
     }
 }
-

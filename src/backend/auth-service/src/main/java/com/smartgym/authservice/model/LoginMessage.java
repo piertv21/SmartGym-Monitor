@@ -1,7 +1,7 @@
 package com.smartgym.authservice.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoginMessage {
@@ -12,8 +12,7 @@ public class LoginMessage {
     @JsonProperty("password")
     private String password;
 
-    public LoginMessage() {
-    }
+    public LoginMessage() {}
 
     public LoginMessage(String username, String password) {
         this.username = username;
@@ -38,9 +37,13 @@ public class LoginMessage {
 
     @Override
     public String toString() {
-        return "LoginMessage{" +
-                "username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                '}';
+        return "LoginMessage{"
+                + "username='"
+                + username
+                + '\''
+                + ", password='"
+                + password
+                + '\''
+                + '}';
     }
 }
