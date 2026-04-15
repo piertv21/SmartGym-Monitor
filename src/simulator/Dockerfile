@@ -10,7 +10,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o simulator .
 
-FROM alpine:3.21
+FROM alpine:3.23
 WORKDIR /app
 RUN apk --no-cache add ca-certificates tzdata
 COPY --from=builder /app/simulator .
