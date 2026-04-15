@@ -15,7 +15,7 @@ tzdata = "^2026.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.0"
-ruff = "^0.11.0"
+ruff = "^0.15.0"
 
 [tool.ruff]
 target-version = "py312"
