@@ -82,23 +82,46 @@ The configured routes expose the services under these prefixes:
 Following there is a simplified flow of how the gateway processes incoming requests, including authentication and routing logic.
 
 ```mermaid
-flowchart LR
-    Client["Flask Frontend"] -->|"HTTP + Bearer JWT"| EAF["ExternalAuthFilter"]
+flowchart TD
+    Client["Flask Frontend"] -->|"HTTP request"| EAF["ExternalAuthFilter"]
 
-    subgraph Gateway
-        EAF -->|"Extract token"| JVS["JwtValidationService"]
-        JVS -->|"Valid userId"| ROUTE["Spring Cloud Route Matching"]
-        JVS -->|"Invalid token"| REJECT["401 Unauthorized"]
+    subgraph Gateway["API Gateway"]
+        EAF --> PUB{"Public endpoint?"}
+        PUB -->|"Yes: /login, /register, /actuator"| ROUTE["Spring Cloud Route Matching"]
+        PUB -->|"No"| AUTHH{"Bearer token present?"}
+
+        AUTHH -->|"No"| REJECT["401 Unauthorized"]
+        AUTHH -->|"Yes"| JVS["JwtValidationService"]
+
+        JVS -->|"JWT invalid / expired"| REJECT
+        JVS -->|"JWT valid"| USER["Add X-User-Id header"]
+        USER --> ROUTE
     end
 
-    ROUTE -->|"/auth-service/**"| AUTH[auth-service]
-    ROUTE -->|"/tracking-service/**"| TRK[tracking-service]
-    ROUTE -->|"/area-service/**"| AREA[area-service]
-    ROUTE -->|"/machine-service/**"| MACH[machine-service]
-    ROUTE -->|"/analytics-service/**"| ANA[analytics-service]
-    ROUTE -->|"/embedded-service/**"| EMB[embedded-service]
+    subgraph Services["Backend microservices"]
+        direction LR
 
-    EAF -.->|"Public paths"| ROUTE
+        subgraph Left[" "]
+            direction TB
+            AUTH["auth-service"]
+            TRK["tracking-service"]
+        end
+
+        subgraph Right[" "]
+            direction TB
+            AREA["area-service"]
+            MACH["machine-service"]
+            ANA["analytics-service"]
+            EMB["embedded-service"]
+        end
+    end
+
+    ROUTE -->|"/auth-service/**"| AUTH
+    ROUTE -->|"/tracking-service/**"| TRK
+    ROUTE -->|"/area-service/**"| AREA
+    ROUTE -->|"/machine-service/**"| MACH
+    ROUTE -->|"/analytics-service/**"| ANA
+    ROUTE -->|"/embedded-service/**"| EMB
 ```
 
 ### 4.2.3 Auth-service
@@ -117,15 +140,16 @@ Main endpoints:
 flowchart TD
     GW[API Gateway]
 
-    subgraph auth-service
+    subgraph auth-service\n\n\n
         CTRL["AuthRestControllerImpl"]
         CTRL --> API["AuthServiceApiImpl"]
-        API -->|"verifica credenziali\n(BCrypt)"| REPO["AuthRepositoryImpl"]
-        API -->|"genera / valida\naccess token"| JWT["JwtTokenService"]
+        API -->|"Verify Credentials\n"| REPO["AuthRepositoryImpl"]
+
+        API -->|"Generate / validate Access Token\n" | JWT["JwtTokenService"]
         REPO --> DB[(MongoDB\nauth-db)]
     end
 
-    GW -->|"POST /login\nPOST /register\nGET /login/{username}\nPOST /logout"| CTRL
+    GW -->|"POST /login\nPOST /register\nGET /login/{username}\nPOST /logout     \n\n "| CTRL
 ```
 
 ### 4.2.4 Tracking-service
@@ -148,13 +172,13 @@ flowchart TD
     subgraph tracking-service
         CTRL["TrackingRestControllerImpl"]
         CTRL --> API["TrackingServiceApiImpl"]
-        API -->|"crea / chiudi sessione"| REPO["TrackingRepositoryImpl"]
+        API -->|"create / close sessions"| REPO["TrackingRepositoryImpl"]
         REPO --> DB[(MongoDB\ntracking-db)]
     end
 
-    EMB -->|"POST /start-session\n(ENTRY)"| CTRL
-    EMB -->|"POST /end-session\n(EXIT)"| CTRL
-    DASH -->|"GET /count\nGET /active-sessions"| CTRL
+    EMB -->|"POST /start-session\n(ENTRY)\n\n"| CTRL
+    EMB -->|"POST /end-session\n(EXIT)\n\n"| CTRL
+    DASH -->|"GET /count\n GET      /active-sessions \n\n"| CTRL
 ```
 
 ### 4.2.5 Area-service
@@ -167,8 +191,6 @@ Main endpoints:
 - `POST /access`
 - `POST /exit`
 - `GET /{areaId}`
-- `GET /`
-- `PUT /capacity`
 
 ```mermaid
 flowchart TD
@@ -178,12 +200,12 @@ flowchart TD
     subgraph area-service
         CTRL["AreaRestControllerImpl"]
         CTRL --> API["AreaServiceApiImpl"]
-        API -->|"incrementa / decrementa\ncurrentCount"| REPO["AreaRepositoryImpl"]
+        API -->|"increment/ decrement\ncurrentCount"| REPO["AreaRepositoryImpl"]
         REPO --> DB[(MongoDB\narea-db)]
     end
 
-    EMB -->|"POST /access (IN)\nPOST /exit (OUT)"| CTRL
-    DASH -->|"GET /\nGET /{areaId}\nPUT /capacity"| CTRL
+    EMB -->|"POST /access (IN)\nPOST /exit (OUT)\n\n"    | CTRL
+    DASH -->|"GET /{areaId}\nPUT /capacity"\n\n| CTRL
 ```
 
 ### 4.2.6 Machine-service
@@ -201,7 +223,6 @@ Main endpoints:
 - `GET /machines`
 - `GET /{machineId}`
 - `GET /history/{machineId}`
-- `GET /machines/history/series`
 
 ```mermaid
 flowchart TD
@@ -211,12 +232,12 @@ flowchart TD
     subgraph machine-service
         CTRL["MachineRestControllerImpl"]
         CTRL --> API["MachineServiceApiImpl"]
-        API -->|"aggiorna stato\nmacchina + sessione"| REPO["MachineRepositoryImpl"]
+        API -->|"update status\nmachine + session"| REPO["MachineRepositoryImpl"]
         REPO --> DB[(MongoDB\nmachine-db)]
     end
 
-    EMB -->|"POST /start-session\nPOST /end-session"| CTRL
-    DASH -->|"POST /set-maintenance\nGET /machines\nGET /{machineId}\nGET /history/{machineId}\nGET /machines/history/series"| CTRL
+    EMB -->|"POST /start-session\nPOST /end-session\n\n"| CTRL
+    DASH -->|"POST /set-maintenance\nGET /machines\nGET /{machineId}\nGET /machines/history/series"| CTRL
 ```
 
 ### 4.2.7 Analytics-service
@@ -239,12 +260,12 @@ flowchart TD
     subgraph analytics-service
         CTRL["AnalyticsRestControllerImpl"]
         CTRL --> API["AnalyticsServiceApiImpl"]
-        API -->|"salva evento +\ncalcola aggregati"| REPO["AnalyticsRepositoryImpl"]
+        API -->|"save event +\ncalcolate aggregates"| REPO["AnalyticsRepositoryImpl"]
         REPO --> DB[(MongoDB\nanalytics-db)]
     end
 
     EMB -->|"POST /events/ingest"| CTRL
-    DASH -->|"GET /attendance\nGET /attendance/series\nGET /gym-session-duration/{date}"| CTRL
+    DASH -->|"\nGET /gym-session-duration/{date}"| CTRL
 ```
 
 ### 4.2.8 Embedded-service
@@ -265,25 +286,14 @@ Here is a simplified flow of how the embedded service processes incoming MQTT me
 ```mermaid
 flowchart TD
     SIM["Go Simulator"] -->|"MQTT"| BROKER["Mosquitto Broker"]
+    BROKER -->|"MQTT"| EMB
+    DASH["Dashboard\n(via Gateway)"] -->|"GET /statuses"| EMB
 
-    subgraph embedded-service
-        MQTT["VertxMqttClientAdapter"]
-        MQTT --> ESAPI["EmbeddedServiceApiImpl"]
-        ESAPI -->|"HTTP"| TSP["TrackingServiceHttpAdapter"]
-        ESAPI -->|"HTTP"| ASP["AreaServiceHttpAdapter"]
-        ESAPI -->|"HTTP"| MSP["MachineServiceHttpAdapter"]
-        ESAPI -->|"HTTP"| ANP["AnalyticsServiceHttpAdapter"]
-        ESAPI -->|"salva evento"| REPO["EmbeddedRepositoryImpl"]
-        REPO --> DB[(MongoDB\nembedded-db)]
-        CTRL["EmbeddedRestControllerImpl"] -->|"getAllDeviceStatuses()"| ESAPI
-    end
-
-    BROKER -->|"MQTT"| MQTT
-    DASH["Dashboard\n(via Gateway)"] -->|"GET /statuses"| CTRL
-    TSP --> TRK[tracking-service]
-    ASP --> AREA[area-service]
-    MSP --> MACH[machine-service]
-    ANP --> ANA[analytics-service]
+    EMB["embedded-service"] -->|"HTTP"| TRK["tracking-service"]
+    EMB -->|"HTTP"| AREA["area-service"]
+    EMB -->|"HTTP"| MACH["machine-service"]
+    EMB -->|"HTTP"| ANA["analytics-service"]
+    EMB --> DB[(MongoDB\nembedded-db)]
 ```
 
 ## 4.3 Frontend Web Application
