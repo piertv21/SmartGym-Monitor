@@ -1,3 +1,29 @@
+## [3.2.2](https://github.com/piertv21/SmartGym-Monitor/compare/3.2.1...3.2.2) (2026-04-16)
+
+### Dependency updates
+
+- **deps:** update actions/setup-java action to v5 ([224b4ca](https://github.com/piertv21/SmartGym-Monitor/commit/224b4ca6f205430cd05a2bad986a39cd4241b98c))
+- **deps:** update alpine docker tag to v3.23 ([8e9aa84](https://github.com/piertv21/SmartGym-Monitor/commit/8e9aa84777024fa7267f69fdd258f672f04b9a20))
+- **deps:** update commitlint monorepo to v20.5.0 ([3e2804a](https://github.com/piertv21/SmartGym-Monitor/commit/3e2804a74515fd9957cc2b99638499de436412a6))
+- **deps:** update dependency com.diffplug.spotless to v7.2.1 ([32a2d33](https://github.com/piertv21/SmartGym-Monitor/commit/32a2d33f25ea564a04589024c21f734e308f376f))
+- **deps:** update dependency mermaid to v11.14.0 ([aefbaf7](https://github.com/piertv21/SmartGym-Monitor/commit/aefbaf74426e040856fde227b765c24227e89afd))
+- **deps:** update dependency ruff to ^0.15.0 ([4d73952](https://github.com/piertv21/SmartGym-Monitor/commit/4d73952ddf5dc000f761b8bbbf7cb69ebf267686))
+- **deps:** update gradle to v9.4.1 ([96ce629](https://github.com/piertv21/SmartGym-Monitor/commit/96ce6297717e2ae35dc6f5e242eb591dd84adff0))
+
+### Bug Fixes
+
+- update docs ([73c9e7b](https://github.com/piertv21/SmartGym-Monitor/commit/73c9e7b95258da5066a0d11c70a91c189f2bc09a))
+
+### Documentation
+
+- improve and update docs ([2514b1b](https://github.com/piertv21/SmartGym-Monitor/commit/2514b1bbc9c3c86e0805b4abee749791a75b0f6d))
+- latest fixes ([8301490](https://github.com/piertv21/SmartGym-Monitor/commit/8301490c44390d9809739c4a7a605d7859c9fab4))
+- refactor docs schema ([6b764cc](https://github.com/piertv21/SmartGym-Monitor/commit/6b764cc3d3bfb7ee821750a5bedf4593a71b27e6))
+
+### Build and continuous integration
+
+- excluded doc files from build-and-test ([425394d](https://github.com/piertv21/SmartGym-Monitor/commit/425394dfebcff1829ecbc2cd24d6ca3492f9d65b))
+
 ## [3.2.1](https://github.com/piertv21/SmartGym-Monitor/compare/3.2.0...3.2.1) (2026-04-14)
 
 ### Dependency updates
