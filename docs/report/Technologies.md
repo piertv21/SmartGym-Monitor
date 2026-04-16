@@ -38,6 +38,12 @@ Eureka is the service registry used by `service-discovery` and consumed by the o
 JWT tokens are issued by `auth-service` and validated by the gateway.
 The implementation uses the `jjwt` libraries and a shared secret configured through environment variables.
 
+### 5.1.8 Vert.x
+
+[Vert.x](https://vertx.io/) is used alongside Spring Boot in specific services.
+The `embedded-service` relies on the Vert.x MQTT client to connect to the Mosquitto broker, subscribe to device topics, and publish commands.
+Vert.x was chosen for this role because of its lightweight, non-blocking approach to MQTT communication.
+
 ## 5.2 Data Stores and Messaging
 
 ### 5.2.1 MongoDB
@@ -106,7 +112,7 @@ Docker is used to containerize each component, while Docker Compose orchestrates
 
 ### 5.6.5 VitePress and Mermaid
 
-The documentation site is built with VitePress, and Mermaid is used for diagrams.
+The documentation site is built with [VitePress](https://vitepress.dev/), and [Mermaid](https://mermaid.js.org/) is used for diagrams.
 
 ### 5.6.6 GitHub Actions
 
@@ -118,6 +124,6 @@ GitHub Actions implements the CI, documentation deployment, release, and commit 
 - **Commitlint** validates Conventional Commits.
 - **Renovate** automates dependency update pull requests.
 
-### 5.6.8 semantic-release
+### 5.6.8 Semantic release
 
 Semantic Release handles automated releases from the main branch.

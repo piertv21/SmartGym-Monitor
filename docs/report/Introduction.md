@@ -36,7 +36,7 @@ This document presents the domain analysis and design of the SmartGym Monitor sy
 
 ## System Overview
 
-Below is the system dashboard, which provides an overview of the operational status.
+Below is the system dashboard from the frontend component of the project, which is the main interface for administrative users and provides an overview of the operational status.
 
 <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
     <img src="/resources/screen.png" alt="Demo" style="max-width: 100%; height: auto;">

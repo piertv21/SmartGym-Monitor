@@ -258,7 +258,7 @@ In addition, it exposes a single REST endpoint:
 | ----------- | ---- | ---------------------------------------------------- |
 | `/statuses` | GET  | Returns the current status of all simulated devices. |
 
-<p align="center"><em>Table 3.14b: Embedded service endpoints</em></p>
+<p align="center"><em>Table 3.15: Embedded service endpoints</em></p>
 
 ### 3.4.8 Frontend Flask Application
 
@@ -283,7 +283,7 @@ Its main routes are:
 | `/api/history/filters`     | GET  | Returns available filter options (areas and machines) for history. |
 | `/api/history`             | GET  | Returns historical attendance and machine usage data.              |
 
-<p align="center"><em>Table 3.15: Frontend Flask routes</em></p>
+<p align="center"><em>Table 3.16: Frontend Flask routes</em></p>
 
 ## 3.5 Architectural Notes
 

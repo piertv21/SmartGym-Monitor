@@ -96,7 +96,7 @@ This prevents inconsistent commit history and improves maintainability.
 
 **GitHub Actions** orchestrates the automation pipeline of the project through four workflows: CI validation, commit validation, documentation deployment, and release automation. The following subsections describe each workflow and its role in the overall quality gate.
 
-### 6.4.1 Continuous Integration Workflow (`build-and-test.yml`)
+### 6.4.1 Continuous Integration Workflow
 
 The CI workflow runs on Pull Requests targeting `main` and can also be launched manually (`workflow_dispatch`).
 
@@ -110,22 +110,22 @@ The workflow also uploads execution artifacts to support debugging:
 
 This structure ensures that every change is validated against the existing test suite, preventing regressions and maintaining code quality before merging into `main`.
 
-### 6.4.2 Commit Validation Workflow (`validate-commits.yml`)
+### 6.4.2 Commit Validation Workflow
 
 The commit validation workflow runs on Pull Requests to `main`.
 
 This workflow guarantees that release automation receives a clean and machine-readable commit history, which is required for semantic versioning decisions.
 
-### 6.4.3 Documentation Deployment Workflow (`deploy-report-site.yml`)
+### 6.4.3 Documentation Deployment Workflow
 
 The documentation deployment workflow runs when:
 
 - a push reaches `main`, and
 - at least one file under `docs/**` changed.
 
-It's used to automatically deploy the latest version of the documentation site, based on [VitePress](https://vitepress.dev/), to GitHub Pages, ensuring that the public report is always up to date with the latest approved changes in the `main` branch.
+It's used to automatically deploy the latest version of the documentation site, based on VitePress, to GitHub Pages, ensuring that the public report is always up to date with the latest approved changes in the `main` branch.
 
-### 6.4.4 Automated Release Workflow (`release.yml`)
+### 6.4.4 Automated Release Workflow
 
 The release workflow is triggered automatically on every push to `main`.
 It executes `semantic-release`, which analyzes commit messages to determine the next version number, generate the changelog, and publish the release.

@@ -31,7 +31,7 @@ flowchart LR
     Gateway --> Embedded
 ```
 
-<p align="center"><em>Listing 4.1: High-level architecture flow represented in Mermaid</em></p>
+<p align="center"><em>Figure 4.1: High-level architecture flow</em></p>
 
 ## 4.2 Backend Microservices
 
@@ -64,6 +64,8 @@ flowchart LR
 
     GW -.->|resolve service addresses| SD
 ```
+
+<p align="center"><em>Figure 4.2: Service discovery and registration</em></p>
 
 ### 4.2.2 Gateway
 
@@ -100,20 +102,12 @@ flowchart TD
 
     subgraph Services["Backend microservices"]
         direction LR
-
-        subgraph Left[" "]
-            direction TB
-            AUTH["auth-service"]
-            TRK["tracking-service"]
-        end
-
-        subgraph Right[" "]
-            direction TB
-            AREA["area-service"]
-            MACH["machine-service"]
-            ANA["analytics-service"]
-            EMB["embedded-service"]
-        end
+        AUTH["auth-service"]
+        TRK["tracking-service"]
+        AREA["area-service"]
+        MACH["machine-service"]
+        ANA["analytics-service"]
+        EMB["embedded-service"]
     end
 
     ROUTE -->|"/auth-service/**"| AUTH
@@ -123,6 +117,8 @@ flowchart TD
     ROUTE -->|"/analytics-service/**"| ANA
     ROUTE -->|"/embedded-service/**"| EMB
 ```
+
+<p align="center"><em>Figure 4.3: Gateway request processing flow</em></p>
 
 ### 4.2.3 Auth-service
 
@@ -143,14 +139,16 @@ flowchart TD
     subgraph auth-service\n\n\n
         CTRL["AuthRestControllerImpl"]
         CTRL --> API["AuthServiceApiImpl"]
-        API -->|"Verify Credentials\n"| REPO["AuthRepositoryImpl"]
+        API --> REPO["AuthRepositoryImpl"]
 
-        API -->|"Generate / validate Access Token\n" | JWT["JwtTokenService"]
+        API --> JWT["JwtTokenService"]
         REPO --> DB[(MongoDB\nauth-db)]
     end
 
-    GW -->|"POST /login\nPOST /register\nGET /login/{username}\nPOST /logout     \n\n "| CTRL
+    GW --> CTRL
 ```
+
+<p align="center"><em>Figure 4.4: Auth-service internal structure</em></p>
 
 ### 4.2.4 Tracking-service
 
@@ -166,20 +164,21 @@ Main endpoints:
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(TrackingServiceHttpAdapter)"]
-    DASH["Dashboard\n(via Gateway)"]
+    EMB["embedded-service"]
+    DASH["Dashboard"]
 
     subgraph tracking-service
         CTRL["TrackingRestControllerImpl"]
         CTRL --> API["TrackingServiceApiImpl"]
-        API -->|"create / close sessions"| REPO["TrackingRepositoryImpl"]
+        API --> REPO["TrackingRepositoryImpl"]
         REPO --> DB[(MongoDB\ntracking-db)]
     end
 
-    EMB -->|"POST /start-session\n(ENTRY)\n\n"| CTRL
-    EMB -->|"POST /end-session\n(EXIT)\n\n"| CTRL
-    DASH -->|"GET /count\n GET      /active-sessions \n\n"| CTRL
+    EMB --> CTRL
+    DASH --> CTRL
 ```
+
+<p align="center"><em>Figure 4.5: Tracking-service internal structure</em></p>
 
 ### 4.2.5 Area-service
 
@@ -194,19 +193,21 @@ Main endpoints:
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(AreaServiceHttpAdapter)"]
-    DASH["Dashboard\n(via Gateway)"]
+    EMB["embedded-service"]
+    DASH["Dashboard"]
 
     subgraph area-service
         CTRL["AreaRestControllerImpl"]
         CTRL --> API["AreaServiceApiImpl"]
-        API -->|"increment/ decrement\ncurrentCount"| REPO["AreaRepositoryImpl"]
+        API --> REPO["AreaRepositoryImpl"]
         REPO --> DB[(MongoDB\narea-db)]
     end
 
-    EMB -->|"POST /access (IN)\nPOST /exit (OUT)\n\n"    | CTRL
-    DASH -->|"GET /{areaId}\nPUT /capacity"\n\n| CTRL
+    EMB --> CTRL
+    DASH --> CTRL
 ```
+
+<p align="center"><em>Figure 4.6: Area-service internal structure</em></p>
 
 ### 4.2.6 Machine-service
 
@@ -226,19 +227,21 @@ Main endpoints:
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(MachineServiceHttpAdapter)"]
-    DASH["Dashboard\n(via Gateway)"]
+    EMB["embedded-service"]
+    DASH["Dashboard"]
 
     subgraph machine-service
         CTRL["MachineRestControllerImpl"]
         CTRL --> API["MachineServiceApiImpl"]
-        API -->|"update status\nmachine + session"| REPO["MachineRepositoryImpl"]
+        API --> REPO["MachineRepositoryImpl"]
         REPO --> DB[(MongoDB\nmachine-db)]
     end
 
-    EMB -->|"POST /start-session\nPOST /end-session\n\n"| CTRL
-    DASH -->|"POST /set-maintenance\nGET /machines\nGET /{machineId}\nGET /machines/history/series"| CTRL
+    EMB --> CTRL
+    DASH --> CTRL
 ```
+
+<p align="center"><em>Figure 4.7: Machine-service internal structure</em></p>
 
 ### 4.2.7 Analytics-service
 
@@ -254,19 +257,21 @@ Main endpoints:
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(AnalyticsServiceHttpAdapter)"]
-    DASH["Dashboard\n(via Gateway)"]
+    EMB["embedded-service"]
+    DASH["Dashboard"]
 
     subgraph analytics-service
         CTRL["AnalyticsRestControllerImpl"]
         CTRL --> API["AnalyticsServiceApiImpl"]
-        API -->|"save event +\ncalcolate aggregates"| REPO["AnalyticsRepositoryImpl"]
+        API --> REPO["AnalyticsRepositoryImpl"]
         REPO --> DB[(MongoDB\nanalytics-db)]
     end
 
-    EMB -->|"POST /events/ingest"| CTRL
-    DASH -->|"\nGET /gym-session-duration/{date}"| CTRL
+    EMB --> CTRL
+    DASH --> CTRL
 ```
+
+<p align="center"><em>Figure 4.8: Analytics-service internal structure</em></p>
 
 ### 4.2.8 Embedded-service
 
@@ -295,6 +300,8 @@ flowchart TD
     EMB -->|"HTTP"| ANA["analytics-service"]
     EMB --> DB[(MongoDB\nembedded-db)]
 ```
+
+<p align="center"><em>Figure 4.9: Embedded-service message processing flow</em></p>
 
 ## 4.3 Frontend Web Application
 
@@ -338,6 +345,8 @@ flowchart TD
     ARS -->|"/area-service/*"| GW
     TS -->|"/tracking-service/*"| GW
 ```
+
+<p align="center"><em>Figure 4.10: Frontend Flask application structure</em></p>
 
 ## 4.4 Simulator and Event Generation
 

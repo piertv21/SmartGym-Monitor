@@ -85,7 +85,7 @@ This section lists all system requirements, divided into functional and non-func
 1. The system must allow users to access the gym via a turnstile at the entrance of the gym, which reads their badge and grants access.
 2. The system must allow users to access different areas of the gym via badge readers
 3. The system must allow users to use machines if they are free
-4. The system must detect when a machine is occupied or free or in manteinance
+4. The system must detect when a machine is occupied or free or in maintenance
 5. The system must allow administrators to view the occupancy status of machines in real time and the machine usage history
 6. The system must correctly manage user and machine access data, ensuring data consistency and integrity
 
@@ -211,14 +211,14 @@ core domain. In following section the are the main entities of the core domain.
 
 <p align="center"><em>Table 2.6: Core domain entities</em></p>
 
-| Value Object        | Attributes                    | Role |
-| ------------------- | ----------------------------- | ---- |
-| **OccupancyStatus** | Free / Occupied / Maintenance |      |
-| **TimeInterval**    | startTime, endTime            |      |
-| **Capacity**        | maxPeople                     |      |
-| **GymCount**        | currentCount                  |      |
-| **AreaCount**       | currentCount                  |      |
-| **BadgeId**         | string/uuid                   |      |
+| Value Object        | Attributes                    |
+| ------------------- | ----------------------------- |
+| **OccupancyStatus** | Free / Occupied / Maintenance |
+| **TimeInterval**    | startTime, endTime            |
+| **Capacity**        | maxPeople                     |
+| **GymCount**        | currentCount                  |
+| **AreaCount**       | currentCount                  |
+| **BadgeId**         | string/uuid                   |
 
 <p align="center"><em>Table 2.7: Core domain value objects</em></p>
 
