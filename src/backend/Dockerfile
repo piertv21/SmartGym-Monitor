@@ -1,7 +1,7 @@
 # -----------------------------
 # BUILD
 # -----------------------------
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:21.0.10_7-jdk AS build
 WORKDIR /app
 ARG SERVICE
 
@@ -29,7 +29,7 @@ RUN ./gradlew --no-daemon :${SERVICE}:bootJar -x test
 # -----------------------------
 # RUNTIME
 # -----------------------------
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21.0.10_7-jre
 WORKDIR /app
 ARG SERVICE
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
