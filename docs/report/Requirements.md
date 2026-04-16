@@ -52,11 +52,11 @@ diagrams, and source code.
 | Area count                 | The number of people currently present in a gym area, including both people who are using machines and people waiting.      | Area Management            |
 | Gym count                  | The number of people currently present in the gym.                                                                          | Tracking Service           |
 | Turnstile                  | An element that allows access to the gym/a gym area if a badge is read correctly, is positioned at the entrance of the gym. | Embedded                   |
-| RFID reader                | A reader detecting user entry and exit, by using RFID.                                                                      | Embedded                   |
+| Reader                     | A reader detecting user entry and exit, by using RFID.                                                                      | Embedded                   |
 | Door                       | An opening that allows passage from one area of the gym to another.                                                         | Embedded                   |
 | Access Area Direction      | The value that describes the direction of access between areas. It can be _IN_ or _OUT_.                                    | Embedded / Area Management |
 | Machine                    | A gym equipment unit that can be used by a user.                                                                            | Machine Management         |
-| Proximity sensor           | A sensor that detects whether the machine is being used by a user.                                                          | Machine Management         |
+| Sensor                     | A sensor that detects whether the machine is being used by a user.                                                          | Machine Management         |
 | Occupancy                  | The current status of a machine, which can be _Free_, _Occupied_, or _Maintenance_.                                         | Machine Management         |
 | Gym Attendance             | Historic attendance of people at the gym.                                                                                   | Analytics Service          |
 | Gym Member                 | A gym member accessing gym areas.                                                                                           | Area Management            |
@@ -82,13 +82,12 @@ This section lists all system requirements, divided into functional and non-func
 - Make requirements clear and testable
 -->
 
-1. The system must allow users to access the gym via a turnstile at the entrance of the gym, which reads their badge and grants or denies access accordingly
-2. The system must allow users to access different areas of the gym via RFID badge readers
-3. The door must allow users to enter a gym area
-4. The system must allow users to use machines if they are free
-5. The system must detect when a machine is occupied or free
-6. The system must allow administrators to view the occupancy status of machines in real time and the machine usage history
-7. The system must correctly manage user and machine access data, ensuring data consistency and integrity
+1. The system must allow users to access the gym via a turnstile at the entrance of the gym, which reads their badge and grants access.
+2. The system must allow users to access different areas of the gym via badge readers
+3. The system must allow users to use machines if they are free
+4. The system must detect when a machine is occupied or free or in maintenance
+5. The system must allow administrators to view the occupancy status of machines in real time and the machine usage history
+6. The system must correctly manage user and machine access data, ensuring data consistency and integrity
 
 ### 2.4.2 Non-Functional Requirements
 
@@ -129,6 +128,7 @@ In the following tables the description of each use case related to Administrato
 | Access Gym      | Allows the gym member to enter the gym through the turnstile using their badge. This action automatically starts a new Gym Session. |
 | Exit Gym        | Allows the gym member to leave the gym. This action automatically ends the current Gym Session.                                     |
 | Access Gym Area | Allows the gym member to enter a specific gym area using badge authentication.                                                      |
+| Exit Gym Area   | Allows the gym member to exit a specific gym area using badge authentication.                                                       |
 | Use Machine     | Allows the gym member to use a machine if it is available. The system detects and records the machine session automatically.        |
 
 <p align="center"><em>Table 2.3: Gym Member use case descriptions</em></p>
@@ -141,7 +141,7 @@ isolate user stories in order to better achieve acceptance criteria.
 | ID    | User Story                                                                                                                  | Related FR |
 | ----- | --------------------------------------------------------------------------------------------------------------------------- | ---------- |
 | US-01 | As a **Gym Member**, I want to enter the gym with my badge, so that my presence is tracked automatically.                   | FR-1       |
-| US-02 | As a **Gym Member**, I want to access a gym area with RFID validation, so that area occupancy is updated in real time.      | FR-2, FR-3 |
+| US-02 | As a **Gym Member**, I want to access a gym area, so that area occupancy is updated in real time.                           | FR-2, FR-3 |
 | US-03 | As a **Gym Member**, I want machine usage to be detected automatically, so that sessions are recorded without manual input. | FR-4, FR-5 |
 | US-04 | As an **Administrator**, I want to monitor machine occupancy and history, so that I can analyze usage trends.               | FR-6       |
 
@@ -149,15 +149,15 @@ isolate user stories in order to better achieve acceptance criteria.
 
 ## 2.7 Quality Attributes Scenarios
 
-| Quality Attribute  | Stimulus                                               | Environment                                              | Artifact                                                        | Response                                                                            | Response Measure                                                        |
-| ------------------ | ------------------------------------------------------ | -------------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| **Performance**    | A gym member enters an area or starts using a machine. | Normal operating conditions with multiple users present. | Area Management and Machine Management services.                | The system updates occupancy status and propagates the change to the dashboard.     | Updated data visible within **2 seconds**.                              |
-| **Scalability**    | Increase in number of users and machines.              | Peak hours with high concurrent usage.                   | Backend microservices and database.                             | The system handles increased load without degradation.                              | Response time ≤ **3 seconds** under peak load; no data loss.            |
-| **Availability**   | A non-critical service failure occurs.                 | Production environment during operational hours.         | Embedded or Analytics service.                                  | The system continues operating and restores the failed component or notifies admin. | At least **99% uptime** during operational hours.                       |
-| **Reliability**    | A badge is scanned at the turnstile.                   | Normal network conditions.                               | Authentication and Area Management services.                    | The system validates the badge and records the access event correctly.              | No duplicated or missing events; guaranteed event persistence.          |
-| **Security**       | An administrator attempts to access the dashboard.     | Internal or external network access.                     | Authentication service and API Gateway.                         | The system requires valid credentials and enforces authorization.                   | Unauthorized access denied and logged; communication encrypted (HTTPS). |
-| **Modifiability**  | A new gym area or machine is added.                    | Maintenance phase.                                       | Configuration files and the `area-service` / `machine-service`. | The system allows configuration without changing core logic.                        | New elements configurable without code modification.                    |
-| **Data Integrity** | Concurrent machine occupancy events occur.             | High concurrent usage.                                   | Machine Management aggregate and database.                      | The system maintains consistent machine state transitions.                          | A machine cannot be both _Free_ and _Occupied_ simultaneously.          |
+| Quality Attribute  | Stimulus                                               | Environment                                              | Artifact                                                        | Response                                                                            | Response Measure                                               |
+| ------------------ | ------------------------------------------------------ | -------------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **Performance**    | A gym member enters an area or starts using a machine. | Normal operating conditions with multiple users present. | Area Management and Machine Management services.                | The system updates occupancy status and propagates the change to the dashboard.     | Updated data visible within **2 seconds**.                     |
+| **Scalability**    | Increase in number of users and machines.              | Peak hours with high concurrent usage.                   | Backend microservices and database.                             | The system handles increased load without degradation.                              | Response time ≤ **3 seconds** under peak load; no data loss.   |
+| **Availability**   | A non-critical service failure occurs.                 | Production environment during operational hours.         | Embedded or Analytics service.                                  | The system continues operating and restores the failed component or notifies admin. | At least **99% uptime** during operational hours.              |
+| **Reliability**    | A badge is scanned at the turnstile.                   | Normal network conditions.                               | Authentication and Area Management services.                    | The system validates the badge and records the access event correctly.              | No duplicated or missing events; guaranteed event persistence. |
+| **Security**       | An administrator attempts to access the dashboard.     | Internal or external network access.                     | Authentication service and API Gateway.                         | The system requires valid credentials and enforces authorization.                   | Unauthorized access denied and logged;                         |
+| **Modifiability**  | A new gym area or machine is added.                    | Maintenance phase.                                       | Configuration files and the `area-service` / `machine-service`. | The system allows configuration without changing core logic.                        | New elements configurable without code modification.           |
+| **Data Integrity** | Concurrent machine occupancy events occur.             | High concurrent usage.                                   | Machine Management aggregate and database.                      | The system maintains consistent machine state transitions.                          | A machine cannot be both _Free_ and _Occupied_ simultaneously. |
 
 <p align="center"><em>Table 2.5: Quality attribute scenarios</em></p>
 
@@ -177,12 +177,11 @@ how sessions are created and terminated, and how data becomes available for moni
 
 Users access the gym through the entrance turnstile, which reads their badge.
 From the moment the user enters the gym, a gym session is tracked, which begins with entry and ends with exit from the gym.
-Each time a user badge is scanned, it is logged, including the timestamp and, in the case of door access, the direction of travel.
-Once inside the gym, users can go to the changing Area to get ready.
+Each time a user badge is scanned, it is logged, including the timestamp and, in the case of door access, the direction of entrance.
 Every door in the facility, including the changing Area door, is equipped with an RFID reader that reads the user's badge to identify the Area they are entering.
 Inside the equipment area, users can use the machines. Each machine tracks its use by a user, so it can detect whether a person is using it and for how long, in practice, it tracks user sessions.
 There are also cardio and weight areas and an area for classes, where the machines detect their use by users in the same way as in the equipment area.
-When the user has finished their workout, they return to the changing Area to get changed, passing through the doors and finally exiting the gym through the turnstile.
+When the user has finished their workout finally exit the gym through the turnstile.
 
 ### 2.8.2 Administrator Storytelling
 
@@ -212,14 +211,14 @@ core domain. In following section the are the main entities of the core domain.
 
 <p align="center"><em>Table 2.6: Core domain entities</em></p>
 
-| Value Object        | Attributes                    | Role |
-| ------------------- | ----------------------------- | ---- |
-| **OccupancyStatus** | Free / Occupied / Maintenance |      |
-| **TimeInterval**    | startTime, endTime            |      |
-| **Capacity**        | maxPeople                     |      |
-| **GymCount**        | currentCount                  |      |
-| **AreaCount**       | currentCount                  |      |
-| **BadgeId**         | string/uuid                   |      |
+| Value Object        | Attributes                    |
+| ------------------- | ----------------------------- |
+| **OccupancyStatus** | Free / Occupied / Maintenance |
+| **TimeInterval**    | startTime, endTime            |
+| **Capacity**        | maxPeople                     |
+| **GymCount**        | currentCount                  |
+| **AreaCount**       | currentCount                  |
+| **BadgeId**         | string/uuid                   |
 
 <p align="center"><em>Table 2.7: Core domain value objects</em></p>
 
@@ -268,18 +267,41 @@ The SmartGym Monitor system is structured into **Core**, **Supporting**, and **G
 
 ## 2.11 Context Map
 
-The context map reflects a **hub-and-spoke** style integration centered on occupancy and session management.
+The context map reflects a **hub-and-spoke** style integration centered on the embedded service, which acts as the single event translator between simulated devices and backend microservices.
 
-- **Embedded → area-service / tracking-service / machine-service**: the embedded context acts as an event producer. It captures RFID scans, turnstile actions, and proximity changes, then forwards them to the backend via MQTT and HTTP adapters.
-- **area-service ↔ tracking-service**: the area context consumes gym access information and contributes to occupancy consistency. It depends on the tracking service for the lifecycle of gym sessions.
-- **machine-service ↔ tracking-service**: the machine context relies on session information to associate machine usage with a gym member and keep machine state synchronized with active sessions.
-- **analytics-service ← area-service / tracking-service / machine-service**: the analytics context is a read-oriented consumer. It aggregates historical data generated by operational services and exposes monitoring views for administrators.
-- **auth-service → gateway / dashboard**: the authentication context protects the administrative access path and issues JWT tokens consumed by the gateway and the Flask frontend.
+```mermaid
+flowchart TD
+    Simulator -->|MQTT| Broker[(Mosquitto)]
+    Broker --> Embedded[embedded-service]
+
+    Embedded -->|"ACL"| Tracking[tracking-service]
+    Embedded -->|"ACL"| Area[area-service]
+    Embedded -->|"ACL"| Machine[machine-service]
+    Embedded -->|"ACL"| Analytics[analytics-service]
+
+    Frontend[Flask frontend] -->|"HTTP + JWT"| Gateway[API Gateway]
+    Gateway -->|"Shared Kernel"| Auth[auth-service]
+    Gateway --> Tracking
+    Gateway --> Area
+    Gateway --> Machine
+    Gateway --> Analytics
+    Gateway --> Embedded
+```
+
+<p align="center"><em>Figure 2.3: SmartGym Monitor context map</em></p>
+
+The relationships between bounded contexts, as implemented in the system, are the following:
+
+- **Simulator → Embedded (via MQTT Broker)**: the Go simulator publishes device events (`gym-access`, `area-access`, `machine-usage`, `device-status`) to the MQTT broker. The embedded service subscribes to all topics under `smartgym/#` and consumes the messages.
+- **Embedded → Tracking Service / Area Service / Machine Service / Analytics Service (via HTTP)**: the embedded service acts as the single event translator. It receives raw MQTT messages, normalizes their payloads through an Anti-Corruption Layer, and forwards structured commands to the four backend services through dedicated HTTP adapters. There are no direct inter-service calls between the operational services themselves.
+- **Auth Service ↔ Gateway (Shared Kernel)**: the authentication service issues JWT tokens, and the gateway validates them using a shared secret and configuration (issuer, audience). Both contexts share the same JWT contract.
+- **Frontend → Gateway → All Services**: the Flask frontend reaches all backend services exclusively through the gateway. It sends HTTP requests with a Bearer JWT token; the gateway validates the token, injects the `X-User-Id` header, and routes the request to the appropriate service via Eureka service discovery.
 
 The main integration patterns are:
 
-- **Customer–Supplier** between embedded devices and operational services, because device events feed the core domain.
-- **Open Host Service** for shared access through REST endpoints and the API Gateway.
-- **Anti-Corruption Layer** in the embedded service, which translates low-level device messages into structured backend commands.
+- **Anti-Corruption Layer (ACL)** in the embedded service, which translates low-level MQTT device messages into structured domain commands understood by the backend services.
+- **Customer–Supplier** between the embedded service (upstream supplier) and the operational and analytics services (downstream customers), since device events feed the core domain logic.
+- **Open Host Service (OHS)** exposed by the API gateway, which provides a unified and public REST interface to all backend microservices.
+- **Shared Kernel** between the authentication service and the gateway, which share the JWT token contract (secret, issuer, audience) to ensure consistent token issuance and validation.
 
-This structure allows each bounded context to evolve independently while preserving a consistent system-wide model.
+This structure allows each bounded context to evolve independently. The operational services (`tracking-service`, `area-service`, `machine-service`) do not call each other directly, preserving full autonomy and reducing coupling.

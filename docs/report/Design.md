@@ -21,15 +21,20 @@ This section shows the main operations identified in the SmartGym Monitor system
 
 <p align="center"><em>Table 3.1: Main System Operations</em></p>
 
-| Query                          | Description                                                   |
-| ------------------------------ | ------------------------------------------------------------- |
-| `getGymCount()`                | Returns the total number of members currently inside the gym. |
-| `getAreaById(areaId)`          | Returns the occupancy status and capacity of a specific area. |
-| `getAllAreas()`                | Returns all configured gym areas.                             |
-| `getMachineStatus(machineId)`  | Returns the current state of a machine.                       |
-| `getMachineHistory(machineId)` | Returns historical usage sessions for a machine.              |
-| `getAttendanceStats(date)`     | Returns attendance statistics for a specific date.            |
-| `getMachineUtilization()`      | Returns aggregated machine usage metrics.                     |
+| Query                                                             | Description                                                   |
+| ----------------------------------------------------------------- | ------------------------------------------------------------- |
+| `getGymCount()`                                                   | Returns the total number of members currently inside the gym. |
+| `getActiveSessions()`                                             | Returns the list of currently active gym sessions.            |
+| `getAreaById(areaId)`                                             | Returns the occupancy status and capacity of a specific area. |
+| `getAllAreas()`                                                   | Returns all configured gym areas.                             |
+| `getMachineStatus(machineId)`                                     | Returns the current state of a machine.                       |
+| `getAllMachines()`                                                | Returns all configured machines.                              |
+| `getMachineHistory(machineId)`                                    | Returns historical usage sessions for a machine.              |
+| `getMachineUsageSeries(from, to, granularity, areaId, machineId)` | Returns machine usage time series with optional filters.      |
+| `getAllAttendanceStats()`                                         | Returns all attendance statistics.                            |
+| `getAttendanceSeries(from, to, granularity, areaId)`              | Returns attendance time series with optional filters.         |
+| `getGymSessionDurationByDate(date)`                               | Returns gym session duration statistics for a specific date.  |
+| `getAllDeviceStatuses()`                                          | Returns the current status of all simulated devices.          |
 
 <p align="center"><em>Table 3.2: Main System Queries</em></p>
 
@@ -128,14 +133,14 @@ The architecture also includes two supporting infrastructure services:
 
 This section identifies the main operations exposed by each microservice and the components they collaborate with.
 
-| Microservice        | Operations                                                                                                                                                   | Collaborators                                                              |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| `tracking-service`  | `startGymSession()`, `endGymSession()`, `getGymCount()`, `getActiveSessions()`                                                                               | `embedded-service`, `auth-service`                                         |
-| `area-service`      | `processAreaAccess()`, `processAreaExit()`, `getAreaById()`, `getAllAreas()`, `updateAreaCapacity()`                                                         | `embedded-service`, `tracking-service`                                     |
-| `machine-service`   | `createMachine()`, `updateMachine()`, `startMachineSession()`, `endMachineSession()`, `setMachineMaintenance()`, `getMachineStatus()`, `getMachineHistory()` | `embedded-service`, `tracking-service`, `area-service`                     |
-| `analytics-service` | `ingestEvent()`, `getAttendanceStats()`, `getAllAttendanceStats()`, `getMachineUtilization()`, `getPeakHours()`, `getAreaAttendance()`, `getAreaPeakHours()` | `tracking-service`, `area-service`, `machine-service`                      |
-| `auth-service`      | `handleLogin()`, `handleRegister()`, `handleVerifyUser()`, `handleLogout()`                                                                                  | `gateway`, `frontend`                                                      |
-| `embedded-service`  | MQTT event handling and HTTP forwarding                                                                                                                      | `tracking-service`, `area-service`, `machine-service`, `analytics-service` |
+| Microservice        | Operations                                                                                                                                                                                                  | Collaborators                                                              |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `tracking-service`  | `startGymSession()`, `endGymSession()`, `getGymCount()`, `getActiveSessions()`                                                                                                                              | `embedded-service`, `auth-service`                                         |
+| `area-service`      | `processAreaAccess()`, `processAreaExit()`, `getAreaById()`, `getAllAreas()`, `updateAreaCapacity()`                                                                                                        | `embedded-service`, `tracking-service`                                     |
+| `machine-service`   | `createMachine()`, `updateMachine()`, `startMachineSession()`, `endMachineSession()`, `setMachineMaintenance()`, `getAllMachines()`, `getMachineStatus()`, `getMachineHistory()`, `getMachineUsageSeries()` | `embedded-service`, `tracking-service`, `area-service`                     |
+| `analytics-service` | `ingestEvent()`, `getAllAttendanceStats()`, `getAttendanceSeries()`, `getGymSessionDurationByDate()`                                                                                                        | `tracking-service`, `area-service`, `machine-service`                      |
+| `auth-service`      | `handleLogin()`, `handleRegister()`, `handleVerifyUser()`, `handleLogout()`                                                                                                                                 | `gateway`, `frontend`                                                      |
+| `embedded-service`  | MQTT event handling, HTTP forwarding, `getAllDeviceStatuses()`                                                                                                                                              | `tracking-service`, `area-service`, `machine-service`, `analytics-service` |
 
 <p align="center"><em>Table 3.9: Microservice operations and collaborators</em></p>
 
@@ -208,15 +213,17 @@ The area service exposes the following controller paths:
 
 The machine service exposes the following controller paths:
 
-| Endpoint                | Type | Description                                                 |
-| ----------------------- | ---- | ----------------------------------------------------------- |
-| `/machines`             | POST | Creates a new machine.                                      |
-| `/machines/{machineId}` | PUT  | Updates machine metadata.                                   |
-| `/start-session`        | POST | Starts a machine session and marks the machine as occupied. |
-| `/end-session`          | POST | Ends the active machine session and frees the machine.      |
-| `/set-maintenance`      | POST | Sets the machine status to maintenance.                     |
-| `/{machineId}`          | GET  | Returns the current state of a machine.                     |
-| `/history/{machineId}`  | GET  | Returns the historical usage sessions of a machine.         |
+| Endpoint                   | Type | Description                                                 |
+| -------------------------- | ---- | ----------------------------------------------------------- |
+| `/machines`                | POST | Creates a new machine.                                      |
+| `/machines/{machineId}`    | PUT  | Updates machine metadata.                                   |
+| `/start-session`           | POST | Starts a machine session and marks the machine as occupied. |
+| `/end-session`             | POST | Ends the active machine session and frees the machine.      |
+| `/set-maintenance`         | POST | Sets the machine status to maintenance.                     |
+| `/machines`                | GET  | Returns all configured machines.                            |
+| `/{machineId}`             | GET  | Returns the current state of a machine.                     |
+| `/history/{machineId}`     | GET  | Returns the historical usage sessions of a machine.         |
+| `/machines/history/series` | GET  | Returns machine usage time series with optional filters.    |
 
 <p align="center"><em>Table 3.13: Machine service endpoints</em></p>
 
@@ -224,27 +231,18 @@ The machine service exposes the following controller paths:
 
 The analytics service exposes the following controller paths:
 
-| Endpoint                           | Type | Description                                                   |
-| ---------------------------------- | ---- | ------------------------------------------------------------- |
-| `/events/ingest`                   | POST | Ingests a domain event into the analytics pipeline.           |
-| `/attendance/{date}`               | GET  | Returns attendance statistics for a specific date.            |
-| `/attendance`                      | GET  | Returns all attendance statistics.                            |
-| `/machine-utilization`             | GET  | Returns aggregated machine utilization statistics.            |
-| `/machine-utilization/{date}`      | GET  | Returns machine utilization for a specific date.              |
-| `/peak-hours`                      | GET  | Returns peak attendance periods.                              |
-| `/peak-hours/{date}`               | GET  | Returns peak attendance periods for a specific date.          |
-| `/area-attendance`                 | GET  | Returns aggregated area attendance statistics.                |
-| `/area-attendance/{date}`          | GET  | Returns area attendance for a specific date.                  |
-| `/area-attendance/{date}/{areaId}` | GET  | Returns area attendance for a specific date and area.         |
-| `/area-peak-hours`                 | GET  | Returns peak attendance periods per area.                     |
-| `/area-peak-hours/{date}`          | GET  | Returns peak attendance periods per area for a specific date. |
-| `/area-peak-hours/{date}/{areaId}` | GET  | Returns peak attendance periods for a specific date and area. |
+| Endpoint                       | Type | Description                                                  |
+| ------------------------------ | ---- | ------------------------------------------------------------ |
+| `/events/ingest`               | POST | Ingests a domain event into the analytics pipeline.          |
+| `/attendance`                  | GET  | Returns all attendance statistics.                           |
+| `/attendance/series`           | GET  | Returns attendance time series with optional filters.        |
+| `/gym-session-duration/{date}` | GET  | Returns gym session duration statistics for a specific date. |
 
 <p align="center"><em>Table 3.14: Analytics service endpoints</em></p>
 
 ### 3.4.7 Embedded Service and MQTT Topics
 
-The embedded layer is driven by MQTT rather than by business REST endpoints.
+The embedded layer is primarily driven by MQTT rather than by business REST endpoints.
 The Go simulator publishes events to the broker using the following topics:
 
 - `smartgym/gym-access`
@@ -254,21 +252,38 @@ The Go simulator publishes events to the broker using the following topics:
 
 The embedded service consumes these messages, normalizes their payloads, and forwards the resulting commands to the backend services through HTTP adapters.
 
+In addition, it exposes a single REST endpoint:
+
+| Endpoint    | Type | Description                                          |
+| ----------- | ---- | ---------------------------------------------------- |
+| `/statuses` | GET  | Returns the current status of all simulated devices. |
+
+<p align="center"><em>Table 3.15: Embedded service endpoints</em></p>
+
 ### 3.4.8 Frontend Flask Application
 
 The frontend is a lightweight Flask application used as the administrative entry point.
 Its main routes are:
 
-| Endpoint      | Type | Description                                                        |
-| ------------- | ---- | ------------------------------------------------------------------ |
-| `/`           | GET  | Redirects to the dashboard or login page depending on the session. |
-| `/login`      | GET  | Renders the login form.                                            |
-| `/login`      | POST | Authenticates the administrator via `auth-service`.                |
-| `/logout`     | GET  | Clears the session and notifies the auth service.                  |
-| `/dashboard`  | GET  | Displays the user dashboard and service connectivity summary.      |
-| `/api/health` | GET  | Returns a simple health response for deployment checks.            |
+| Endpoint                   | Type | Description                                                        |
+| -------------------------- | ---- | ------------------------------------------------------------------ |
+| `/`                        | GET  | Redirects to the dashboard or login page depending on the session. |
+| `/login`                   | GET  | Renders the login form.                                            |
+| `/login`                   | POST | Authenticates the administrator via `auth-service`.                |
+| `/logout`                  | GET  | Clears the session and notifies the auth service.                  |
+| `/dashboard`               | GET  | Displays the user dashboard and service connectivity summary.      |
+| `/live`                    | GET  | Renders the live monitor page for real-time area occupancy.        |
+| `/history`                 | GET  | Renders the history page for historical data exploration.          |
+| `/api/health`              | GET  | Returns a simple health response for deployment checks.            |
+| `/api/statuses`            | GET  | Returns device statuses from the embedded-service.                 |
+| `/api/analytics/dashboard` | GET  | Returns dashboard analytics (attendance and session duration).     |
+| `/api/machines`            | GET  | Returns all machines from the machine-service.                     |
+| `/api/live-monitor`        | GET  | Returns live area and machine occupancy data.                      |
+| `/api/maintenance/toggle`  | POST | Toggles machine maintenance status.                                |
+| `/api/history/filters`     | GET  | Returns available filter options (areas and machines) for history. |
+| `/api/history`             | GET  | Returns historical attendance and machine usage data.              |
 
-<p align="center"><em>Table 3.15: Frontend Flask routes</em></p>
+<p align="center"><em>Table 3.16: Frontend Flask routes</em></p>
 
 ## 3.5 Architectural Notes
 

@@ -16,22 +16,22 @@ Operational data is persisted in MongoDB, while the embedded layer converts devi
 
 ```mermaid
 flowchart LR
-	Sim[Go Simulator] -->|MQTT| Mosquitto[(Mosquitto Broker)]
-	Mosquitto --> Embedded[embedded-service]
-	Embedded --> Tracking[tracking-service]
-	Embedded --> Area[area-service]
-	Embedded --> Machine[machine-service]
-	Embedded --> Analytics[analytics-service]
-	Frontend[Flask frontend] --> Gateway[API Gateway]
-	Gateway --> Auth[auth-service]
-	Gateway --> Tracking
-	Gateway --> Area
-	Gateway --> Machine
-	Gateway --> Analytics
-	Gateway --> Embedded
+    Sim[Go Simulator] -->|MQTT| Mosquitto[(Mosquitto Broker)]
+    Mosquitto --> Embedded[embedded-service]
+    Embedded --> Tracking[tracking-service]
+    Embedded --> Area[area-service]
+    Embedded --> Machine[machine-service]
+    Embedded --> Analytics[analytics-service]
+    Frontend[Flask frontend] --> Gateway[API Gateway]
+    Gateway --> Auth[auth-service]
+    Gateway --> Tracking
+    Gateway --> Area
+    Gateway --> Machine
+    Gateway --> Analytics
+    Gateway --> Embedded
 ```
 
-<p align="center"><em>Listing 4.1: High-level architecture flow represented in Mermaid</em></p>
+<p align="center"><em>Figure 4.1: High-level architecture flow</em></p>
 
 ## 4.2 Backend Microservices
 
@@ -65,6 +65,8 @@ flowchart LR
     GW -.->|resolve service addresses| SD
 ```
 
+<p align="center"><em>Figure 4.2: Service discovery and registration</em></p>
+
 ### 4.2.2 Gateway
 
 The gateway runs on port `8080` and exposes the main entry point for backend requests.
@@ -82,24 +84,41 @@ The configured routes expose the services under these prefixes:
 Following there is a simplified flow of how the gateway processes incoming requests, including authentication and routing logic.
 
 ```mermaid
-flowchart LR
-    Client["Flask Frontend"] -->|"HTTP + Bearer JWT"| EAF["ExternalAuthFilter"]
+flowchart TD
+    Client["Flask Frontend"] -->|"HTTP request"| EAF["ExternalAuthFilter"]
 
-    subgraph Gateway
-        EAF -->|"Extract token"| JVS["JwtValidationService"]
-        JVS -->|"Valid userId"| ROUTE["Spring Cloud Route Matching"]
-        JVS -->|"Invalid token"| REJECT["401 Unauthorized"]
+    subgraph Gateway["API Gateway"]
+        EAF --> PUB{"Public endpoint?"}
+        PUB -->|"Yes: /login, /register, /actuator"| ROUTE["Spring Cloud Route Matching"]
+        PUB -->|"No"| AUTHH{"Bearer token present?"}
+
+        AUTHH -->|"No"| REJECT["401 Unauthorized"]
+        AUTHH -->|"Yes"| JVS["JwtValidationService"]
+
+        JVS -->|"JWT invalid / expired"| REJECT
+        JVS -->|"JWT valid"| USER["Add X-User-Id header"]
+        USER --> ROUTE
     end
 
-    ROUTE -->|"/auth-service/**"| AUTH[auth-service]
-    ROUTE -->|"/tracking-service/**"| TRK[tracking-service]
-    ROUTE -->|"/area-service/**"| AREA[area-service]
-    ROUTE -->|"/machine-service/**"| MACH[machine-service]
-    ROUTE -->|"/analytics-service/**"| ANA[analytics-service]
-    ROUTE -->|"/embedded-service/**"| EMB[embedded-service]
+    subgraph Services["Backend microservices"]
+        direction LR
+        AUTH["auth-service"]
+        TRK["tracking-service"]
+        AREA["area-service"]
+        MACH["machine-service"]
+        ANA["analytics-service"]
+        EMB["embedded-service"]
+    end
 
-    EAF -.->|"Public paths"| ROUTE
+    ROUTE -->|"/auth-service/**"| AUTH
+    ROUTE -->|"/tracking-service/**"| TRK
+    ROUTE -->|"/area-service/**"| AREA
+    ROUTE -->|"/machine-service/**"| MACH
+    ROUTE -->|"/analytics-service/**"| ANA
+    ROUTE -->|"/embedded-service/**"| EMB
 ```
+
+<p align="center"><em>Figure 4.3: Gateway request processing flow</em></p>
 
 ### 4.2.3 Auth-service
 
@@ -115,18 +134,21 @@ Main endpoints:
 
 ```mermaid
 flowchart TD
-    GW[API Gateway] -->|"POST /login\nPOST /register\nGET /login/username\nPOST /logout"| CTRL["AuthRestControllerImpl"]
+    GW[API Gateway]
 
-    subgraph auth-service
+    subgraph auth-service\n\n\n
+        CTRL["AuthRestControllerImpl"]
         CTRL --> API["AuthServiceApiImpl"]
-        API -->|"verifica credenziali\n(BCrypt)"| REPO["AuthRepositoryImpl"]
-        API -->|"genera / valida\naccess token"| JWT["JwtTokenService"]
+        API --> REPO["AuthRepositoryImpl"]
+
+        API --> JWT["JwtTokenService"]
         REPO --> DB[(MongoDB\nauth-db)]
     end
 
-    API -->|"accessToken"| CTRL
-    CTRL -->|"risposta JSON"| GW
+    GW --> CTRL
 ```
+
+<p align="center"><em>Figure 4.4: Auth-service internal structure</em></p>
 
 ### 4.2.4 Tracking-service
 
@@ -142,18 +164,21 @@ Main endpoints:
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(TrackingServiceHttpAdapter)"] -->|"POST /start-session\n(ENTRY)"| CTRL["TrackingRestControllerImpl"]
-    EMB -->|"POST /end-session\n(EXIT)"| CTRL
+    EMB["embedded-service"]
+    DASH["Dashboard"]
 
     subgraph tracking-service
+        CTRL["TrackingRestControllerImpl"]
         CTRL --> API["TrackingServiceApiImpl"]
-        API -->|"crea / chiudi sessione"| REPO["TrackingRepositoryImpl"]
+        API --> REPO["TrackingRepositoryImpl"]
         REPO --> DB[(MongoDB\ntracking-db)]
     end
 
-    DASH["Dashboard\n(via Gateway)"] -->|"GET /count\nGET /active-sessions"| CTRL
-    API -->|"conteggio presenze"| CTRL
+    EMB --> CTRL
+    DASH --> CTRL
 ```
+
+<p align="center"><em>Figure 4.5: Tracking-service internal structure</em></p>
 
 ### 4.2.5 Area-service
 
@@ -165,22 +190,24 @@ Main endpoints:
 - `POST /access`
 - `POST /exit`
 - `GET /{areaId}`
-- `GET /`
-- `PUT /capacity`
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(AreaServiceHttpAdapter)"] -->|"POST /access (IN)\nPOST /exit (OUT)"| CTRL["AreaRestControllerImpl"]
+    EMB["embedded-service"]
+    DASH["Dashboard"]
 
     subgraph area-service
+        CTRL["AreaRestControllerImpl"]
         CTRL --> API["AreaServiceApiImpl"]
-        API -->|"incrementa / decrementa\ncurrentCount"| REPO["AreaRepositoryImpl"]
+        API --> REPO["AreaRepositoryImpl"]
         REPO --> DB[(MongoDB\narea-db)]
     end
 
-    DASH["Dashboard\n(via Gateway)"] -->|"GET /\nGET /areaId\nPUT /capacity"| CTRL
-    API -->|"lista aree +\noccupazione"| CTRL
+    EMB --> CTRL
+    DASH --> CTRL
 ```
+
+<p align="center"><em>Figure 4.6: Area-service internal structure</em></p>
 
 ### 4.2.6 Machine-service
 
@@ -194,57 +221,57 @@ Main endpoints:
 - `POST /start-session`
 - `POST /end-session`
 - `POST /set-maintenance`
+- `GET /machines`
 - `GET /{machineId}`
 - `GET /history/{machineId}`
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(MachineServiceHttpAdapter)"] -->|"POST /start-session\nPOST /end-session"| CTRL["MachineRestControllerImpl"]
+    EMB["embedded-service"]
+    DASH["Dashboard"]
 
     subgraph machine-service
+        CTRL["MachineRestControllerImpl"]
         CTRL --> API["MachineServiceApiImpl"]
-        API -->|"aggiorna stato\nmacchina + sessione"| REPO["MachineRepositoryImpl"]
+        API --> REPO["MachineRepositoryImpl"]
         REPO --> DB[(MongoDB\nmachine-db)]
     end
 
-    DASH["Dashboard\n(via Gateway)"] -->|"POST /set-maintenance\nGET /machines\nGET /machineId\nGET /history/machineId"| CTRL
-    API -->|"stato + storico"| CTRL
+    EMB --> CTRL
+    DASH --> CTRL
 ```
+
+<p align="center"><em>Figure 4.7: Machine-service internal structure</em></p>
 
 ### 4.2.7 Analytics-service
 
 The analytics service stores and exposes historical data used by the dashboard.
-It ingests events and computes attendance, area attendance, machine utilization, and peak hours.
+It ingests events and computes attendance statistics and gym session duration metrics.
 
 Main endpoints:
 
 - `POST /events/ingest`
-- `GET /attendance/{date}`
 - `GET /attendance`
-- `GET /machine-utilization`
-- `GET /machine-utilization/{date}`
-- `GET /peak-hours`
-- `GET /peak-hours/{date}`
-- `GET /area-attendance`
-- `GET /area-attendance/{date}`
-- `GET /area-attendance/{date}/{areaId}`
-- `GET /area-peak-hours`
-- `GET /area-peak-hours/{date}`
-- `GET /area-peak-hours/{date}/{areaId}`
+- `GET /attendance/series`
+- `GET /gym-session-duration/{date}`
 
 ```mermaid
 flowchart TD
-    EMB["embedded-service\n(AnalyticsServiceHttpAdapter)"] -->|"POST /events/ingest"| CTRL["AnalyticsRestControllerImpl"]
+    EMB["embedded-service"]
+    DASH["Dashboard"]
 
     subgraph analytics-service
+        CTRL["AnalyticsRestControllerImpl"]
         CTRL --> API["AnalyticsServiceApiImpl"]
-        API -->|"salva evento +\ncalcola aggregati"| REPO["AnalyticsRepositoryImpl"]
+        API --> REPO["AnalyticsRepositoryImpl"]
         REPO --> DB[(MongoDB\nanalytics-db)]
     end
 
-    DASH["Dashboard\n(via Gateway)"] -->|"GET /attendance\nGET /machine-utilization\nGET /peak-hours\nGET /area-attendance"| CTRL
-    API -->|"metriche aggregate"| CTRL
+    EMB --> CTRL
+    DASH --> CTRL
 ```
+
+<p align="center"><em>Figure 4.8: Analytics-service internal structure</em></p>
 
 ### 4.2.8 Embedded-service
 
@@ -252,41 +279,45 @@ The embedded service is the integration layer between physical devices and backe
 It subscribes to MQTT topics, forwards events to the operational services, and translates low-level messages into higher-level domain commands.
 
 The service uses adapters for the area, tracking, machine, and analytics services, plus an MQTT manager to publish and receive messages.
+
+The embedded service also exposes a REST endpoint:
+
+- `GET /statuses`
+
+This endpoint is used by the frontend dashboard to retrieve the current status of all known devices.
+
 Here is a simplified flow of how the embedded service processes incoming MQTT messages and interacts with the backend services.
 
 ```mermaid
 flowchart TD
     SIM["Go Simulator"] -->|"MQTT"| BROKER["Mosquitto Broker"]
-    BROKER -->|"MQTT"| MQTT["VertxMqttClientAdapter"]
+    BROKER -->|"MQTT"| EMB
+    DASH["Dashboard\n(via Gateway)"] -->|"GET /statuses"| EMB
 
-    subgraph embedded-service
-        MQTT --> ESAPI["EmbeddedServiceApiImpl"]
-        ESAPI -->|"HTTP"| TSP["TrackingServiceHttpAdapter"]
-        ESAPI -->|"HTTP"| ASP["AreaServiceHttpAdapter"]
-        ESAPI -->|"HTTP"| MSP["MachineServiceHttpAdapter"]
-        ESAPI -->|"HTTP"| ANP["AnalyticsServiceHttpAdapter"]
-        ESAPI -->|"salva evento"| REPO["EmbeddedRepositoryImpl"]
-        REPO --> DB[(MongoDB\nembedded-db)]
-    end
-
-    TSP --> TRK[tracking-service]
-    ASP --> AREA[area-service]
-    MSP --> MACH[machine-service]
-    ANP --> ANA[analytics-service]
+    EMB["embedded-service"] -->|"HTTP"| TRK["tracking-service"]
+    EMB -->|"HTTP"| AREA["area-service"]
+    EMB -->|"HTTP"| MACH["machine-service"]
+    EMB -->|"HTTP"| ANA["analytics-service"]
+    EMB --> DB[(MongoDB\nembedded-db)]
 ```
+
+<p align="center"><em>Figure 4.9: Embedded-service message processing flow</em></p>
 
 ## 4.3 Frontend Web Application
 
 The frontend is a Flask application located in `src/frontend/smartgym_flask`.
-It provides a lightweight dashboard for authentication and for checking the reachability of the backend services.
+It provides a lightweight administrative dashboard for authentication, real-time monitoring, and historical data exploration.
 
 The application includes:
 
 - a login page that authenticates against `auth-service`;
-- a dashboard page that verifies the logged user via `/login/{username}`;
-- a health endpoint at `/api/health` used by automated checks.
+- a dashboard page that shows attendance and gym session duration stats;
+- a live monitor page that displays real-time area occupancy and machine statuses;
+- a history page that allows exploring attendance series and machine session history;
+- a health endpoint at `/api/health` used by automated checks;
+- several API endpoints (`/api/statuses`, `/api/analytics/dashboard`, `/api/machines`, `/api/live-monitor`, `/api/maintenance/toggle`, `/api/history/filters`, `/api/history`) that aggregate data from backend services for the frontend views.
 
-The frontend stores the access token in the user session and forwards it when interacting with the authentication service.
+The frontend stores the access token in the user session and forwards it as a Bearer token when interacting with the backend services through the gateway.
 It does not implement the business logic of the gym: that remains in the backend microservices.
 
 ```mermaid
@@ -304,6 +335,7 @@ flowchart TD
         API_BP --> AS["AnalyticsService"]
         API_BP --> MS["MachineService"]
         API_BP --> ARS["AreaService"]
+        API_BP --> TS["TrackingService"]
     end
 
     US -->|"/auth-service/*"| GW["Gateway"]
@@ -311,7 +343,10 @@ flowchart TD
     AS -->|"/analytics-service/*"| GW
     MS -->|"/machine-service/*"| GW
     ARS -->|"/area-service/*"| GW
+    TS -->|"/tracking-service/*"| GW
 ```
+
+<p align="center"><em>Figure 4.10: Frontend Flask application structure</em></p>
 
 ## 4.4 Simulator and Event Generation
 

@@ -92,11 +92,11 @@ These hooks run locally, upon commit and push actions:
 
 This prevents inconsistent commit history and improves maintainability.
 
-## 6.5 GitHub Actions Workflows
+## 6.4 GitHub Actions Workflows
 
 **GitHub Actions** orchestrates the automation pipeline of the project through four workflows: CI validation, commit validation, documentation deployment, and release automation. The following subsections describe each workflow and its role in the overall quality gate.
 
-### 6.5.1 Continuous Integration Workflow (`build-and-test.yml`)
+### 6.4.1 Continuous Integration Workflow
 
 The CI workflow runs on Pull Requests targeting `main` and can also be launched manually (`workflow_dispatch`).
 
@@ -110,22 +110,22 @@ The workflow also uploads execution artifacts to support debugging:
 
 This structure ensures that every change is validated against the existing test suite, preventing regressions and maintaining code quality before merging into `main`.
 
-### 6.5.2 Commit Validation Workflow (`validate-commits.yml`)
+### 6.4.2 Commit Validation Workflow
 
 The commit validation workflow runs on Pull Requests to `main`.
 
 This workflow guarantees that release automation receives a clean and machine-readable commit history, which is required for semantic versioning decisions.
 
-### 6.5.3 Documentation Deployment Workflow (`deploy-report-site.yml`)
+### 6.4.3 Documentation Deployment Workflow
 
 The documentation deployment workflow runs when:
 
 - a push reaches `main`, and
 - at least one file under `docs/**` changed.
 
-It's used to automatically deploy the latest version of the documentation site, based on [VitePress](https://vitepress.dev/), to GitHub Pages, ensuring that the public report is always up to date with the latest approved changes in the `main` branch.
+It's used to automatically deploy the latest version of the documentation site, based on VitePress, to GitHub Pages, ensuring that the public report is always up to date with the latest approved changes in the `main` branch.
 
-### 6.5.4 Automated Release Workflow (`release.yml`)
+### 6.4.4 Automated Release Workflow
 
 The release workflow is triggered automatically on every push to `main`.
 It executes `semantic-release`, which analyzes commit messages to determine the next version number, generate the changelog, and publish the release.
@@ -138,7 +138,7 @@ In this model, for service-scoped release streams, each service release is expec
 
 In the current repository workflow, release detection is based on SemVer-like tags (for example `v2.0.0`), and release notes are reflected in `CHANGELOG.md` for traceability directly in the codebase.
 
-## 6.6 Automated Testing Strategy
+## 6.5 Automated Testing Strategy
 
 Automated tests are integrated into the CI process with multiple layers:
 
@@ -148,14 +148,14 @@ Automated tests are integrated into the CI process with multiple layers:
 
 This layered strategy reduces regression risk and improves confidence in cross-service behavior.
 
-## 6.7 Dependency Management with Renovate
+## 6.6 Dependency Management with Renovate
 
 The repository uses [Renovate](https://docs.renovatebot.com/) to keep dependencies up to date.
 Renovate periodically scans the repository and automatically opens pull requests whenever newer dependency versions are available, across package ecosystems used in the repo.
 
 Each update is reviewed and validated through the CI pipeline before being merged.
 
-## 6.8 Observability with Prometheus and Grafana
+## 6.7 Observability with Prometheus and Grafana
 
 To monitor runtime behavior and detect regressions early, the project includes an observability stack integrated in `docker-compose.yml`.
 
@@ -165,7 +165,7 @@ The telemetry flow is:
 - Prometheus scrapes those endpoints according to `prometheus.yml` (5s scrape interval).
 - Grafana reads Prometheus as default datasource and renders the pre-provisioned dashboards.
 
-### 6.8.1 Prometheus Targets
+### 6.7.1 Prometheus Targets
 
 `prometheus.yml` registers a dedicated job for each backend microservice:
 
@@ -180,7 +180,7 @@ The telemetry flow is:
 
 All jobs scrape `/actuator/prometheus` and run inside the Docker network (`smartgym-net`) using internal service hostnames.
 
-### 6.8.2 Grafana Provisioning and Dashboard
+### 6.7.2 Grafana Provisioning and Dashboard
 
 Grafana is preconfigured at startup through:
 
@@ -197,7 +197,7 @@ The default dashboard is `grafana/dashboards/smartgym-overview.json` with:
 - Title: `SmartGym Monitor`
 - Key panels for throughput, p95 response time, JVM memory/threads, `up` status, 5xx error rate, and system CPU usage.
 
-## 6.9 DevOps Benefits
+## 6.8 DevOps Benefits
 
 The adopted DevOps strategy provides:
 
